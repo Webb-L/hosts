@@ -51,7 +51,6 @@ class _HostPageState extends State<HostPage> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.hostModel != null ? "编辑 - $_host" : "新增"),
       ),
       floatingActionButton: FloatingActionButton(

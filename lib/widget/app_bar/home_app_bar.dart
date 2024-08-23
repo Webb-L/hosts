@@ -4,7 +4,7 @@ import 'package:hosts/model/host_file.dart';
 import 'package:hosts/widget/dialog/copy_multiple_dialog.dart';
 import 'package:hosts/widget/text_field/search_text_field.dart';
 
-class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+class HomeAppBar extends StatelessWidget {
   final String searchText;
   final ValueChanged<String> onSearchChanged;
   final EditMode editMode;
@@ -31,48 +31,57 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      title: const Text("Hosts Editor"),
-      actions: [
-        if (editMode == EditMode.Table)
-          SizedBox(
-            width: 230,
-            child: SearchTextField(
-              text: searchText,
-              onChanged: onSearchChanged,
-            ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: Row(
+            children: [
+              IconButton(onPressed: (){}, icon: const Icon(Icons.clear)),
+              const SizedBox(width: 10),
+              if (editMode == EditMode.Table)
+                SizedBox(
+                  width: 430,
+                  child: SearchTextField(
+                    text: searchText,
+                    onChanged: onSearchChanged,
+                  ),
+                ),
+              const Expanded(child: SizedBox()),
+              Row(
+                children: [
+                  if (hosts.isNotEmpty && editMode == EditMode.Table)
+                    IconButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) => CopyMultipleDialog(hosts: hosts));
+                        },
+                        tooltip: "复制选中",
+                        icon: const Icon(Icons.copy)),
+                  if (hosts.isNotEmpty && editMode == EditMode.Table)
+                    IconButton(
+                        onPressed: onDeletePressed,
+                        tooltip: "删除选中",
+                        icon: const Icon(Icons.delete)),
+                  _buildEditModeButton(),
+                ],
+              )
+            ],
           ),
-        _buildEditModeButton(),
-        if (hosts.isNotEmpty && editMode == EditMode.Table)
-          IconButton(
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) => CopyMultipleDialog(hosts: hosts));
-              },
-              tooltip: "复制选中",
-              icon: const Icon(Icons.copy)),
-        if (hosts.isNotEmpty && editMode == EditMode.Table)
-          IconButton(
-              onPressed: onDeletePressed,
-              tooltip: "删除选中",
-              icon: const Icon(Icons.delete)),
+        ),
+        if (editMode == EditMode.Table)
+          Table(
+            columnWidths: const {
+              0: FixedColumnWidth(50),
+              2: FixedColumnWidth(100),
+              3: FlexColumnWidth(2),
+              5: FixedColumnWidth(180),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            children: [tableHeader()],
+          )
       ],
-      bottom: editMode == EditMode.Table
-          ? PreferredSize(
-              preferredSize: const Size(double.maxFinite, 48),
-              child: Table(
-                columnWidths: const {
-                  0: FixedColumnWidth(50),
-                  2: FixedColumnWidth(100),
-                  3: FlexColumnWidth(2),
-                  5: FixedColumnWidth(180),
-                },
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                children: [tableHeader()],
-              ))
-          : null,
     );
   }
 
@@ -143,8 +152,4 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-  @override
-  Size get preferredSize =>
-      Size.fromHeight(56.0 + (editMode == EditMode.Table ? 48 : 0));
 }

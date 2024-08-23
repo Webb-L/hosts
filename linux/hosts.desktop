@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Hosts Editor
+Exec=hosts
+Icon=app_icon
+Type=Application

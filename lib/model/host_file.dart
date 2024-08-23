@@ -36,14 +36,17 @@ class HostsModel {
 
 class HostsFile {
   late File _file;
-  final String _filePath;
+  final String filePath;
+
+  // 是否保存
+  bool isSave = true;
 
   final List<HostsModel> hosts = [];
   List<String> _lines = [];
 
-  HostsFile(this._filePath) {
+  HostsFile(this.filePath) {
     try {
-      _file = File(_filePath);
+      _file = File(filePath);
       _lines = _file.readAsLinesSync();
       _parseHosts(_lines);
     } catch (e) {
@@ -98,7 +101,7 @@ class HostsFile {
     return _lines.join("\n");
   }
 
-  void formString(String text){
+  void formString(String text) {
     _lines = text.split("\n");
     _parseHosts(_lines);
   }
@@ -146,6 +149,7 @@ class HostsFile {
   addHost(HostsModel model) {
     _lines.addAll(model.toString().split("\n"));
     _parseHosts(_lines);
+    isSave = false;
   }
 
   updateHost(int index, HostsModel model) {
@@ -177,6 +181,7 @@ class HostsFile {
     }
 
     _parseHosts(_lines);
+    isSave = false;
   }
 
   void deleteMultiple(List<HostsModel> models) {
@@ -193,6 +198,7 @@ class HostsFile {
       }
     }
 
+    isSave = false;
     _parseHosts(_lines);
   }
 }

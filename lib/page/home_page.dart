@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hosts/enum/edit_mode_enum.dart';
@@ -6,6 +8,7 @@ import 'package:hosts/page/host_page.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
+import 'package:hosts/widget/home_drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,47 +43,6 @@ class _HomePageState extends State<HomePage> {
     List<HostsModel> filterHosts =
         hostsFile.filterHosts(searchText, sortConfig);
     return Scaffold(
-      appBar: HomeAppBar(
-          searchText: searchText,
-          onSearchChanged: (value){
-            setState(() {
-              searchText = value;
-            });
-          },
-          editMode: editMode,
-          onSwitchMode: (value) {
-            setState(() {
-              if (editMode == EditMode.Text) {
-                editMode = EditMode.Table;
-                hostsFile.formString(_textEditingController.text);
-                selectHosts.clear();
-              } else {
-                editMode = EditMode.Text;
-                _textEditingController.value =
-                    TextEditingValue(text: hostsFile.toString());
-              }
-            });
-          },
-          hosts: selectHosts,
-          sortConfig: sortConfig,
-          onDeletePressed:(){
-            deleteMultiple(selectHosts);
-          },
-          isCheckedAll: hostsFile.hosts.length == selectHosts.length,
-          onCheckedAllChanged: (value) {
-            setState(() {
-              if (value ?? false) {
-                selectHosts.addAll(hostsFile.hosts);
-              } else {
-                selectHosts.clear();
-              }
-            });
-          },
-          onSortConfChanged: (value) {
-            setState(() {
-              sortConfig =  value;
-            });
-          }),
       floatingActionButton: editMode == EditMode.Table
           ? FloatingActionButton(
               onPressed: () async {
@@ -96,12 +58,83 @@ class _HomePageState extends State<HomePage> {
               child: const Icon(Icons.add),
             )
           : null,
-      body: Stack(
-        fit: StackFit.expand,
+      body: Row(
         children: [
-          editMode == EditMode.Table
-              ? _buildTable(filterHosts)
-              : _buildTextEdit()
+          HomeDrawer(onChanged: (String value) {
+            setState(() {
+              hostsFile = HostsFile(value);
+            });
+          },),
+          Expanded(
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                HomeAppBar(
+                    searchText: searchText,
+                    onSearchChanged: (value) {
+                      setState(() {
+                        searchText = value;
+                      });
+                    },
+                    editMode: editMode,
+                    onSwitchMode: (value) {
+                      setState(() {
+                        if (editMode == EditMode.Text) {
+                          editMode = EditMode.Table;
+                          hostsFile.formString(_textEditingController.text);
+                          selectHosts.clear();
+                        } else {
+                          editMode = EditMode.Text;
+                          _textEditingController.value =
+                              TextEditingValue(text: hostsFile.toString());
+                        }
+                      });
+                    },
+                    hosts: selectHosts,
+                    sortConfig: sortConfig,
+                    onDeletePressed: () {
+                      deleteMultiple(selectHosts);
+                    },
+                    isCheckedAll: hostsFile.hosts.length == selectHosts.length,
+                    onCheckedAllChanged: (value) {
+                      setState(() {
+                        if (value ?? false) {
+                          selectHosts.addAll(hostsFile.hosts);
+                        } else {
+                          selectHosts.clear();
+                        }
+                      });
+                    },
+                    onSortConfChanged: (value) {
+                      setState(() {
+                        sortConfig = value;
+                      });
+                    }),
+                if (!hostsFile.isSave)
+                  MaterialBanner(
+                    content: const Text('内容已更新！请确保保存您的更改，以免丢失重要信息。'),
+                    leading: const Icon(Icons.error_outline),
+                    actions: [
+                      TextButton(
+                        onPressed: () async {
+                          await Process.start("pkexec", ["env"]);
+                          setState(() {
+                            hostsFile.isSave = true;
+                          });
+                        },
+                        child: const Text('保存'),
+                      ),
+                    ],
+                  ),
+                Expanded(
+                    child: SingleChildScrollView(
+                  child: editMode == EditMode.Table
+                      ? _buildTable(filterHosts)
+                      : _buildTextEdit(),
+                ))
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -242,29 +275,24 @@ class _HomePageState extends State<HomePage> {
         child: ErrorEmpty(),
       );
     } else {
-      return SingleChildScrollView(
-        child: Table(
-          columnWidths: const {
-            0: FixedColumnWidth(50),
-            2: FixedColumnWidth(100),
-            3: FlexColumnWidth(2),
-            5: FixedColumnWidth(180),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          children: tableBody(filterHosts),
-        ),
+      return Table(
+        columnWidths: const {
+          0: FixedColumnWidth(50),
+          2: FixedColumnWidth(100),
+          3: FlexColumnWidth(2),
+          5: FixedColumnWidth(180),
+        },
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        children: tableBody(filterHosts),
       );
     }
   }
 
   _buildTextEdit() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
-      child: TextField(
-        controller: _textEditingController,
-        maxLines: double.maxFinite.toInt(),
-        decoration: const InputDecoration(border: InputBorder.none),
-      ),
+    return TextField(
+      controller: _textEditingController,
+      maxLines: double.maxFinite.toInt(),
+      decoration: const InputDecoration(border: InputBorder.none),
     );
   }
 }

@@ -8,6 +8,8 @@ set(BINARY_NAME "hosts")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
 set(APPLICATION_ID "top.webb_l.hosts")
+# APPIcon
+set(APP_ICON "app_icon.png")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

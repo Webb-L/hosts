@@ -1,0 +1,24 @@
+class SimpleHostFile {
+  final String fileName;
+  final String remark;
+
+  SimpleHostFile({
+    required this.fileName,
+    required this.remark,
+  });
+
+
+  factory SimpleHostFile.fromJson(Map<String, dynamic> json) {
+    return SimpleHostFile(
+      fileName: json['fileName'] as String,
+      remark: json['remark'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fileName': fileName,
+      'remark': remark,
+    };
+  }
+}
