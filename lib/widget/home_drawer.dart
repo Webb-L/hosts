@@ -57,13 +57,16 @@ class _HomeDrawerState extends State<HomeDrawer> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   "Hosts Editor",
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                CreateHostFileDialog()
+                const Expanded(child: SizedBox()),
+                CreateHostFileDialog(),
+                IconButton(
+                    onPressed: () async {},
+                    icon: const Icon(Icons.file_open_outlined))
               ],
             ),
           ),
@@ -93,7 +96,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                           ? Icons.star
                           : Icons.star_border),
                     ),
-                    trailing: buildMoreButton(),
+                    trailing: buildMoreButton(hostFile),
                     selectedTileColor: Theme.of(context).colorScheme.onPrimary,
                     selected: selectHostFile == hostFile,
                     onTap: () async {
@@ -112,24 +115,31 @@ class _HomeDrawerState extends State<HomeDrawer> {
     );
   }
 
-  Widget buildMoreButton() {
-    return PopupMenuButton<String>(
+  Widget buildMoreButton(SimpleHostFile hostFile) {
+    return PopupMenuButton<int>(
       style: OutlinedButton.styleFrom(
         minimumSize: Size.zero,
         padding: EdgeInsets.zero,
       ),
       onSelected: (value) {
-        // 处理菜单选择
-        print(value);
+        switch (value) {
+          case 1:
+            break;
+          case 2:
+            break;
+          case 3:
+            deleteMultiple([hostFile]);
+            break;
+        }
       },
       itemBuilder: (BuildContext context) {
         return [
-          {'icon': Icons.edit, 'text': '编辑'},
-          {'icon': Icons.history, 'text': '历史'},
-          {'icon': Icons.delete_outline, 'text': '删除'},
+          {'icon': Icons.edit, 'text': '编辑', 'value': 1},
+          {'icon': Icons.history, 'text': '历史', 'value': 2},
+          {'icon': Icons.delete_outline, 'text': '删除', 'value': 3},
         ].map((item) {
-          return PopupMenuItem<String>(
-            value: item['text']!.toString(),
+          return PopupMenuItem<int>(
+            value: int.parse(item['value'].toString()),
             child: Row(
               children: [
                 Icon(item['icon']! as IconData),
@@ -141,5 +151,15 @@ class _HomeDrawerState extends State<HomeDrawer> {
         }).toList();
       },
     );
+  }
+
+  void deleteMultiple(List<SimpleHostFile> array) {
+    if (array.isEmpty) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(array.length == 1
+          ? "您确认需要删除《${array.first.remark}》吗？"
+          : "确认删除选中的${array.length}条记录吗？"),
+      action: SnackBarAction(label: "确认", onPressed: () {}),
+    ));
   }
 }
