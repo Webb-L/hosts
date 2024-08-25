@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/regexp_util.dart';
 
 class HostsModel {
@@ -37,6 +38,9 @@ class HostsModel {
 class HostsFile {
   late File _file;
   final String filePath;
+  final String fileId;
+
+  late String defaultContent;
 
   // 是否保存
   bool isSave = true;
@@ -44,10 +48,16 @@ class HostsFile {
   final List<HostsModel> hosts = [];
   List<String> _lines = [];
 
-  HostsFile(this.filePath) {
+  HostsFile(this.filePath, this.fileId) {
+    if (filePath.isEmpty || fileId.isEmpty) return;
+    initData();
+  }
+
+  void initData() {
     try {
       _file = File(filePath);
       _lines = _file.readAsLinesSync();
+      defaultContent = toString().replaceAll(" ", "").replaceAll("	", "");
       _parseHosts(_lines);
     } catch (e) {
       print('读取 hosts 文件时发生错误: $e');
@@ -101,6 +111,11 @@ class HostsFile {
     return _lines.join("\n");
   }
 
+  void isUpdateHost() {
+    isSave =
+        defaultContent == toString().replaceAll(" ", "").replaceAll("	", "");
+  }
+
   void formString(String text) {
     _lines = text.split("\n");
     _parseHosts(_lines);
@@ -149,7 +164,7 @@ class HostsFile {
   addHost(HostsModel model) {
     _lines.addAll(model.toString().split("\n"));
     _parseHosts(_lines);
-    isSave = false;
+    isUpdateHost();
   }
 
   updateHost(int index, HostsModel model) {
@@ -181,7 +196,7 @@ class HostsFile {
     }
 
     _parseHosts(_lines);
-    isSave = false;
+    isUpdateHost();
   }
 
   void deleteMultiple(List<HostsModel> models) {
@@ -198,7 +213,18 @@ class HostsFile {
       }
     }
 
-    isSave = false;
+    isUpdateHost();
     _parseHosts(_lines);
+  }
+
+  void save([bool isHistory = false]) {
+    final String content = toString();
+    File(filePath).writeAsStringSync(content);
+    if (isHistory) {
+      FileManager().saveHistory(fileId, content);
+    }
+    initData();
+    isUpdateHost();
+    isSave = true;
   }
 }

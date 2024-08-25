@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:hosts/enum/edit_mode_enum.dart';
+import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/host_page.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
@@ -20,8 +21,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final List<HostsModel> selectHosts = [];
-  HostsFile hostsFile = HostsFile("/etc/hosts");
+  HostsFile hostsFile = HostsFile("", "");
   EditMode editMode = EditMode.Table;
+  AdvancedSettingsEnum advancedSettingsEnum = AdvancedSettingsEnum.Close;
   String searchText = "";
   Map<String, int?> sortConfig = {
     "host": null,
@@ -31,6 +33,18 @@ class _HomePageState extends State<HomePage> {
   };
 
   final TextEditingController _textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    _textEditingController.addListener(() {
+      String content =
+          _textEditingController.text.replaceAll(" ", "").replaceAll("	", "");
+      setState(() {
+        hostsFile.isSave = hostsFile.defaultContent == content;
+      });
+    });
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -49,8 +63,6 @@ class _HomePageState extends State<HomePage> {
                 HostsModel? hostsModel = await Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => const HostPage()));
                 if (hostsModel == null) return;
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("添加成功")));
                 setState(() {
                   hostsFile.addHost(hostsModel);
                 });
@@ -60,56 +72,65 @@ class _HomePageState extends State<HomePage> {
           : null,
       body: Row(
         children: [
-          HomeDrawer(onChanged: (String value) {
-            setState(() {
-              hostsFile = HostsFile(value);
-            });
-          },),
+          if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
+            HomeDrawer(
+              onChanged: (String value, String fileId) {
+                setState(() {
+                  hostsFile = HostsFile(value, fileId);
+                });
+              },
+            ),
           Expanded(
             child: Column(
               children: [
                 const SizedBox(height: 12),
                 HomeAppBar(
-                    searchText: searchText,
-                    onSearchChanged: (value) {
-                      setState(() {
-                        searchText = value;
-                      });
-                    },
-                    editMode: editMode,
-                    onSwitchMode: (value) {
-                      setState(() {
-                        if (editMode == EditMode.Text) {
-                          editMode = EditMode.Table;
-                          hostsFile.formString(_textEditingController.text);
-                          selectHosts.clear();
-                        } else {
-                          editMode = EditMode.Text;
-                          _textEditingController.value =
-                              TextEditingValue(text: hostsFile.toString());
-                        }
-                      });
-                    },
-                    hosts: selectHosts,
-                    sortConfig: sortConfig,
-                    onDeletePressed: () {
-                      deleteMultiple(selectHosts);
-                    },
-                    isCheckedAll: hostsFile.hosts.length == selectHosts.length,
-                    onCheckedAllChanged: (value) {
-                      setState(() {
-                        if (value ?? false) {
-                          selectHosts.addAll(hostsFile.hosts);
-                        } else {
-                          selectHosts.clear();
-                        }
-                      });
-                    },
-                    onSortConfChanged: (value) {
-                      setState(() {
-                        sortConfig = value;
-                      });
-                    }),
+                  searchText: searchText,
+                  onSearchChanged: (value) {
+                    setState(() {
+                      searchText = value;
+                    });
+                  },
+                  advancedSettingsEnum: advancedSettingsEnum,
+                  onSwitchAdvancedSettings: (AdvancedSettingsEnum value) {
+                    setState(() {
+                      advancedSettingsEnum = value;
+                    });
+                  },
+                  editMode: editMode,
+                  onSwitchMode: (value) {
+                    setState(() {
+                      if (editMode == EditMode.Text) {
+                        editMode = EditMode.Table;
+                        hostsFile.formString(_textEditingController.text);
+                        selectHosts.clear();
+                      } else {
+                        editMode = EditMode.Text;
+                        _textEditingController.value =
+                            TextEditingValue(text: hostsFile.toString());
+                      }
+                    });
+                  },
+                  hosts: selectHosts,
+                  sortConfig: sortConfig,
+                  onDeletePressed: () {
+                    deleteMultiple(selectHosts);
+                  },
+                  isCheckedAll: hostsFile.hosts.length == selectHosts.length,
+                  onCheckedAllChanged: (value) {
+                    setState(() {
+                      selectHosts.clear();
+                      if (value ?? false) {
+                        selectHosts.addAll(hostsFile.hosts);
+                      }
+                    });
+                  },
+                  onSortConfChanged: (value) {
+                    setState(() {
+                      sortConfig = value;
+                    });
+                  },
+                ),
                 if (!hostsFile.isSave)
                   MaterialBanner(
                     content: const Text('内容已更新！请确保保存您的更改，以免丢失重要信息。'),
@@ -117,9 +138,20 @@ class _HomePageState extends State<HomePage> {
                     actions: [
                       TextButton(
                         onPressed: () async {
-                          await Process.start("pkexec", ["env"]);
+                          // TODO 判断当前文件是否是正在使用的文件
+                          // await Process.start("pkexec", ["env"]);
                           setState(() {
-                            hostsFile.isSave = true;
+                            hostsFile.save(true);
+                          });
+                        },
+                        child: const Text('保存并生成历史'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          // TODO 判断当前文件是否是正在使用的文件
+                          // await Process.start("pkexec", ["env"]);
+                          setState(() {
+                            hostsFile.save();
                           });
                         },
                         child: const Text('保存'),
@@ -127,11 +159,9 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 Expanded(
-                    child: SingleChildScrollView(
-                  child: editMode == EditMode.Table
-                      ? _buildTable(filterHosts)
-                      : _buildTextEdit(),
-                ))
+                    child: editMode == EditMode.Table
+                        ? _buildTable(filterHosts)
+                        : _buildTextEdit())
               ],
             ),
           ),
@@ -200,8 +230,6 @@ class _HomePageState extends State<HomePage> {
                         MaterialPageRoute(
                             builder: (context) => HostPage(hostModel: it)));
                     if (hostsModel == null) return;
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(const SnackBar(content: Text("更新成功")));
                     setState(() {
                       hostsFile.updateHost(index, hostsModel);
                     });
@@ -270,29 +298,37 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTable(List<HostsModel> filterHosts) {
     if (filterHosts.isEmpty) {
-      return const Align(
+      return Container(
         alignment: Alignment.center,
-        child: ErrorEmpty(),
+        width: double.maxFinite,
+        height: double.maxFinite,
+        child: const ErrorEmpty(),
       );
     } else {
-      return Table(
-        columnWidths: const {
-          0: FixedColumnWidth(50),
-          2: FixedColumnWidth(100),
-          3: FlexColumnWidth(2),
-          5: FixedColumnWidth(180),
-        },
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-        children: tableBody(filterHosts),
+      return SingleChildScrollView(
+        child: Table(
+          columnWidths: const {
+            0: FixedColumnWidth(50),
+            2: FixedColumnWidth(100),
+            3: FlexColumnWidth(2),
+            5: FixedColumnWidth(180),
+          },
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: tableBody(filterHosts),
+        ),
       );
     }
   }
 
   _buildTextEdit() {
-    return TextField(
-      controller: _textEditingController,
-      maxLines: double.maxFinite.toInt(),
-      decoration: const InputDecoration(border: InputBorder.none),
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: TextField(
+        controller: _textEditingController,
+        maxLines: double.maxFinite.toInt(),
+        onChanged: (value) {},
+        decoration: const InputDecoration(border: InputBorder.none),
+      ),
     );
   }
 }

@@ -1,13 +1,13 @@
-import 'dart:io';
+import "dart:io";
 
-import 'package:flutter/material.dart';
-import 'package:hosts/model/simple_host_file.dart';
-import 'package:hosts/util/file_manager.dart';
-import 'package:hosts/util/settings_manager.dart';
-import 'package:hosts/widget/dialog/create_host_file_dialog.dart';
+import "package:flutter/material.dart";
+import "package:hosts/model/simple_host_file.dart";
+import "package:hosts/util/file_manager.dart";
+import "package:hosts/util/settings_manager.dart";
+import "package:hosts/widget/dialog/create_host_file_dialog.dart";
 
 class HomeDrawer extends StatefulWidget {
-  final ValueChanged<String> onChanged;
+  final void Function(String, String) onChanged;
 
   const HomeDrawer({super.key, required this.onChanged});
 
@@ -19,33 +19,40 @@ class _HomeDrawerState extends State<HomeDrawer> {
   final SettingsManager _settingsManager = SettingsManager();
   final FileManager _fileManager = FileManager();
 
-  SimpleHostFile? useHostFile;
-  SimpleHostFile? selectHostFile;
+  String? useHostFile;
+  String? selectHostFile;
   final List<SimpleHostFile> hostFiles = [];
 
   @override
   void initState() {
-    (() async {
-      List<SimpleHostFile> tempHostFiles = [];
-      List<dynamic> hostConfigs =
-          await _settingsManager.getList(settingKeyHostConfigs);
-      String? useHostFileKey =
-          await _settingsManager.getString(settingKeyUseHostFile);
-      for (Map<String, dynamic> config in hostConfigs) {
-        SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
-        if (hostFile.fileName == useHostFileKey) {
-          useHostFile = hostFile;
-          selectHostFile = hostFile;
-        }
-        tempHostFiles.add(hostFile);
-      }
-
-      setState(() {
-        hostFiles.clear();
-        hostFiles.addAll(tempHostFiles);
-      });
-    })();
+    loadHostFiles(true);
     super.initState();
+  }
+
+  Future<void> loadHostFiles([bool isInit = false]) async {
+    List<SimpleHostFile> tempHostFiles = [];
+    List<dynamic> hostConfigs =
+        await _settingsManager.getList(settingKeyHostConfigs);
+    useHostFile = await _settingsManager.getString(settingKeyUseHostFile);
+
+    if (isInit) {
+      selectHostFile = useHostFile;
+    }
+
+    for (Map<String, dynamic> config in hostConfigs) {
+      SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
+      hostFile.historyFiles = await _fileManager.getHistory(hostFile.fileName);
+      if (hostFile.fileName == "system" && isInit) {
+        widget.onChanged(await _fileManager.getHostsFilePath(hostFile.fileName),
+            hostFile.fileName);
+      }
+      tempHostFiles.add(hostFile);
+    }
+
+    setState(() {
+      hostFiles.clear();
+      hostFiles.addAll(tempHostFiles);
+    });
   }
 
   @override
@@ -63,7 +70,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Expanded(child: SizedBox()),
-                CreateHostFileDialog(),
+                CreateHostFileDialog(onSyncChanged: () {
+                  loadHostFiles();
+                }),
                 IconButton(
                     onPressed: () async {},
                     icon: const Icon(Icons.file_open_outlined))
@@ -71,7 +80,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
             ),
           ),
           Expanded(
-            // 使用 Expanded 包裹 ListView
             child: ListView.builder(
                 itemCount: hostFiles.length,
                 itemBuilder: (context, index) {
@@ -85,27 +93,31 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         padding: EdgeInsets.zero,
                       ),
                       onPressed: () async {
-                        await Process.start("pkexec", ["env"]);
+                        // await Process.start(
+                        //     "runas /user:Administrator", ["env"]);
                         setState(() {
-                          useHostFile = hostFile;
+                          useHostFile = hostFile.fileName;
                         });
                         _settingsManager.setString(
                             settingKeyUseHostFile, hostFile.fileName);
                       },
-                      icon: Icon(useHostFile == hostFile
+                      icon: Icon(useHostFile == hostFile.fileName
                           ? Icons.star
                           : Icons.star_border),
                     ),
                     trailing: buildMoreButton(hostFile),
-                    selectedTileColor: Theme.of(context).colorScheme.onPrimary,
-                    selected: selectHostFile == hostFile,
+                    selectedTileColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                    selected: selectHostFile == hostFile.fileName,
                     onTap: () async {
-                      if (selectHostFile == hostFile) return;
+                      if (selectHostFile == hostFile.fileName) return;
                       setState(() {
-                        selectHostFile = hostFile;
+                        selectHostFile = hostFile.fileName;
                       });
-                      widget.onChanged(await _fileManager
-                          .getHostsFilePath(hostFile.fileName));
+                      widget.onChanged(
+                          await _fileManager
+                              .getHostsFilePath(hostFile.fileName),
+                          hostFile.fileName);
                     },
                   );
                 }),
@@ -116,14 +128,35 @@ class _HomeDrawerState extends State<HomeDrawer> {
   }
 
   Widget buildMoreButton(SimpleHostFile hostFile) {
+    if (hostFile.fileName == "system") {
+      if (hostFile.historyFiles.isEmpty) {
+        return const SizedBox();
+      }
+      return IconButton(
+          onPressed: () {},
+          style: OutlinedButton.styleFrom(
+            minimumSize: Size.zero,
+            padding: EdgeInsets.zero,
+          ),
+          icon: const Icon(Icons.history));
+    }
+
     return PopupMenuButton<int>(
       style: OutlinedButton.styleFrom(
         minimumSize: Size.zero,
         padding: EdgeInsets.zero,
       ),
-      onSelected: (value) {
+      onSelected: (value) async {
         switch (value) {
           case 1:
+            String result = (await showInputDialog(hostFile) ?? "");
+            if (result.isEmpty) return;
+            int index = hostFiles.indexOf(hostFile);
+            if (index == -1) return;
+            hostFile.remark = result;
+            hostFiles[index] = hostFile;
+            await _settingsManager.setList(settingKeyHostConfigs, hostFiles);
+            loadHostFiles();
             break;
           case 2:
             break;
@@ -133,22 +166,78 @@ class _HomeDrawerState extends State<HomeDrawer> {
         }
       },
       itemBuilder: (BuildContext context) {
-        return [
-          {'icon': Icons.edit, 'text': '编辑', 'value': 1},
-          {'icon': Icons.history, 'text': '历史', 'value': 2},
-          {'icon': Icons.delete_outline, 'text': '删除', 'value': 3},
-        ].map((item) {
+        List<Map<String, Object>> list = [
+          {"icon": Icons.edit, "text": "编辑", "value": 1},
+          {
+            "icon": Icons.history,
+            "text": "历史(${hostFile.historyFiles.length})",
+            "value": 2
+          },
+          {"icon": Icons.delete_outline, "text": "删除", "value": 3},
+        ];
+
+        if (hostFile.historyFiles.isEmpty) {
+          list.removeAt(1);
+        }
+
+        return list.map((item) {
           return PopupMenuItem<int>(
-            value: int.parse(item['value'].toString()),
+            value: int.parse(item["value"].toString()),
             child: Row(
               children: [
-                Icon(item['icon']! as IconData),
+                Icon(item["icon"]! as IconData),
                 const SizedBox(width: 8),
-                Text(item['text']!.toString()),
+                Text(item["text"]!.toString()),
               ],
             ),
           );
         }).toList();
+      },
+    );
+  }
+
+  Future<String?> showInputDialog(SimpleHostFile simpleHostFile) {
+    final TextEditingController remarkController =
+        TextEditingController(text: simpleHostFile.remark);
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    return showDialog<String?>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("编辑"),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: remarkController,
+              maxLength: 30,
+              validator: (value) {
+                final text = value ?? "";
+                if (text.isEmpty) return "请输入备注";
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: "备注",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("取消"),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (!(formKey.currentState?.validate() ?? false)) return;
+                Navigator.of(context).pop(remarkController.text);
+              },
+              child: const Text("确定"),
+            ),
+          ],
+        );
       },
     );
   }
@@ -159,7 +248,21 @@ class _HomeDrawerState extends State<HomeDrawer> {
       content: Text(array.length == 1
           ? "您确认需要删除《${array.first.remark}》吗？"
           : "确认删除选中的${array.length}条记录吗？"),
-      action: SnackBarAction(label: "确认", onPressed: () {}),
+      action: SnackBarAction(
+          label: "确认",
+          onPressed: () async {
+            setState(() {
+              hostFiles.removeWhere((hostFile) => array.contains(hostFile));
+            });
+            await _settingsManager.setList(settingKeyHostConfigs, hostFiles);
+            selectHostFile =
+                await _settingsManager.getString(settingKeyUseHostFile);
+            widget.onChanged(
+                await _fileManager.getHostsFilePath(selectHostFile!),
+                selectHostFile!);
+            _fileManager
+                .deleteFiles(array.map((file) => file.fileName).toList());
+          }),
     ));
   }
 }

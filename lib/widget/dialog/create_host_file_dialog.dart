@@ -5,7 +5,8 @@ import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/util/string_util.dart';
 
 class CreateHostFileDialog extends StatelessWidget {
-  CreateHostFileDialog({super.key});
+  final VoidCallback onSyncChanged;
+  CreateHostFileDialog({super.key, required this.onSyncChanged});
 
   final SettingsManager _settingsManager = SettingsManager();
 
@@ -23,6 +24,7 @@ class CreateHostFileDialog extends StatelessWidget {
 
           await FileManager().createHosts(fileName);
           await _settingsManager.setList(settingKeyHostConfigs, hostConfigs);
+          onSyncChanged();
         },
         icon: const Icon(Icons.add));
   }

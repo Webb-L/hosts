@@ -1,1 +1,0 @@
-enum EditMode { Text, Table }

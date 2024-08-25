@@ -2,6 +2,7 @@ import 'dart:convert'; // 导入 JSON 编码和解码
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+const String settingKeyFirstOpenApp = "FirstOpenApp";
 const String settingKeyHostConfigs = "HostConfigs";
 const String settingKeyUseHostFile = "UseHostFileKey";
 
@@ -41,9 +42,9 @@ class SettingsManager {
     await prefs.setBool(key, value);
   }
 
-  Future<bool?> getBool(String key) async {
+  Future<bool> getBool(String key) async {
     final prefs = await _getPrefs();
-    return prefs.getBool(key);
+    return prefs.getBool(key)??false;
   }
 
   Future<void> remove(String key) async {

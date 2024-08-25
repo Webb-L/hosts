@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -77,15 +78,71 @@ class FileManager {
   }
 
   // 删除文件
-  Future<void> deleteFile(String fileName) async {
-    try {
-      if (_cachedDirectory == null) await _initializeDirectory();
-      final file = File('${_cachedDirectory!.path}/$fileName');
-      if (await file.exists()) {
-        await file.delete();
-      }
-    } catch (e) {
-      print('Error: $e');
+  Future<void> deleteFiles(List<String> fileNames) async {
+    if (_cachedDirectory == null) await _initializeDirectory();
+    for (var pathName in fileNames) {
+      deleteRecursively(Directory(p.join(_cachedDirectory!.path, pathName)));
     }
+  }
+
+  void deleteRecursively(Directory dir) {
+    // 获取目录中的所有文件和子目录
+    var entities = dir.listSync();
+
+    for (var entity in entities) {
+      if (entity is File) {
+        // 删除文件
+        entity.deleteSync();
+      } else if (entity is Directory) {
+        // 递归删除子目录
+        deleteRecursively(entity);
+        // 删除目录本身
+        entity.deleteSync();
+      }
+    }
+
+    dir.delete();
+  }
+
+  // TODO 保存后不会更新数据。
+  Future<List<SimpleHostFileHistory>> getHistory(String fileName) async {
+    if (_cachedDirectory == null) await _initializeDirectory();
+    if (fileName.isEmpty) return [];
+    Directory historyDirectory =
+        Directory(p.joinAll([_cachedDirectory!.path, fileName, "history"]));
+    if (!historyDirectory.existsSync()) {
+      return [];
+    }
+    return historyDirectory
+        .listSync()
+        .map(
+          (item) => SimpleHostFileHistory(
+            fileName: item.uri.pathSegments.last,
+            path: item.path,
+          ),
+        )
+        .toList();
+  }
+
+  void saveHistory(String fileName, String content) async {
+    if (_cachedDirectory == null) await _initializeDirectory();
+    if (fileName.isEmpty) return;
+
+    // 规范化文件名，防止目录穿越
+    final safeFileName = p.basename(fileName); // 只保留文件名，不允许路径
+    final filePath = p.join(_cachedDirectory!.path, safeFileName);
+    Directory rootDirectory = Directory(filePath);
+    if (!rootDirectory.existsSync()) {
+      rootDirectory.create(recursive: true);
+    }
+    Directory historyDirectory =
+        Directory(p.join(rootDirectory.path, "history"));
+    if (!historyDirectory.existsSync()) {
+      historyDirectory.create(recursive: true);
+    }
+    File(
+      p.join(historyDirectory.path,
+          DateTime.now().millisecondsSinceEpoch.toString()),
+    ).writeAsString(content);
   }
 }

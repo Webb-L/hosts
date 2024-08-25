@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hosts/enum/edit_mode_enum.dart';
+import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/widget/dialog/copy_multiple_dialog.dart';
 import 'package:hosts/widget/text_field/search_text_field.dart';
@@ -7,6 +7,8 @@ import 'package:hosts/widget/text_field/search_text_field.dart';
 class HomeAppBar extends StatelessWidget {
   final String searchText;
   final ValueChanged<String> onSearchChanged;
+  final AdvancedSettingsEnum advancedSettingsEnum;
+  final ValueChanged<AdvancedSettingsEnum> onSwitchAdvancedSettings;
   final EditMode editMode;
   final ValueChanged<EditMode> onSwitchMode;
   final List<HostsModel> hosts;
@@ -20,6 +22,8 @@ class HomeAppBar extends StatelessWidget {
       {super.key,
       required this.searchText,
       required this.onSearchChanged,
+      required this.advancedSettingsEnum,
+      required this.onSwitchAdvancedSettings,
       required this.editMode,
       required this.onSwitchMode,
       required this.hosts,
@@ -37,7 +41,19 @@ class HomeAppBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Row(
             children: [
-              IconButton(onPressed: (){}, icon: const Icon(Icons.clear)),
+              IconButton(
+                onPressed: () {
+                  onSwitchAdvancedSettings(
+                    advancedSettingsEnum == AdvancedSettingsEnum.Close
+                        ? AdvancedSettingsEnum.Open
+                        : AdvancedSettingsEnum.Close,
+                  );
+                },
+                icon: Icon(advancedSettingsEnum == AdvancedSettingsEnum.Close
+                    ? Icons.close
+                    : Icons.settings),
+                tooltip: "高级设置",
+              ),
               const SizedBox(width: 10),
               if (editMode == EditMode.Table)
                 SizedBox(
@@ -55,7 +71,8 @@ class HomeAppBar extends StatelessWidget {
                         onPressed: () {
                           showDialog(
                               context: context,
-                              builder: (context) => CopyMultipleDialog(hosts: hosts));
+                              builder: (context) =>
+                                  CopyMultipleDialog(hosts: hosts));
                         },
                         tooltip: "复制选中",
                         icon: const Icon(Icons.copy)),
@@ -108,8 +125,9 @@ class HomeAppBar extends StatelessWidget {
       children: [
         Padding(
             padding: const EdgeInsets.all(8.0),
-            child:
-                Checkbox(value: isCheckedAll, onChanged: onCheckedAllChanged)),
+            child: Checkbox(
+                value: hosts.isNotEmpty && isCheckedAll,
+                onChanged: onCheckedAllChanged)),
         tableHeaderItem("host", "IP地址"),
         tableHeaderItem("isUse", "状态"),
         tableHeaderItem("hosts", "域名"),

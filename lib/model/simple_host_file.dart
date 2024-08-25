@@ -1,12 +1,12 @@
 class SimpleHostFile {
   final String fileName;
-  final String remark;
+  String remark;
+  List<SimpleHostFileHistory> historyFiles = [];
 
   SimpleHostFile({
     required this.fileName,
     required this.remark,
   });
-
 
   factory SimpleHostFile.fromJson(Map<String, dynamic> json) {
     return SimpleHostFile(
@@ -21,4 +21,14 @@ class SimpleHostFile {
       'remark': remark,
     };
   }
+}
+
+class SimpleHostFileHistory {
+  final String fileName;
+  final String path;
+
+  SimpleHostFileHistory({
+    required this.fileName,
+    required this.path,
+  });
 }

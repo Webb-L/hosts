@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/util/regexp_util.dart';
 
+// TODO 应该支持批量添加
 class HostPage extends StatefulWidget {
   final HostsModel? hostModel;
 
@@ -78,6 +79,7 @@ class _HostPageState extends State<HostPage> {
               padding: EdgeInsets.symmetric(horizontal: 8),
               child: VerticalDivider(),
             ),
+            // TODO 需求输入数据 左边的表单应该也会跟着变化。
             Expanded(
                 child: TextFormField(
               controller: _hostConf,
