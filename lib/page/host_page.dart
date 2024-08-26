@@ -14,36 +14,68 @@ class HostPage extends StatefulWidget {
 
 class _HostPageState extends State<HostPage> {
   final GlobalKey _formKey = GlobalKey<FormState>();
+  final FocusNode _focusNode = FocusNode();
   bool _isUse = false;
-  String _host = "";
-  String _description = "";
-  final List<String> _hosts = [""];
+  final TextEditingController _hostController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   final List<TextEditingController> _hostControllers = [];
-  final TextEditingController _hostConf = TextEditingController();
+  final TextEditingController _hostConfController = TextEditingController();
+  int currentIndex = 0;
+  List<HostsModel> hosts = [HostsModel("", false, "", [])];
 
   @override
   void initState() {
     super.initState();
     if (widget.hostModel != null) {
-      _isUse = widget.hostModel!.isUse;
-      _host = widget.hostModel!.host;
-      _description = widget.hostModel!.description;
-      _hosts.clear();
-      _hosts.addAll(widget.hostModel!.hosts);
+      setState(() {
+        setForm(widget.hostModel!);
+      });
     }
-    _hostControllers
-        .addAll(_hosts.map((host) => TextEditingController(text: host)));
-    _hostConf.value = TextEditingValue(
-        text: HostsModel(_host, _isUse, _description, _hosts).toString());
+    updateHostModelString();
+
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) return;
+
+      final List<HostsModel> tempHosts =
+          HostsFile.parseHosts(_hostConfController.text.split("\n"));
+      setState(() {
+        hosts = tempHosts;
+        if (hosts.isNotEmpty && currentIndex >= hosts.length) {
+          currentIndex = hosts.length - 1;
+        }
+      });
+      if (tempHosts.isNotEmpty) {
+        setState(() {
+          setForm(hosts[currentIndex]);
+        });
+        return;
+      }
+
+      setState(() {
+        _isUse = false;
+      });
+
+      _hostController.value = const TextEditingValue();
+      _descriptionController.value = const TextEditingValue();
+      _hostControllers.clear();
+    });
+  }
+
+  void setForm(HostsModel tempHost) {
+    _isUse = tempHost.isUse;
+    _hostController.value = TextEditingValue(text: tempHost.host);
+    _descriptionController.value = TextEditingValue(text: tempHost.description);
+    _hostControllers.clear();
+    _hostControllers.addAll(
+        tempHost.hosts.map((host) => TextEditingController(text: host)));
   }
 
   @override
   void dispose() {
-    // 释放所有的 TextEditingController
     for (var controller in _hostControllers) {
       controller.dispose();
     }
-    _hostConf.dispose();
+    _hostConfController.dispose();
     super.dispose();
   }
 
@@ -52,7 +84,45 @@ class _HostPageState extends State<HostPage> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.hostModel != null ? "编辑 - $_host" : "新增"),
+        title: Text(widget.hostModel != null
+            ? "编辑 - ${_hostController.text}"
+            : "新增(${currentIndex + 1}/${hosts.isEmpty ? 1 : hosts.length})"),
+        actions: [
+          IconButton(
+            onPressed: currentIndex == 0
+                ? null
+                : () {
+                    setState(() {
+                      currentIndex--;
+                      setForm(hosts[currentIndex]);
+                    });
+                  },
+            icon: const Icon(Icons.chevron_left),
+            tooltip: "上一个",
+          ),
+          IconButton(
+            onPressed: currentIndex == hosts.length - 1 || hosts.isEmpty
+                ? null
+                : () {
+                    setState(() {
+                      currentIndex++;
+                      setForm(hosts[currentIndex]);
+                    });
+                  },
+            icon: const Icon(Icons.chevron_right),
+            tooltip: "下一个",
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                hosts.add(HostsModel("", false, "", []));
+                updateHostModelString();
+              });
+            },
+            icon: const Icon(Icons.add),
+            tooltip: "新增",
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -60,8 +130,12 @@ class _HostPageState extends State<HostPage> {
             return;
           }
 
-          Navigator.of(context)
-              .pop(HostsModel(_host, _isUse, _description, _hosts));
+          Navigator.of(context).pop(HostsModel(
+            _hostController.text,
+            _isUse,
+            _descriptionController.text,
+            _hostControllers.map((text) => text.text).toList(),
+          ));
         },
         child: const Icon(Icons.save),
       ),
@@ -79,12 +153,15 @@ class _HostPageState extends State<HostPage> {
               padding: EdgeInsets.symmetric(horizontal: 8),
               child: VerticalDivider(),
             ),
-            // TODO 需求输入数据 左边的表单应该也会跟着变化。
             Expanded(
                 child: TextFormField(
-              controller: _hostConf,
-              maxLines: 1000,
-              decoration: const InputDecoration(border: InputBorder.none),
+              focusNode: _focusNode,
+              controller: _hostConfController,
+              maxLines: 10000,
+              decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText:
+                      "模板：\n# 127.0.0.1 flutter.dev\n\n# Flutter\n127.0.0.1 flutter.dev\n\n..."),
             ))
           ],
         ),
@@ -106,14 +183,12 @@ class _HostPageState extends State<HostPage> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               Switch(
-                  value: _isUse,
-                  onChanged: (value) => setState(() {
-                        _isUse = value;
-                        _hostConf.value = TextEditingValue(
-                            text:
-                                HostsModel(_host, _isUse, _description, _hosts)
-                                    .toString());
-                      }))
+                value: _isUse,
+                onChanged: (value) => setState(() {
+                  _isUse = value;
+                  updateHostModelString();
+                }),
+              )
             ],
           ),
           const Padding(
@@ -121,19 +196,14 @@ class _HostPageState extends State<HostPage> {
             child: Divider(),
           ),
           TextFormField(
-            initialValue: _host,
+            controller: _hostController,
             decoration: const InputDecoration(
                 label: Text("IP地址"),
                 hintText: "支持IPV4和IPV6",
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(16)))),
             onChanged: (value) {
-              setState(() {
-                _host = value;
-              });
-              _hostConf.value = TextEditingValue(
-                  text: HostsModel(_host, _isUse, _description, _hosts)
-                      .toString());
+              updateHostModelString();
               (_formKey.currentState as FormState?)?.validate();
             },
             validator: (value) {
@@ -149,14 +219,9 @@ class _HostPageState extends State<HostPage> {
           ),
           const SizedBox(height: 8),
           TextFormField(
-              initialValue: _description,
+              controller: _descriptionController,
               onChanged: (value) {
-                setState(() {
-                  _description = value;
-                });
-                _hostConf.value = TextEditingValue(
-                    text: HostsModel(_host, _isUse, _description, _hosts)
-                        .toString());
+                updateHostModelString();
                 (_formKey.currentState as FormState?)?.validate();
               },
               decoration: const InputDecoration(
@@ -172,7 +237,7 @@ class _HostPageState extends State<HostPage> {
 
   ListView buildDomains() {
     return ListView.builder(
-        itemCount: _hosts.length,
+        itemCount: _hostControllers.length,
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -183,29 +248,30 @@ class _HostPageState extends State<HostPage> {
                 prefixIcon: GestureDetector(
                   onTap: () {
                     setState(() {
-                      if (_hosts.length > 1) {
-                        _hosts.removeAt(index);
+                      if (_hostControllers.length > 1) {
                         _hostControllers.removeAt(index);
                       } else {
-                        _hosts.first = "";
                         _hostControllers.first.text = "";
                       }
                     });
+                    updateHostModelString();
+                    (_formKey.currentState as FormState?)?.validate();
                   },
                   child: const Icon(Icons.remove),
                 ),
                 suffixIcon: GestureDetector(
                   onTap: () {
                     setState(() {
-                      if (index == _hosts.length - 1) {
-                        _hosts.add("");
+                      if (index == _hostControllers.length - 1) {
                         _hostControllers.add(TextEditingController());
                       } else {
-                        _hosts.insert(index + 1, "");
                         _hostControllers.insert(
-                            index + 1, TextEditingController());
+                          index + 1,
+                          TextEditingController(),
+                        );
                       }
                     });
+                    updateHostModelString();
                   },
                   child: const Icon(Icons.add),
                 ),
@@ -214,12 +280,7 @@ class _HostPageState extends State<HostPage> {
                 ),
               ),
               onChanged: (value) {
-                setState(() {
-                  _hosts[index] = value;
-                });
-                _hostConf.value = TextEditingValue(
-                    text: HostsModel(_host, _isUse, _description, _hosts)
-                        .toString());
+                updateHostModelString();
                 (_formKey.currentState as FormState?)?.validate();
               },
               validator: (value) {
@@ -231,7 +292,8 @@ class _HostPageState extends State<HostPage> {
                   return "请不要输入空格(“ ”)和换行(“\n”)。";
                 }
 
-                if (_hosts.where((it) => it == text).length > 1) {
+                if (_hostControllers.where((it) => it.text == text).length >
+                    1) {
                   return "该域名已存在";
                 }
 
@@ -240,5 +302,24 @@ class _HostPageState extends State<HostPage> {
             ),
           );
         });
+  }
+
+  void updateHostModelString() {
+    hosts[currentIndex] = HostsModel(
+      _hostController.text,
+      _isUse,
+      _descriptionController.text,
+      _hostControllers.map((text) => text.text).toList(),
+    );
+    if (hosts.length == 1) {
+      _hostConfController.value = TextEditingValue(
+        text: hosts[currentIndex].toString(),
+      );
+      return;
+    }
+
+    _hostConfController.value = TextEditingValue(
+      text: hosts.join("\n\n"),
+    );
   }
 }

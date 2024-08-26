@@ -25,6 +25,10 @@ class HostsModel {
       text += "\n";
     }
 
+    if (text.isEmpty && host.isEmpty && hosts.isEmpty) {
+      return "";
+    }
+
     return "$text${isUse ? "" : "# "}$host ${hosts.join(" ")}";
   }
 
