@@ -53,7 +53,7 @@ class HostsFile {
   HostsFile(this.filePath, this.fileId) {
     if (filePath.isEmpty || fileId.isEmpty) return;
     initData();
-    FileManager().getHistory(fileId).then((value){
+    FileManager().getHistory(fileId).then((value) {
       history = value;
     });
   }
@@ -63,14 +63,12 @@ class HostsFile {
       _file = File(filePath);
       _lines = _file.readAsLinesSync();
       defaultContent = toString().replaceAll(" ", "").replaceAll("	", "");
-      _parseHosts(_lines);
+      final List<HostsModel> tempHosts = parseHosts(_lines);
+      hosts.clear();
+      hosts.addAll(tempHosts);
     } catch (e) {
       print('读取 hosts 文件时发生错误: $e');
     }
-  }
-
-  int count() {
-    return hosts.length;
   }
 
   List<HostsModel> filterHosts(
@@ -123,10 +121,13 @@ class HostsFile {
 
   void formString(String text) {
     _lines = text.split("\n");
-    _parseHosts(_lines);
+    final List<HostsModel> tempHosts = parseHosts(_lines);
+    hosts.clear();
+    hosts.addAll(tempHosts);
   }
 
-  void _parseHosts(List<String> lines) {
+  // 将字符串解析成 HostModel 对象
+  static List<HostsModel> parseHosts(List<String> lines) {
     List<HostsModel> tempHosts = [];
 
     for (int i = 0; i < lines.length; i++) {
@@ -136,39 +137,62 @@ class HostsFile {
         // 解析 hosts 配置
         final parts = line
             .replaceFirst("#", "")
-            .split(RegExp(r'\s+'))
-            .map((it) => it.trim())
-            .where((it) => it.isNotEmpty)
+            .split(RegExp(r"\s+"))
+            .where((it) => it.trim().isNotEmpty)
             .toList();
 
         if (parts.length < 2) continue;
 
+        String host = parts.first;
+        List<String> hosts = parts.sublist(1);
+
         int? descLine;
         String description = "";
 
-        if (i > 0) {
+        // 解析 “IP 域名 # 描述”
+        List<String> lineDescription = line.contains(RegExp(r"\s+#\s?"))
+            ? line
+                .split(RegExp(r"\s+#\s?"))
+                .where((it) => it.trim().isNotEmpty)
+                .toList()
+            : [];
+
+        if (lineDescription.isNotEmpty) {
+          description = lineDescription.sublist(1).join("#");
+          descLine = i;
+
+          hosts = lineDescription.first
+              .replaceFirst("#", "")
+              .split(RegExp(r"\s+"))
+              .where((it) => it.trim().isNotEmpty)
+              .toList()
+              .sublist(1);
+        }
+
+        if (i > 0 && description.isEmpty) {
           final prevLine = lines[i - 1].trim();
           if (prevLine.isNotEmpty &&
               prevLine.startsWith("#") &&
               !(isValidIPv4(prevLine) || isValidIPv6(prevLine))) {
-            description = prevLine.replaceFirst(RegExp("^#\\s?"), "");
+            description = prevLine.replaceFirst(RegExp(r"^#\s?"), "");
             descLine = i - 1;
           }
         }
 
         tempHosts.add(HostsModel(
-            parts.first, !line.startsWith("#"), description, parts.sublist(1),
+            host, !line.startsWith(RegExp(r"^\s?#")), description, hosts,
             hostLine: i, descLine: descLine));
       }
     }
 
-    hosts.clear();
-    hosts.addAll(tempHosts);
+    return tempHosts;
   }
 
   addHost(HostsModel model) {
     _lines.addAll(model.toString().split("\n"));
-    _parseHosts(_lines);
+    final List<HostsModel> tempHosts = parseHosts(_lines);
+    hosts.clear();
+    hosts.addAll(tempHosts);
     isUpdateHost();
   }
 
@@ -195,12 +219,22 @@ class HostsFile {
     if (model.descLine == null && model.description.isNotEmpty) {
       _lines.insert(model.hostLine!, "# ${model.description}");
     }
+    if (model.descLine != null &&
+        model.descLine == model.hostLine &&
+        model.description.isNotEmpty) {
+      _lines.insert(model.hostLine!, "# ${model.description}");
+    }
+
     // 移除备注
     if (model.descLine != null && model.description.isEmpty) {
       _lines.removeAt(model.descLine!);
     }
 
-    _parseHosts(_lines);
+    print(_lines.join("\n"));
+
+    final List<HostsModel> tempHosts = parseHosts(_lines);
+    hosts.clear();
+    hosts.addAll(tempHosts);
     isUpdateHost();
   }
 
@@ -219,7 +253,9 @@ class HostsFile {
     }
 
     isUpdateHost();
-    _parseHosts(_lines);
+    final List<HostsModel> tempHosts = parseHosts(_lines);
+    hosts.clear();
+    hosts.addAll(tempHosts);
   }
 
   void save([bool isHistory = false]) {
@@ -228,7 +264,7 @@ class HostsFile {
     if (isHistory) {
       FileManager fileManager = FileManager();
       fileManager.saveHistory(fileId, content);
-      fileManager.getHistory(fileId).then((value){
+      fileManager.getHistory(fileId).then((value) {
         history = value;
       });
     }
