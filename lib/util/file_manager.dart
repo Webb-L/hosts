@@ -81,27 +81,36 @@ class FileManager {
   Future<void> deleteFiles(List<String> fileNames) async {
     if (_cachedDirectory == null) await _initializeDirectory();
     for (var pathName in fileNames) {
-      deleteRecursively(Directory(p.join(_cachedDirectory!.path, pathName)));
+      recursiveDelete(Directory(p.join(_cachedDirectory!.path, pathName)));
     }
   }
 
-  void deleteRecursively(Directory dir) {
-    // 获取目录中的所有文件和子目录
-    var entities = dir.listSync();
+  void recursiveDelete(Directory dir) {
+    if (!dir.existsSync()) {
+      print("Directory does not exist: ${dir.path}");
+      return;
+    }
+
+    List<FileSystemEntity> entities = dir.listSync();
 
     for (var entity in entities) {
       if (entity is File) {
-        // 删除文件
-        entity.deleteSync();
+        try {
+          entity.deleteSync();
+        } catch (e) {
+          print("Error deleting file: ${entity.path} - ${e.toString()}");
+        }
       } else if (entity is Directory) {
-        // 递归删除子目录
-        deleteRecursively(entity);
-        // 删除目录本身
-        entity.deleteSync();
+        recursiveDelete(entity);
       }
     }
 
-    dir.delete();
+    try {
+      dir.deleteSync(recursive: true);
+      print("Deleted folder: ${dir.path}");
+    } catch (e) {
+      print("Error deleting folder: ${dir.path} - ${e.toString()}");
+    }
   }
 
   // TODO 保存后不会更新数据。

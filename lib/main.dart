@@ -20,7 +20,7 @@ void main() async {
     await settingsManager.setString(settingKeyUseHostFile, fileName);
     final List<String> systemHostFilePath = Platform.isWindows
         ? ["C:", "Windows", "System32", "drivers", "etc", "hosts"]
-        : ["etc", "hosts"];
+        : ["/", "etc", "hosts"];
     File(p.joinAll(systemHostFilePath))
         .copy(await fileManager.getHostsFilePath(fileName));
     settingsManager.setBool(settingKeyFirstOpenApp, true);

@@ -49,9 +49,7 @@ class HomeAppBar extends StatelessWidget {
                         : AdvancedSettingsEnum.Close,
                   );
                 },
-                icon: Icon(advancedSettingsEnum == AdvancedSettingsEnum.Close
-                    ? Icons.close
-                    : Icons.settings),
+                icon: const Icon(Icons.settings),
                 tooltip: "高级设置",
               ),
               const SizedBox(width: 10),
