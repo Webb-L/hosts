@@ -5,9 +5,10 @@ import "package:hosts/util/settings_manager.dart";
 import "package:hosts/widget/dialog/create_host_file_dialog.dart";
 
 class HomeDrawer extends StatefulWidget {
+  final bool isSave;
   final void Function(String, String) onChanged;
 
-  const HomeDrawer({super.key, required this.onChanged});
+  const HomeDrawer({super.key, required this.isSave, required this.onChanged});
 
   @override
   State<HomeDrawer> createState() => _HomeDrawerState();
@@ -108,6 +109,24 @@ class _HomeDrawerState extends State<HomeDrawer> {
                     selected: selectHostFile == hostFile.fileName,
                     onTap: () async {
                       if (selectHostFile == hostFile.fileName) return;
+                      if (!widget.isSave) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: const Text("当前文件包含未保存的更改"),
+                          action: SnackBarAction(
+                              label: "舍弃",
+                              onPressed: () async {
+                                setState(() {
+                                  selectHostFile = hostFile.fileName;
+                                });
+                                widget.onChanged(
+                                    await _fileManager
+                                        .getHostsFilePath(hostFile.fileName),
+                                    hostFile.fileName);
+                              }),
+                        ));
+                        return;
+                      }
                       setState(() {
                         selectHostFile = hostFile.fileName;
                       });

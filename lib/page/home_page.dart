@@ -75,9 +75,9 @@ class _HomePageState extends State<HomePage> {
         children: [
           if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
             HomeDrawer(
+              isSave:hostsFile.isSave,
               onChanged: (String value, String fileId) {
                 setState(() {
-                  // TODO 判断当前文件是否没有保存
                   hostsFile = HostsFile(value, fileId);
                 });
               },
