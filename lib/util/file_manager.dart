@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:hosts/model/simple_host_file.dart';
@@ -9,6 +10,10 @@ class FileManager {
   FileManager._internal() {
     _initializeDirectory();
   }
+
+  static final systemHostFilePath = p.joinAll(Platform.isWindows
+      ? ["C:", "Windows", "System32", "drivers", "etc", "hosts"]
+      : ["/", "etc", "hosts"]);
 
   // 静态变量保存单例实例
   static final FileManager _instance = FileManager._internal();
@@ -113,7 +118,6 @@ class FileManager {
     }
   }
 
-  // TODO 保存后不会更新数据。
   Future<List<SimpleHostFileHistory>> getHistory(String fileName) async {
     if (_cachedDirectory == null) await _initializeDirectory();
     if (fileName.isEmpty) return [];
@@ -153,5 +157,41 @@ class FileManager {
       p.join(historyDirectory.path,
           DateTime.now().millisecondsSinceEpoch.toString()),
     ).writeAsString(content);
+  }
+
+  Future<String> saveToHosts(String content) async {
+    final Directory cacheDirectory = await getApplicationCacheDirectory();
+    final File cacheFile = File(p.join(cacheDirectory.path, 'hosts'));
+
+    await cacheFile.writeAsString(content);
+
+    final Process process = await Process.start(
+      "pkexec",
+      ["cp", cacheFile.path, systemHostFilePath],
+      mode: ProcessStartMode.normal,
+    );
+
+    // 处理标准输出
+    String result = "";
+    process.stdout.transform(utf8.decoder).listen((data) {
+      print('Output: $data');
+      result = data;
+    });
+
+    // 处理标准错误
+    String errorMessage = "";
+    process.stderr.transform(utf8.decoder).listen((data) {
+      errorMessage = data;
+    });
+
+    // 等待进程结束
+    int exitCode = await process.exitCode;
+
+    // 检查退出代码，如果非零则抛出异常
+    if (errorMessage.isNotEmpty) {
+      throw Exception(errorMessage);
+    }
+
+    return result;
   }
 }

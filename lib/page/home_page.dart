@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/page/host_page.dart';
+import 'package:hosts/util/file_manager.dart';
+import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
@@ -17,6 +19,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final SettingsManager _settingsManager = SettingsManager();
+  final FileManager _fileManager = FileManager();
   final List<HostsModel> selectHosts = [];
   HostsFile hostsFile = HostsFile("", "");
   EditMode editMode = EditMode.Table;
@@ -73,6 +77,7 @@ class _HomePageState extends State<HomePage> {
             HomeDrawer(
               onChanged: (String value, String fileId) {
                 setState(() {
+                  // TODO 判断当前文件是否没有保存
                   hostsFile = HostsFile(value, fileId);
                 });
               },
@@ -130,32 +135,15 @@ class _HomePageState extends State<HomePage> {
                   history: hostsFile.history,
                 ),
                 if (!hostsFile.isSave)
-                  MaterialBanner(
-                    content: const Text('内容已更新！请确保保存您的更改，以免丢失重要信息。'),
-                    leading: const Icon(Icons.error_outline),
-                    actions: [
-                      TextButton(
-                        onPressed: () async {
-                          // TODO 判断当前文件是否是正在使用的文件
-                          // await Process.start("pkexec", ["env"]);
-                          setState(() {
-                            hostsFile.save(true);
-                          });
-                        },
-                        child: const Text('保存并生成历史'),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          // TODO 判断当前文件是否是正在使用的文件
-                          // await Process.start("pkexec", ["env"]);
-                          setState(() {
-                            hostsFile.save();
-                          });
-                        },
-                        child: const Text('保存'),
-                      ),
-                    ],
-                  ),
+                  FutureBuilder(
+                      future: saveTipMessage(context),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<Widget> snapshot) {
+                        if (snapshot.hasData) {
+                          return snapshot.data!;
+                        }
+                        return const SizedBox();
+                      }),
                 Expanded(
                     child: editMode == EditMode.Table
                         ? _buildTable(filterHosts)
@@ -165,6 +153,52 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<MaterialBanner> saveTipMessage(BuildContext context) async {
+    final bool isUseFile = hostsFile.fileId ==
+        await _settingsManager.getString(settingKeyUseHostFile);
+    return MaterialBanner(
+      content: Text(
+          "内容已更新！请确保保存您的更改，以免丢失重要信息。${isUseFile ? '\n该文件已被使用保存时需要管理员权限。' : ''}"),
+      leading: const Icon(Icons.error_outline),
+      actions: [
+        TextButton(
+          onPressed: () async {
+            if (isUseFile) {
+              try {
+                await _fileManager.saveToHosts(hostsFile.toString());
+              } catch (e) {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(const SnackBar(content: Text("保存失败")));
+                return;
+              }
+            }
+            setState(() {
+              hostsFile.save(true);
+            });
+          },
+          child: const Text('保存并生成历史'),
+        ),
+        TextButton(
+          onPressed: () async {
+            if (isUseFile) {
+              try {
+                await _fileManager.saveToHosts(hostsFile.toString());
+              } catch (e) {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(const SnackBar(content: Text("保存失败")));
+                return;
+              }
+            }
+            setState(() {
+              hostsFile.save();
+            });
+          },
+          child: const Text('保存'),
+        ),
+      ],
     );
   }
 
