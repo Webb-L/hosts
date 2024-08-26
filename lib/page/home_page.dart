@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
-import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/host_page.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
@@ -130,6 +127,7 @@ class _HomePageState extends State<HomePage> {
                       sortConfig = value;
                     });
                   },
+                  history: hostsFile.history,
                 ),
                 if (!hostsFile.isSave)
                   MaterialBanner(

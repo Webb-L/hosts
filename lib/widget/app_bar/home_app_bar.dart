@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/widget/dialog/copy_multiple_dialog.dart';
 import 'package:hosts/widget/text_field/search_text_field.dart';
 
@@ -17,21 +18,24 @@ class HomeAppBar extends StatelessWidget {
   final bool isCheckedAll;
   final ValueChanged<bool?> onCheckedAllChanged;
   final ValueChanged<Map<String, int?>> onSortConfChanged;
+  final List<SimpleHostFileHistory> history;
 
-  const HomeAppBar(
-      {super.key,
-      required this.searchText,
-      required this.onSearchChanged,
-      required this.advancedSettingsEnum,
-      required this.onSwitchAdvancedSettings,
-      required this.editMode,
-      required this.onSwitchMode,
-      required this.hosts,
-      required this.sortConfig,
-      required this.onDeletePressed,
-      required this.isCheckedAll,
-      required this.onCheckedAllChanged,
-      required this.onSortConfChanged});
+  const HomeAppBar({
+    super.key,
+    required this.searchText,
+    required this.onSearchChanged,
+    required this.advancedSettingsEnum,
+    required this.onSwitchAdvancedSettings,
+    required this.editMode,
+    required this.onSwitchMode,
+    required this.hosts,
+    required this.sortConfig,
+    required this.onDeletePressed,
+    required this.isCheckedAll,
+    required this.onCheckedAllChanged,
+    required this.onSortConfChanged,
+    required this.history,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +83,11 @@ class HomeAppBar extends StatelessWidget {
                         onPressed: onDeletePressed,
                         tooltip: "删除选中",
                         icon: const Icon(Icons.delete)),
+                  if (history.isNotEmpty)
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.history),
+                    ),
                   _buildEditModeButton(),
                 ],
               )

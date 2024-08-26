@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/regexp_util.dart';
 
@@ -47,10 +48,14 @@ class HostsFile {
 
   final List<HostsModel> hosts = [];
   List<String> _lines = [];
+  List<SimpleHostFileHistory> history = [];
 
   HostsFile(this.filePath, this.fileId) {
     if (filePath.isEmpty || fileId.isEmpty) return;
     initData();
+    FileManager().getHistory(fileId).then((value){
+      history = value;
+    });
   }
 
   void initData() {
@@ -221,7 +226,11 @@ class HostsFile {
     final String content = toString();
     File(filePath).writeAsStringSync(content);
     if (isHistory) {
-      FileManager().saveHistory(fileId, content);
+      FileManager fileManager = FileManager();
+      fileManager.saveHistory(fileId, content);
+      fileManager.getHistory(fileId).then((value){
+        history = value;
+      });
     }
     initData();
     isUpdateHost();

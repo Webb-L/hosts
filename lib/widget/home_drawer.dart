@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:flutter/material.dart";
 import "package:hosts/model/simple_host_file.dart";
 import "package:hosts/util/file_manager.dart";
@@ -41,7 +39,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
     for (Map<String, dynamic> config in hostConfigs) {
       SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
-      hostFile.historyFiles = await _fileManager.getHistory(hostFile.fileName);
       if (hostFile.fileName == "system" && isInit) {
         widget.onChanged(await _fileManager.getHostsFilePath(hostFile.fileName),
             hostFile.fileName);
@@ -129,16 +126,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
   Widget buildMoreButton(SimpleHostFile hostFile) {
     if (hostFile.fileName == "system") {
-      if (hostFile.historyFiles.isEmpty) {
-        return const SizedBox();
-      }
-      return IconButton(
-          onPressed: () {},
-          style: OutlinedButton.styleFrom(
-            minimumSize: Size.zero,
-            padding: EdgeInsets.zero,
-          ),
-          icon: const Icon(Icons.history));
+      return const SizedBox();
     }
 
     return PopupMenuButton<int>(
@@ -159,8 +147,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
             loadHostFiles();
             break;
           case 2:
-            break;
-          case 3:
             deleteMultiple([hostFile]);
             break;
         }
@@ -168,17 +154,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
           {"icon": Icons.edit, "text": "编辑", "value": 1},
-          {
-            "icon": Icons.history,
-            "text": "历史(${hostFile.historyFiles.length})",
-            "value": 2
-          },
-          {"icon": Icons.delete_outline, "text": "删除", "value": 3},
+          {"icon": Icons.delete_outline, "text": "删除", "value": 2},
         ];
-
-        if (hostFile.historyFiles.isEmpty) {
-          list.removeAt(1);
-        }
 
         return list.map((item) {
           return PopupMenuItem<int>(

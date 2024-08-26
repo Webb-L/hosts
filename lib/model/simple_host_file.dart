@@ -1,7 +1,6 @@
 class SimpleHostFile {
   final String fileName;
   String remark;
-  List<SimpleHostFileHistory> historyFiles = [];
 
   SimpleHostFile({
     required this.fileName,
