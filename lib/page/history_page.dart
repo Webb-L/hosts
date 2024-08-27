@@ -34,14 +34,19 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      color:Theme.of(context).colorScheme.surfaceContainer,
       height: MediaQuery.of(context).size.height,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          Container(
+            width: double.maxFinite,
             padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
+            decoration: BoxDecoration(
+              color:Theme.of(context).colorScheme.surfaceContainer,
+            ),
             child: Text(
               "历史记录",
               style: Theme.of(context).textTheme.titleLarge,

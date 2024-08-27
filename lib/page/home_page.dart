@@ -39,10 +39,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _textEditingController.addListener(() {
-      String content =
-          _textEditingController.text.replaceAll(" ", "").replaceAll("	", "");
       setState(() {
-        hostsFile.isSave = hostsFile.defaultContent == content;
+        hostsFile.isSave =
+            hostsFile.defaultContent == _textEditingController.text;
       });
     });
     super.initState();
@@ -100,6 +99,8 @@ class _HomePageState extends State<HomePage> {
                   undoHost: () {
                     setState(() {
                       hostsFile.undoHost();
+                      _textEditingController.value =
+                          TextEditingValue(text: hostsFile.toString());
                     });
                   },
                   searchText: searchText,
@@ -151,11 +152,17 @@ class _HomePageState extends State<HomePage> {
                   history: hostsFile.history,
                   onHistoryChanged: (history) async {
                     List<SimpleHostFileHistory> resultHistory =
-                        await FileManager().getHistory(hostsFile.fileId);
+                        await _fileManager.getHistory(hostsFile.fileId);
                     setState(() {
                       if (history != null) {
                         selectHistory = history;
-                        hostsFile.setHistory(history.path);
+                        hostsFile.setHistory(history.path).then((value) {
+                          if (editMode != EditMode.Text) return;
+                          setState(() {
+                            _textEditingController.value =
+                                TextEditingValue(text: hostsFile.toString());
+                          });
+                        });
                       }
                       hostsFile.history = resultHistory;
                     });
@@ -386,7 +393,6 @@ class _HomePageState extends State<HomePage> {
       child: TextField(
         controller: _textEditingController,
         maxLines: double.maxFinite.toInt(),
-        onChanged: (value) {},
         decoration: const InputDecoration(border: InputBorder.none),
       ),
     );

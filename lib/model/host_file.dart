@@ -285,7 +285,7 @@ class HostsFile {
     isSave = true;
   }
 
-  void setHistory(String path) async {
+  Future<void> setHistory(String path) async {
     FileManager fileManager = FileManager();
     final List<SimpleHostFileHistory> result =
         await fileManager.getHistory(fileId);
