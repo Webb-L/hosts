@@ -25,7 +25,9 @@ class HostsModel {
       text += "\n";
     }
 
-    if (text.isEmpty && host.isEmpty && hosts.where((it)=>it.trim().isNotEmpty).isEmpty) {
+    if (text.isEmpty &&
+        host.isEmpty &&
+        hosts.where((it) => it.trim().isNotEmpty).isEmpty) {
       return "";
     }
 
@@ -234,8 +236,6 @@ class HostsFile {
       _lines.removeAt(model.descLine!);
     }
 
-    print(_lines.join("\n"));
-
     final List<HostsModel> tempHosts = parseHosts(_lines);
     hosts.clear();
     hosts.addAll(tempHosts);
@@ -246,6 +246,12 @@ class HostsFile {
     models.sort((a, b) => a.hostLine?.compareTo(b.hostLine ?? -1) ?? 1);
     int removeCount = 0;
     for (var model in models) {
+      if (model.descLine != null && model.descLine == model.hostLine) {
+        _lines.removeAt(model.descLine! - removeCount);
+        removeCount++;
+        continue;
+      }
+
       if (model.descLine != null && model.descLine! > -1) {
         _lines.removeAt(model.descLine! - removeCount);
         removeCount++;
