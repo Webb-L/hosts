@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/host_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
@@ -32,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     "hosts": null,
     "description": null,
   };
-
+  SimpleHostFileHistory? selectHistory;
   final TextEditingController _textEditingController = TextEditingController();
 
   @override
@@ -81,8 +82,9 @@ class _HomePageState extends State<HomePage> {
               isSave: hostsFile.isSave,
               onChanged: (String value, String fileId) {
                 setState(() {
+                  selectHosts.clear();
                   hostsFile = HostsFile(value, fileId);
-                  if (editMode==EditMode.Text) {
+                  if (editMode == EditMode.Text) {
                     _textEditingController.value =
                         TextEditingValue(text: hostsFile.toString());
                   }
@@ -94,6 +96,12 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 12),
                 HomeAppBar(
+                  isSave: hostsFile.isSave,
+                  undoHost: () {
+                    setState(() {
+                      hostsFile.undoHost();
+                    });
+                  },
                   searchText: searchText,
                   onSearchChanged: (value) {
                     setState(() {
@@ -139,7 +147,19 @@ class _HomePageState extends State<HomePage> {
                       sortConfig = value;
                     });
                   },
+                  selectHistory: selectHistory,
                   history: hostsFile.history,
+                  onHistoryChanged: (history) async {
+                    List<SimpleHostFileHistory> resultHistory =
+                        await FileManager().getHistory(hostsFile.fileId);
+                    setState(() {
+                      if (history != null) {
+                        selectHistory = history;
+                        hostsFile.setHistory(history.path);
+                      }
+                      hostsFile.history = resultHistory;
+                    });
+                  },
                 ),
                 if (!hostsFile.isSave)
                   FutureBuilder(
@@ -282,7 +302,7 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     deleteMultiple([it]);
                   },
-                  icon: const Icon(Icons.delete)),
+                  icon: const Icon(Icons.delete_outline)),
             ],
           ),
         )

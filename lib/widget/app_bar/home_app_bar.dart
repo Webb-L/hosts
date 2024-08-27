@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
+import 'package:hosts/page/history_page.dart';
 import 'package:hosts/widget/dialog/copy_multiple_dialog.dart';
 import 'package:hosts/widget/text_field/search_text_field.dart';
 
 class HomeAppBar extends StatelessWidget {
+  final bool isSave;
+  final VoidCallback undoHost;
   final String searchText;
   final ValueChanged<String> onSearchChanged;
   final AdvancedSettingsEnum advancedSettingsEnum;
@@ -18,10 +21,14 @@ class HomeAppBar extends StatelessWidget {
   final bool isCheckedAll;
   final ValueChanged<bool?> onCheckedAllChanged;
   final ValueChanged<Map<String, int?>> onSortConfChanged;
+  final SimpleHostFileHistory? selectHistory;
   final List<SimpleHostFileHistory> history;
+  final ValueChanged<SimpleHostFileHistory?> onHistoryChanged;
 
   const HomeAppBar({
     super.key,
+    required this.isSave,
+    required this.undoHost,
     required this.searchText,
     required this.onSearchChanged,
     required this.advancedSettingsEnum,
@@ -34,14 +41,17 @@ class HomeAppBar extends StatelessWidget {
     required this.isCheckedAll,
     required this.onCheckedAllChanged,
     required this.onSortConfChanged,
+    required this.selectHistory,
     required this.history,
+    required this.onHistoryChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
+        Container(
+          height: 58,
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Row(
             children: [
@@ -68,6 +78,12 @@ class HomeAppBar extends StatelessWidget {
               const Expanded(child: SizedBox()),
               Row(
                 children: [
+                  if (!isSave)
+                    IconButton(
+                      onPressed: undoHost,
+                      icon: const Icon(Icons.undo),
+                      tooltip: "还原",
+                    ),
                   if (hosts.isNotEmpty && editMode == EditMode.Table)
                     IconButton(
                         onPressed: () {
@@ -82,10 +98,25 @@ class HomeAppBar extends StatelessWidget {
                     IconButton(
                         onPressed: onDeletePressed,
                         tooltip: "删除选中",
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete_outline)),
                   if (history.isNotEmpty)
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        SimpleHostFileHistory? resultHistory =
+                            await showModalBottomSheet(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return HistoryPage(
+                                selectHistory:selectHistory,
+                                history: history);
+                          },
+                        );
+                        if (resultHistory != null) {
+                          onHistoryChanged(resultHistory);
+                          return;
+                        }
+                        onHistoryChanged(null);
+                      },
                       icon: const Icon(Icons.history),
                     ),
                   _buildEditModeButton(),

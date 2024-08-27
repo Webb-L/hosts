@@ -194,4 +194,16 @@ class FileManager {
 
     return result;
   }
+
+  void deleteFile(String path) {
+    File(path).deleteSync();
+  }
+
+  String readHistoryFile(String path) {
+    File file = File(path);
+    if (!file.existsSync()) {
+      return "";
+    }
+    return file.readAsStringSync();
+  }
 }

@@ -30,4 +30,17 @@ class SimpleHostFileHistory {
     required this.fileName,
     required this.path,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SimpleHostFileHistory) return false;
+
+    return fileName == other.fileName && path == other.path;
+  }
+
+  @override
+  int get hashCode {
+    return fileName.hashCode ^ path.hashCode;
+  }
 }

@@ -58,17 +58,17 @@ class HostsFile {
 
   HostsFile(this.filePath, this.fileId) {
     if (filePath.isEmpty || fileId.isEmpty) return;
-    initData();
+    initData(filePath);
     FileManager().getHistory(fileId).then((value) {
       history = value;
     });
   }
 
-  void initData() {
+  void initData(String path) {
     try {
-      _file = File(filePath);
+      _file = File(path);
       _lines = _file.readAsLinesSync();
-      defaultContent = toString().replaceAll(" ", "").replaceAll("	", "");
+      defaultContent = toString();
       final List<HostsModel> tempHosts = parseHosts(_lines);
       hosts.clear();
       hosts.addAll(tempHosts);
@@ -78,7 +78,9 @@ class HostsFile {
   }
 
   List<HostsModel> filterHosts(
-      String searchQuery, Map<String, int?> sortConfig) {
+    String searchQuery,
+    Map<String, int?> sortConfig,
+  ) {
     hosts.sort((a, b) {
       for (var property in sortConfig.keys) {
         final order = sortConfig[property];
@@ -121,8 +123,8 @@ class HostsFile {
   }
 
   void isUpdateHost() {
-    isSave =
-        defaultContent == toString().replaceAll(" ", "").replaceAll("	", "");
+    isSave = defaultContent.replaceAll(" ", "").replaceAll("	", "") ==
+        toString().replaceAll(" ", "").replaceAll("	", "");
   }
 
   void formString(String text) {
@@ -278,8 +280,31 @@ class HostsFile {
         history = value;
       });
     }
-    initData();
+    initData(filePath);
     isUpdateHost();
     isSave = true;
+  }
+
+  void setHistory(String path) async {
+    FileManager fileManager = FileManager();
+    final List<SimpleHostFileHistory> result =
+        await fileManager.getHistory(fileId);
+    String historyFile = fileManager.readHistoryFile(path);
+    if (historyFile.isNotEmpty) {
+      _lines = historyFile.split("\n");
+      final List<HostsModel> tempHosts = HostsFile.parseHosts(_lines);
+      hosts.clear();
+      hosts.addAll(tempHosts);
+      isUpdateHost();
+    }
+    history = result;
+  }
+
+  undoHost() {
+    _lines = defaultContent.split("\n");
+    final List<HostsModel> tempHosts = HostsFile.parseHosts(_lines);
+    hosts.clear();
+    hosts.addAll(tempHosts);
+    isUpdateHost();
   }
 }
