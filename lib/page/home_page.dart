@@ -82,6 +82,10 @@ class _HomePageState extends State<HomePage> {
               onChanged: (String value, String fileId) {
                 setState(() {
                   hostsFile = HostsFile(value, fileId);
+                  if (editMode==EditMode.Text) {
+                    _textEditingController.value =
+                        TextEditingValue(text: hostsFile.toString());
+                  }
                 });
               },
             ),
@@ -228,8 +232,9 @@ class _HomePageState extends State<HomePage> {
             child: Text(
               it.host,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold),
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
