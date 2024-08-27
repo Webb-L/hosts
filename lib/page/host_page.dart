@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/util/regexp_util.dart';
 
-// TODO 应该支持批量添加
 class HostPage extends StatefulWidget {
   final HostsModel? hostModel;
 
@@ -16,20 +15,25 @@ class _HostPageState extends State<HostPage> {
   final GlobalKey _formKey = GlobalKey<FormState>();
   final FocusNode _focusNode = FocusNode();
   bool _isUse = false;
-  final TextEditingController _hostController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _hostController = TextEditingController();
   final List<TextEditingController> _hostControllers = [];
   final TextEditingController _hostConfController = TextEditingController();
   int currentIndex = 0;
-  List<HostsModel> hosts = [HostsModel("", false, "", [])];
+  List<HostsModel> hosts = [
+    HostsModel("", false, "", [""])
+  ];
 
   @override
   void initState() {
     super.initState();
     if (widget.hostModel != null) {
+      hosts = [widget.hostModel!];
       setState(() {
-        setForm(widget.hostModel!);
+        setForm(hosts.first);
       });
+    } else {
+      setForm(hosts.first);
     }
     updateHostModelString();
 
@@ -39,7 +43,11 @@ class _HostPageState extends State<HostPage> {
       final List<HostsModel> tempHosts =
           HostsFile.parseHosts(_hostConfController.text.split("\n"));
       setState(() {
-        hosts = tempHosts;
+        if (widget.hostModel==null) {
+          hosts = tempHosts;
+        }else {
+          hosts = [tempHosts.first];
+        }
         if (hosts.isNotEmpty && currentIndex >= hosts.length) {
           currentIndex = hosts.length - 1;
         }
@@ -55,16 +63,16 @@ class _HostPageState extends State<HostPage> {
         _isUse = false;
       });
 
-      _hostController.value = const TextEditingValue();
       _descriptionController.value = const TextEditingValue();
+      _hostController.value = const TextEditingValue();
       _hostControllers.clear();
     });
   }
 
   void setForm(HostsModel tempHost) {
     _isUse = tempHost.isUse;
-    _hostController.value = TextEditingValue(text: tempHost.host);
     _descriptionController.value = TextEditingValue(text: tempHost.description);
+    _hostController.value = TextEditingValue(text: tempHost.host);
     _hostControllers.clear();
     _hostControllers.addAll(
         tempHost.hosts.map((host) => TextEditingController(text: host)));
@@ -87,42 +95,6 @@ class _HostPageState extends State<HostPage> {
         title: Text(widget.hostModel != null
             ? "编辑 - ${_hostController.text}"
             : "新增(${currentIndex + 1}/${hosts.isEmpty ? 1 : hosts.length})"),
-        actions: [
-          IconButton(
-            onPressed: currentIndex == 0
-                ? null
-                : () {
-                    setState(() {
-                      currentIndex--;
-                      setForm(hosts[currentIndex]);
-                    });
-                  },
-            icon: const Icon(Icons.chevron_left),
-            tooltip: "上一个",
-          ),
-          IconButton(
-            onPressed: currentIndex == hosts.length - 1 || hosts.isEmpty
-                ? null
-                : () {
-                    setState(() {
-                      currentIndex++;
-                      setForm(hosts[currentIndex]);
-                    });
-                  },
-            icon: const Icon(Icons.chevron_right),
-            tooltip: "下一个",
-          ),
-          IconButton(
-            onPressed: () {
-              setState(() {
-                hosts.add(HostsModel("", false, "", []));
-                updateHostModelString();
-              });
-            },
-            icon: const Icon(Icons.add),
-            tooltip: "新增",
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -130,12 +102,7 @@ class _HostPageState extends State<HostPage> {
             return;
           }
 
-          Navigator.of(context).pop(HostsModel(
-            _hostController.text,
-            _isUse,
-            _descriptionController.text,
-            _hostControllers.map((text) => text.text).toList(),
-          ));
+          Navigator.of(context).pop(hosts);
         },
         child: const Icon(Icons.save),
       ),
@@ -159,9 +126,19 @@ class _HostPageState extends State<HostPage> {
               controller: _hostConfController,
               maxLines: 10000,
               decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText:
-                      "模板：\n# 127.0.0.1 flutter.dev\n\n# Flutter\n127.0.0.1 flutter.dev\n\n..."),
+                border: InputBorder.none,
+                hintText: """模板1 - 未启用：
+# 127.0.0.1 flutter.dev
+
+模板2 - 没备注：
+127.0.0.1 flutter.dev
+
+模板3 - 有备注：
+# Flutter
+127.0.0.1 flutter.dev
+
+...""",
+              ),
             ))
           ],
         ),
@@ -178,9 +155,69 @@ class _HostPageState extends State<HostPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "信息",
-                style: Theme.of(context).textTheme.titleLarge,
+              Row(
+                children: [
+                  Text(
+                    "信息",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  if (widget.hostModel == null)
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: currentIndex == 0
+                              ? null
+                              : () {
+                                  setState(() {
+                                    currentIndex--;
+                                    setForm(hosts[currentIndex]);
+                                  });
+                                },
+                          icon: const Icon(Icons.chevron_left),
+                          tooltip: "上一个",
+                        ),
+                        IconButton(
+                          onPressed:
+                              currentIndex == hosts.length - 1 || hosts.isEmpty
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        currentIndex++;
+                                        setForm(hosts[currentIndex]);
+                                      });
+                                    },
+                          icon: const Icon(Icons.chevron_right),
+                          tooltip: "下一个",
+                        ),
+                        const SizedBox(width: 16),
+                        IconButton(
+                          onPressed: hosts.length == 1
+                              ? null
+                              : () {
+                                  setState(() {
+                                    hosts.removeAt(currentIndex);
+                                    if (currentIndex > 0) {
+                                      currentIndex--;
+                                    }
+                                    updateHostModelString();
+                                  });
+                                },
+                          icon: const Icon(Icons.remove),
+                          tooltip: "移除",
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              hosts.add(HostsModel("", false, "", [""]));
+                              updateHostModelString();
+                            });
+                          },
+                          icon: const Icon(Icons.add),
+                          tooltip: "新增",
+                        ),
+                      ],
+                    )
+                ],
               ),
               Switch(
                 value: _isUse,
@@ -195,6 +232,17 @@ class _HostPageState extends State<HostPage> {
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(),
           ),
+          TextFormField(
+              controller: _descriptionController,
+              onChanged: (value) {
+                updateHostModelString();
+                (_formKey.currentState as FormState?)?.validate();
+              },
+              decoration: const InputDecoration(
+                  label: Text("备注"),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16))))),
+          const SizedBox(height: 8),
           TextFormField(
             controller: _hostController,
             decoration: const InputDecoration(
@@ -217,17 +265,6 @@ class _HostPageState extends State<HostPage> {
               return null;
             },
           ),
-          const SizedBox(height: 8),
-          TextFormField(
-              controller: _descriptionController,
-              onChanged: (value) {
-                updateHostModelString();
-                (_formKey.currentState as FormState?)?.validate();
-              },
-              decoration: const InputDecoration(
-                  label: Text("备注"),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16))))),
           const SizedBox(height: 16),
           Expanded(child: buildDomains()),
         ],

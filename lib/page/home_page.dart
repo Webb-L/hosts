@@ -61,11 +61,14 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: editMode == EditMode.Table
           ? FloatingActionButton(
               onPressed: () async {
-                HostsModel? hostsModel = await Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const HostPage()));
-                if (hostsModel == null) return;
+                List<HostsModel>? hostsModels = await Navigator.of(context)
+                    .push(MaterialPageRoute(
+                        builder: (context) => const HostPage()));
+                if (hostsModels == null) return;
                 setState(() {
-                  hostsFile.addHost(hostsModel);
+                  for (HostsModel hostsModel in hostsModels) {
+                    hostsFile.addHost(hostsModel);
+                  }
                 });
               },
               child: const Icon(Icons.add),
@@ -75,7 +78,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
             HomeDrawer(
-              isSave:hostsFile.isSave,
+              isSave: hostsFile.isSave,
               onChanged: (String value, String fileId) {
                 setState(() {
                   hostsFile = HostsFile(value, fileId);
@@ -258,12 +261,12 @@ class _HomePageState extends State<HomePage> {
             children: [
               IconButton(
                   onPressed: () async {
-                    HostsModel? hostsModel = await Navigator.of(context).push(
-                        MaterialPageRoute(
+                    List<HostsModel>? hostsModels = await Navigator.of(context)
+                        .push(MaterialPageRoute(
                             builder: (context) => HostPage(hostModel: it)));
-                    if (hostsModel == null) return;
+                    if (hostsModels == null) return;
                     setState(() {
-                      hostsFile.updateHost(index, hostsModel);
+                      hostsFile.updateHost(index, hostsModels.first);
                     });
                   },
                   icon: const Icon(Icons.edit)),

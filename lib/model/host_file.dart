@@ -25,7 +25,7 @@ class HostsModel {
       text += "\n";
     }
 
-    if (text.isEmpty && host.isEmpty && hosts.isEmpty) {
+    if (text.isEmpty && host.isEmpty && hosts.where((it)=>it.trim().isNotEmpty).isEmpty) {
       return "";
     }
 
