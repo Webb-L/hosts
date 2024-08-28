@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hosts/enums.dart';
@@ -79,7 +81,46 @@ class _HomePageState extends State<HomePage> {
           if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
             HomeDrawer(
               isSave: hostsFile.isSave,
-              onChanged: (String value, String fileId) {
+              onChanged: (String value, String fileId) async {
+                if (await _settingsManager.getString(settingKeyUseHostFile) ==
+                    fileId) {
+                  if (!await _fileManager.areFilesEqual(fileId)) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("警告"),
+                            content: const Text(
+                                "系统 Hosts 文件与当前文件不一致！\n如果您不做覆盖处理，修改后保存当前文件会导致系统文件的数据被覆盖。"),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  try {
+                                    await _fileManager.saveToHosts(hostsFile.toString());
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(content: Text("保存失败")));
+                                    return;
+                                  }
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("当前覆盖系统"),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    hostsFile.formString(File(FileManager.systemHostFilePath).readAsStringSync());
+                                    hostsFile.save(true);
+                                    Navigator.of(context).pop();
+                                  });
+                                },
+                                child: const Text("系统覆盖当前"),
+                              ),
+                            ],
+                          );
+                        });
+                  }
+                }
                 setState(() {
                   selectHosts.clear();
                   hostsFile = HostsFile(value, fileId);

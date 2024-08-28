@@ -29,18 +29,18 @@ class FileManager {
     _cachedDirectory = await getApplicationSupportDirectory();
   }
 
-  Future<String> getHostsFilePath(String fileName) async {
+  Future<String> getHostsFilePath(String fileId) async {
     if (_cachedDirectory == null) await _initializeDirectory();
-    return p.joinAll([_cachedDirectory!.path, fileName, 'hosts']);
+    return p.joinAll([_cachedDirectory!.path, fileId, 'hosts']);
   }
 
   // 创建文件夹
-  Future<void> createHosts(String fileName) async {
+  Future<void> createHosts(String fileId) async {
     if (_cachedDirectory == null) await _initializeDirectory();
-    if (fileName.isEmpty) return;
+    if (fileId.isEmpty) return;
 
     // 规范化文件名，防止目录穿越
-    final safeFileName = p.basename(fileName); // 只保留文件名，不允许路径
+    final safeFileName = p.basename(fileId); // 只保留文件名，不允许路径
     final filePath = p.join(_cachedDirectory!.path, safeFileName);
     final directory = await Directory(filePath).create(recursive: true);
     await Directory(p.join(directory.path, "history")).create(recursive: true);
@@ -48,7 +48,7 @@ class FileManager {
   }
 
   // 写入文件
-  Future<File> writeFile(String pathName, String fileName,
+  Future<File> writeFile(String pathName, String fileId,
       [String content = ""]) async {
     if (_cachedDirectory == null) await _initializeDirectory();
     final directory = Directory(p.join(_cachedDirectory!.path, pathName));
@@ -59,18 +59,18 @@ class FileManager {
     }
 
     // 规范化文件名，防止目录穿越
-    final safeFileName = p.basename(fileName); // 只保留文件名，不允许路径
+    final safeFileName = p.basename(fileId); // 只保留文件名，不允许路径
     final filePath = p.join(directory.path, safeFileName);
     return await File(filePath).writeAsString(content);
   }
 
   // 读取文件的方法
-  Future<String> readFile(String pathName, String fileName) async {
+  Future<String> readFile(String pathName, String fileId) async {
     if (_cachedDirectory == null) await _initializeDirectory();
     final directory = Directory(p.join(_cachedDirectory!.path, pathName));
 
     // 规范化文件名，防止目录穿越
-    final safeFileName = p.basename(fileName); // 只保留文件名，不允许路径
+    final safeFileName = p.basename(fileId); // 只保留文件名，不允许路径
     final filePath = p.join(directory.path, safeFileName);
     final file = File(filePath);
 
@@ -118,11 +118,11 @@ class FileManager {
     }
   }
 
-  Future<List<SimpleHostFileHistory>> getHistory(String fileName) async {
+  Future<List<SimpleHostFileHistory>> getHistory(String fileId) async {
     if (_cachedDirectory == null) await _initializeDirectory();
-    if (fileName.isEmpty) return [];
+    if (fileId.isEmpty) return [];
     Directory historyDirectory =
-        Directory(p.joinAll([_cachedDirectory!.path, fileName, "history"]));
+        Directory(p.joinAll([_cachedDirectory!.path, fileId, "history"]));
     if (!historyDirectory.existsSync()) {
       return [];
     }
@@ -137,12 +137,12 @@ class FileManager {
         .toList();
   }
 
-  void saveHistory(String fileName, String content) async {
+  void saveHistory(String fileId, String content) async {
     if (_cachedDirectory == null) await _initializeDirectory();
-    if (fileName.isEmpty) return;
+    if (fileId.isEmpty) return;
 
     // 规范化文件名，防止目录穿越
-    final safeFileName = p.basename(fileName); // 只保留文件名，不允许路径
+    final safeFileName = p.basename(fileId); // 只保留文件名，不允许路径
     final filePath = p.join(_cachedDirectory!.path, safeFileName);
     Directory rootDirectory = Directory(filePath);
     if (!rootDirectory.existsSync()) {
@@ -159,6 +159,7 @@ class FileManager {
     ).writeAsString(content);
   }
 
+  // TODO Windows Mac
   Future<String> saveToHosts(String content) async {
     final Directory cacheDirectory = await getApplicationCacheDirectory();
     final File cacheFile = File(p.join(cacheDirectory.path, 'hosts'));
@@ -205,5 +206,28 @@ class FileManager {
       return "";
     }
     return file.readAsStringSync();
+  }
+
+  // 比较两个文件是否相同
+  Future<bool> areFilesEqual(String fileId) async {
+    final file1 = File(await getHostsFilePath(fileId));
+    final file2 = File(systemHostFilePath);
+
+    // 检查文件是否存在
+    if (!(await file1.exists()) || !(await file2.exists())) {
+      return false;
+    }
+
+    // 读取文件内容
+    final content1 = (await file1.readAsString())
+        .replaceAll("\n", "")
+        .replaceAll(" ", "")
+        .replaceAll("	", "");
+    final content2 = (await file2.readAsString())
+        .replaceAll("\n", "")
+        .replaceAll(" ", "")
+        .replaceAll("	", "");
+    // 比较内容
+    return content1 == content2;
   }
 }

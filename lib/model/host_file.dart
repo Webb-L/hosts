@@ -301,10 +301,7 @@ class HostsFile {
   }
 
   undoHost() {
-    _lines = defaultContent.split("\n");
-    final List<HostsModel> tempHosts = HostsFile.parseHosts(_lines);
-    hosts.clear();
-    hosts.addAll(tempHosts);
+    formString(defaultContent);
     isUpdateHost();
   }
 }
