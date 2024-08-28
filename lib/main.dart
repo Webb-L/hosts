@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/home_page.dart';
+import 'package:hosts/theme.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 
@@ -31,8 +32,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hosts Editor',
-      theme: ThemeData.light(useMaterial3: true),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      theme: ThemeData(
+        brightness: Brightness.light,
+        colorScheme: MaterialTheme.lightScheme(),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorScheme: MaterialTheme.darkScheme(),
+        useMaterial3: true,
+      ),
       themeMode: ThemeMode.system,
       home: const HomePage(),
     );
