@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:flutter/material.dart";
 import "package:hosts/model/simple_host_file.dart";
 import "package:hosts/util/file_manager.dart";
@@ -90,15 +92,27 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         minimumSize: Size.zero,
                         padding: EdgeInsets.zero,
                       ),
-                      onPressed: () async {
-                        // await Process.start(
-                        //     "runas /user:Administrator", ["env"]);
-                        setState(() {
-                          useHostFile = hostFile.fileName;
-                        });
-                        _settingsManager.setString(
-                            settingKeyUseHostFile, hostFile.fileName);
-                      },
+                      onPressed: useHostFile == hostFile.fileName
+                          ? null
+                          : () async {
+                              final String path = await _fileManager
+                                  .getHostsFilePath(hostFile.fileName);
+
+                              try {
+                                await _fileManager
+                                    .saveToHosts(File(path).readAsStringSync());
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("使用失败")));
+                                return;
+                              }
+
+                              setState(() {
+                                useHostFile = hostFile.fileName;
+                              });
+                              _settingsManager.setString(
+                                  settingKeyUseHostFile, hostFile.fileName);
+                            },
                       icon: Icon(useHostFile == hostFile.fileName
                           ? Icons.star
                           : Icons.star_border),
