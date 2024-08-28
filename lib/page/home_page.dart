@@ -96,10 +96,11 @@ class _HomePageState extends State<HomePage> {
                               TextButton(
                                 onPressed: () async {
                                   try {
-                                    await _fileManager.saveToHosts(hostsFile.toString());
+                                    await _fileManager
+                                        .saveToHosts(hostsFile.toString());
                                   } catch (e) {
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(const SnackBar(content: Text("保存失败")));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text("保存失败")));
                                     return;
                                   }
                                   Navigator.of(context).pop();
@@ -109,7 +110,9 @@ class _HomePageState extends State<HomePage> {
                               TextButton(
                                 onPressed: () async {
                                   setState(() {
-                                    hostsFile.formString(File(FileManager.systemHostFilePath).readAsStringSync());
+                                    hostsFile.formString(
+                                        File(FileManager.systemHostFilePath)
+                                            .readAsStringSync());
                                     hostsFile.save(true);
                                     Navigator.of(context).pop();
                                   });
