@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/home_page.dart';
 import 'package:hosts/theme.dart';
@@ -32,6 +33,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hosts Editor',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('cn'),
+      ],
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: MaterialTheme.lightScheme(),
