@@ -45,10 +45,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
     for (Map<String, dynamic> config in hostConfigs) {
       SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
-      if (hostFile.fileName == "system" && isInit) {
+      if (hostFile.fileName == "system") {
         hostFile.remark = AppLocalizations.of(context)!.default_hosts_text;
-        widget.onChanged(await _fileManager.getHostsFilePath(hostFile.fileName),
-            hostFile.fileName);
+        if (isInit) {
+          widget.onChanged(
+              await _fileManager.getHostsFilePath(hostFile.fileName),
+              hostFile.fileName);
+        }
       }
       tempHostFiles.add(hostFile);
     }
