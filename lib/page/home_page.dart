@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         hostsFile.isSave =
             hostsFile.defaultContent == _textEditingController.text;
+        hostsFile.formString(_textEditingController.text);
       });
     });
     super.initState();

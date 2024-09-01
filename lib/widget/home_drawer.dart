@@ -133,7 +133,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         ScaffoldMessenger.of(context).removeCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(
-                              AppLocalizations.of(context)!.error_use_fail),
+                              AppLocalizations.of(context)!.error_not_save),
                           action: SnackBarAction(
                               label: AppLocalizations.of(context)!.abort,
                               onPressed: () async {
@@ -189,7 +189,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
             break;
           case 2:
             final List<SimpleHostFile> list = [hostFile];
-            deleteMultiple(context, list.map((item) => item.fileName).toList(),
+            deleteMultiple(context, list.map((item) => item.remark).toList(),
                 () async {
               setState(() {
                 hostFiles.removeWhere((hostFile) => list.contains(hostFile));

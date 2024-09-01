@@ -9,7 +9,7 @@ void deleteMultiple(
         ? AppLocalizations.of(context)!.remove_single_tip(array.first)
         : AppLocalizations.of(context)!.remove_multiple_tip(array.length)),
     action: SnackBarAction(
-      label: AppLocalizations.of(context)!.save,
+      label: AppLocalizations.of(context)!.ok,
       onPressed: onRemove,
     ),
   ));
