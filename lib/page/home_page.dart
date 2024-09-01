@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
@@ -12,6 +13,7 @@ import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
 import 'package:hosts/widget/home_drawer.dart';
+import 'package:hosts/widget/snakbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
@@ -89,9 +91,9 @@ class _HomePageState extends State<HomePage> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text("警告"),
-                            content: const Text(
-                                "系统 Hosts 文件与当前文件不一致！\n如果您不做覆盖处理，修改后保存当前文件会导致系统文件的数据被覆盖。"),
+                            title: Text(AppLocalizations.of(context)!.warning),
+                            content: Text(AppLocalizations.of(context)!
+                                .warning_different),
                             actions: [
                               TextButton(
                                 onPressed: () async {
@@ -100,12 +102,16 @@ class _HomePageState extends State<HomePage> {
                                         .saveToHosts(hostsFile.toString());
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text("保存失败")));
+                                        SnackBar(
+                                            content: Text(
+                                                AppLocalizations.of(context)!
+                                                    .error_save_fail)));
                                     return;
                                   }
                                   Navigator.of(context).pop();
                                 },
-                                child: const Text("当前覆盖系统"),
+                                child: Text(AppLocalizations.of(context)!
+                                    .warning_different_covering_system),
                               ),
                               TextButton(
                                 onPressed: () async {
@@ -117,7 +123,8 @@ class _HomePageState extends State<HomePage> {
                                     Navigator.of(context).pop();
                                   });
                                 },
-                                child: const Text("系统覆盖当前"),
+                                child: Text(AppLocalizations.of(context)!
+                                    .warning_different_covering_current),
                               ),
                             ],
                           );
@@ -176,7 +183,13 @@ class _HomePageState extends State<HomePage> {
                   hosts: selectHosts,
                   sortConfig: sortConfig,
                   onDeletePressed: () {
-                    deleteMultiple(selectHosts);
+                    deleteMultiple(
+                      context,
+                      selectHosts.map((item) => item.host).toList(),
+                      () => setState(() {
+                        hostsFile.deleteMultiple(selectHosts);
+                      }),
+                    );
                   },
                   isCheckedAll: hostsFile.hosts.length == selectHosts.length,
                   onCheckedAllChanged: (value) {
@@ -237,9 +250,14 @@ class _HomePageState extends State<HomePage> {
   Future<MaterialBanner> saveTipMessage(BuildContext context) async {
     final bool isUseFile = hostsFile.fileId ==
         await _settingsManager.getString(settingKeyUseHostFile);
+
+    final String updateSaveTip =
+        AppLocalizations.of(context)!.error_not_update_save_tip;
+    final String updateSavePermissionTip = isUseFile
+        ? '\n${AppLocalizations.of(context)!.error_not_update_save_permission_tip}'
+        : '';
     return MaterialBanner(
-      content: Text(
-          "内容已更新！请确保保存您的更改，以免丢失重要信息。${isUseFile ? '\n该文件已被使用保存时需要管理员权限。' : ''}"),
+      content: Text("$updateSaveTip$updateSavePermissionTip"),
       leading: const Icon(Icons.error_outline),
       actions: [
         TextButton(
@@ -248,8 +266,9 @@ class _HomePageState extends State<HomePage> {
               try {
                 await _fileManager.saveToHosts(hostsFile.toString());
               } catch (e) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("保存失败")));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text(AppLocalizations.of(context)!.error_save_fail)));
                 return;
               }
             }
@@ -257,7 +276,7 @@ class _HomePageState extends State<HomePage> {
               hostsFile.save(true);
             });
           },
-          child: const Text('保存并生成历史'),
+          child: Text(AppLocalizations.of(context)!.save_create_history),
         ),
         TextButton(
           onPressed: () async {
@@ -265,8 +284,9 @@ class _HomePageState extends State<HomePage> {
               try {
                 await _fileManager.saveToHosts(hostsFile.toString());
               } catch (e) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("保存失败")));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text(AppLocalizations.of(context)!.error_save_fail)));
                 return;
               }
             }
@@ -274,7 +294,7 @@ class _HomePageState extends State<HomePage> {
               hostsFile.save();
             });
           },
-          child: const Text('保存'),
+          child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
     );
@@ -351,7 +371,14 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 8),
               IconButton(
                   onPressed: () {
-                    deleteMultiple([it]);
+                    final List<HostsModel> list = [it];
+                    deleteMultiple(
+                      context,
+                      list.map((item) => item.host).toList(),
+                      () => setState(() {
+                        hostsFile.deleteMultiple(list);
+                      }),
+                    );
                   },
                   icon: const Icon(Icons.delete_outline)),
             ],
@@ -359,22 +386,6 @@ class _HomePageState extends State<HomePage> {
         )
       ]);
     }).toList();
-  }
-
-  void deleteMultiple(List<HostsModel> array) {
-    if (array.isEmpty) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(array.length == 1
-          ? "您确认需要删除《${array.first.host}》吗？"
-          : "确认删除选中的${array.length}条记录吗？"),
-      action: SnackBarAction(
-          label: "确认",
-          onPressed: () {
-            setState(() {
-              hostsFile.deleteMultiple(array);
-            });
-          }),
-    ));
   }
 
   List<InlineSpan> _buildTextSpans(List<String> hosts) {

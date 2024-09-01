@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 
 class CopyDialog extends StatelessWidget {
@@ -26,8 +27,9 @@ class CopyDialog extends StatelessWidget {
                     builder: (BuildContext context, StateSetter setState) {
                   return AlertDialog(
                     title: hosts.length > 1
-                        ? Text("复制(${curIndex + 1}/${hosts.length})")
-                        : const Text("复制"),
+                        ? Text(
+                            "${AppLocalizations.of(context)!.copy}(${curIndex + 1}/${hosts.length})")
+                        : Text(AppLocalizations.of(context)!.copy),
                     content: SelectableText(outputHostModel),
                     actions: [
                       Row(
@@ -73,13 +75,14 @@ class CopyDialog extends StatelessWidget {
                                       ClipboardData(text: outputHostModel))
                                   .then((_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("已复制到剪贴板"),
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!
+                                        .copy_to_tip),
                                   ),
                                 );
                               });
                             },
-                            child: const Text("复制"),
+                            child: Text(AppLocalizations.of(context)!.copy),
                           ),
                         ],
                       ),

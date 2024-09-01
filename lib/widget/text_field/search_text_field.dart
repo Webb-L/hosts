@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class SearchTextField extends StatefulWidget {
   final String text;
@@ -37,7 +39,7 @@ class _SearchTextFieldState extends State<SearchTextField> {
     return TextField(
       controller: _textEditingController,
       decoration: InputDecoration(
-        hintText: '搜索...',
+        hintText: AppLocalizations.of(context)!.input_search,
         prefixIcon: const Icon(Icons.search),
         suffixIcon: widget.text.isNotEmpty
             ? GestureDetector(

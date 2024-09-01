@@ -1,10 +1,13 @@
 import "dart:io";
 
 import "package:flutter/material.dart";
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import "package:hosts/model/simple_host_file.dart";
 import "package:hosts/util/file_manager.dart";
 import "package:hosts/util/settings_manager.dart";
 import "package:hosts/widget/dialog/create_host_file_dialog.dart";
+import "package:hosts/widget/dialog/dialog.dart";
+import "package:hosts/widget/snakbar.dart";
 
 class HomeDrawer extends StatefulWidget {
   final bool isSave;
@@ -66,7 +69,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
             child: Row(
               children: [
                 Text(
-                  "Hosts Editor",
+                  AppLocalizations.of(context)!.app_name,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Expanded(child: SizedBox()),
@@ -87,7 +90,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   return ListTile(
                     title: Text(hostFile.remark),
                     leading: IconButton(
-                      tooltip: "使用",
+                      tooltip: AppLocalizations.of(context)!.use,
                       style: OutlinedButton.styleFrom(
                         minimumSize: Size.zero,
                         padding: EdgeInsets.zero,
@@ -103,7 +106,10 @@ class _HomeDrawerState extends State<HomeDrawer> {
                                     .saveToHosts(File(path).readAsStringSync());
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("使用失败")));
+                                    SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .error_use_fail)));
                                 return;
                               }
 
@@ -126,9 +132,10 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       if (!widget.isSave) {
                         ScaffoldMessenger.of(context).removeCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: const Text("当前文件包含未保存的更改"),
+                          content: Text(
+                              AppLocalizations.of(context)!.error_use_fail),
                           action: SnackBarAction(
-                              label: "舍弃",
+                              label: AppLocalizations.of(context)!.abort,
                               onPressed: () async {
                                 setState(() {
                                   selectHostFile = hostFile.fileName;
@@ -170,7 +177,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
       onSelected: (value) async {
         switch (value) {
           case 1:
-            String result = (await showInputDialog(hostFile) ?? "");
+            String result =
+                (await hostConfigDialog(context, hostFile.remark) ?? "");
             if (result.isEmpty) return;
             int index = hostFiles.indexOf(hostFile);
             if (index == -1) return;
@@ -180,14 +188,36 @@ class _HomeDrawerState extends State<HomeDrawer> {
             loadHostFiles();
             break;
           case 2:
-            deleteMultiple([hostFile]);
+            final List<SimpleHostFile> list = [hostFile];
+            deleteMultiple(context, list.map((item) => item.fileName).toList(),
+                () async {
+              setState(() {
+                hostFiles.removeWhere((hostFile) => list.contains(hostFile));
+              });
+              await _settingsManager.setList(settingKeyHostConfigs, hostFiles);
+              selectHostFile =
+                  await _settingsManager.getString(settingKeyUseHostFile);
+              widget.onChanged(
+                  await _fileManager.getHostsFilePath(selectHostFile!),
+                  selectHostFile!);
+              _fileManager
+                  .deleteFiles(list.map((file) => file.fileName).toList());
+            });
             break;
         }
       },
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
-          {"icon": Icons.edit, "text": "编辑", "value": 1},
-          {"icon": Icons.delete_outline, "text": "删除", "value": 2},
+          {
+            "icon": Icons.edit,
+            "text": AppLocalizations.of(context)!.edit,
+            "value": 1
+          },
+          {
+            "icon": Icons.delete_outline,
+            "text": AppLocalizations.of(context)!.remove,
+            "value": 2
+          },
         ];
 
         return list.map((item) {
@@ -204,75 +234,5 @@ class _HomeDrawerState extends State<HomeDrawer> {
         }).toList();
       },
     );
-  }
-
-  Future<String?> showInputDialog(SimpleHostFile simpleHostFile) {
-    final TextEditingController remarkController =
-        TextEditingController(text: simpleHostFile.remark);
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-    return showDialog<String?>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("编辑"),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              controller: remarkController,
-              maxLength: 30,
-              validator: (value) {
-                final text = value ?? "";
-                if (text.isEmpty) return "请输入备注";
-                return null;
-              },
-              decoration: const InputDecoration(
-                labelText: "备注",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("取消"),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (!(formKey.currentState?.validate() ?? false)) return;
-                Navigator.of(context).pop(remarkController.text);
-              },
-              child: const Text("确定"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void deleteMultiple(List<SimpleHostFile> array) {
-    if (array.isEmpty) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(array.length == 1
-          ? "您确认需要删除《${array.first.remark}》吗？"
-          : "确认删除选中的${array.length}条记录吗？"),
-      action: SnackBarAction(
-          label: "确认",
-          onPressed: () async {
-            setState(() {
-              hostFiles.removeWhere((hostFile) => array.contains(hostFile));
-            });
-            await _settingsManager.setList(settingKeyHostConfigs, hostFiles);
-            selectHostFile =
-                await _settingsManager.getString(settingKeyUseHostFile);
-            widget.onChanged(
-                await _fileManager.getHostsFilePath(selectHostFile!),
-                selectHostFile!);
-            _fileManager
-                .deleteFiles(array.map((file) => file.fileName).toList());
-          }),
-    ));
   }
 }

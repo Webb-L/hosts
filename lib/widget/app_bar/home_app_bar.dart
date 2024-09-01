@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
@@ -64,7 +65,7 @@ class HomeAppBar extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.settings),
-                tooltip: "高级设置",
+                tooltip: AppLocalizations.of(context)!.advanced_settings,
               ),
               const SizedBox(width: 10),
               if (editMode == EditMode.Table)
@@ -82,7 +83,7 @@ class HomeAppBar extends StatelessWidget {
                     IconButton(
                       onPressed: undoHost,
                       icon: const Icon(Icons.undo),
-                      tooltip: "还原",
+                      tooltip: AppLocalizations.of(context)!.reduction,
                     ),
                   if (hosts.isNotEmpty && editMode == EditMode.Table)
                     IconButton(
@@ -92,12 +93,12 @@ class HomeAppBar extends StatelessWidget {
                               builder: (context) =>
                                   CopyMultipleDialog(hosts: hosts));
                         },
-                        tooltip: "复制选中",
+                        tooltip: AppLocalizations.of(context)!.copy_selected,
                         icon: const Icon(Icons.copy)),
                   if (hosts.isNotEmpty && editMode == EditMode.Table)
                     IconButton(
                         onPressed: onDeletePressed,
-                        tooltip: "删除选中",
+                        tooltip: AppLocalizations.of(context)!.delete_selected,
                         icon: const Icon(Icons.delete_outline)),
                   if (history.isNotEmpty)
                     IconButton(
@@ -107,8 +108,7 @@ class HomeAppBar extends StatelessWidget {
                           context: context,
                           builder: (BuildContext context) {
                             return HistoryPage(
-                                selectHistory:selectHistory,
-                                history: history);
+                                selectHistory: selectHistory, history: history);
                           },
                         );
                         if (resultHistory != null) {
@@ -119,7 +119,7 @@ class HomeAppBar extends StatelessWidget {
                       },
                       icon: const Icon(Icons.history),
                     ),
-                  _buildEditModeButton(),
+                  _buildEditModeButton(context),
                 ],
               )
             ],
@@ -134,13 +134,13 @@ class HomeAppBar extends StatelessWidget {
               5: FixedColumnWidth(180),
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [tableHeader()],
+            children: [tableHeader(context)],
           )
       ],
     );
   }
 
-  IconButton _buildEditModeButton() {
+  IconButton _buildEditModeButton(BuildContext context) {
     return IconButton(
       onPressed: () {
         if (editMode == EditMode.Text) {
@@ -149,7 +149,9 @@ class HomeAppBar extends StatelessWidget {
           onSwitchMode(EditMode.Text);
         }
       },
-      tooltip: editMode == EditMode.Text ? "表格" : "文本",
+      tooltip: editMode == EditMode.Text
+          ? AppLocalizations.of(context)!.table
+          : AppLocalizations.of(context)!.text,
       icon: Icon(
         editMode == EditMode.Text
             ? Icons.table_rows_outlined
@@ -158,7 +160,7 @@ class HomeAppBar extends StatelessWidget {
     );
   }
 
-  TableRow tableHeader() {
+  TableRow tableHeader(BuildContext context) {
     return TableRow(
       children: [
         Padding(
@@ -166,13 +168,14 @@ class HomeAppBar extends StatelessWidget {
             child: Checkbox(
                 value: hosts.isNotEmpty && isCheckedAll,
                 onChanged: onCheckedAllChanged)),
-        tableHeaderItem("host", "IP地址"),
-        tableHeaderItem("isUse", "状态"),
-        tableHeaderItem("hosts", "域名"),
-        tableHeaderItem("description", "备注"),
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text('操作', style: TextStyle(fontWeight: FontWeight.bold)),
+        tableHeaderItem("host", AppLocalizations.of(context)!.ip_address),
+        tableHeaderItem("isUse", AppLocalizations.of(context)!.status),
+        tableHeaderItem("hosts", AppLocalizations.of(context)!.domain),
+        tableHeaderItem("description", AppLocalizations.of(context)!.remark),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(AppLocalizations.of(context)!.action,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ],
     );
@@ -199,10 +202,11 @@ class HomeAppBar extends StatelessWidget {
               const SizedBox()
             else
               Icon(
-                  sortConfig[columnName] == 2
-                      ? Icons.arrow_upward
-                      : Icons.arrow_downward,
-                  size: 16.0),
+                sortConfig[columnName] == 2
+                    ? Icons.arrow_upward
+                    : Icons.arrow_downward,
+                size: 16.0,
+              ),
           ],
         ),
       ),

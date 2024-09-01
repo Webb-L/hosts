@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/home_page.dart';
 import 'package:hosts/theme.dart';
@@ -16,6 +16,7 @@ void main() async {
   if (!firstOpenApp) {
     const String fileName = "system";
     await fileManager.createHosts(fileName);
+    // TODO 应该根据系统语言来显示
     await settingsManager.setList(settingKeyHostConfigs,
         [SimpleHostFile(fileName: fileName, remark: "默认")]);
     await settingsManager.setString(settingKeyUseHostFile, fileName);
@@ -32,16 +33,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hosts Editor',
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('cn'),
-      ],
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.app_name,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: MaterialTheme.lightScheme(),

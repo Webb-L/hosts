@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/util/regexp_util.dart';
 
@@ -43,9 +44,9 @@ class _HostPageState extends State<HostPage> {
       final List<HostsModel> tempHosts =
           HostsFile.parseHosts(_hostConfController.text.split("\n"));
       setState(() {
-        if (widget.hostModel==null) {
+        if (widget.hostModel == null) {
           hosts = tempHosts;
-        }else {
+        } else {
           hosts = [tempHosts.first];
         }
         if (hosts.isNotEmpty && currentIndex >= hosts.length) {
@@ -93,8 +94,8 @@ class _HostPageState extends State<HostPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.hostModel != null
-            ? "编辑 - ${_hostController.text}"
-            : "新增(${currentIndex + 1}/${hosts.isEmpty ? 1 : hosts.length})"),
+            ? "${AppLocalizations.of(context)!.edit} - ${_hostController.text}"
+            : "${AppLocalizations.of(context)!.create}(${currentIndex + 1}/${hosts.isEmpty ? 1 : hosts.length})"),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -125,19 +126,9 @@ class _HostPageState extends State<HostPage> {
               focusNode: _focusNode,
               controller: _hostConfController,
               maxLines: 10000,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: """模板1 - 未启用：
-# 127.0.0.1 flutter.dev
-
-模板2 - 没备注：
-127.0.0.1 flutter.dev
-
-模板3 - 有备注：
-# Flutter
-127.0.0.1 flutter.dev
-
-...""",
+                hintText: AppLocalizations.of(context)!.create_host_template,
               ),
             ))
           ],
@@ -158,7 +149,7 @@ class _HostPageState extends State<HostPage> {
               Row(
                 children: [
                   Text(
-                    "信息",
+                    AppLocalizations.of(context)!.info,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   if (widget.hostModel == null)
@@ -174,7 +165,7 @@ class _HostPageState extends State<HostPage> {
                                   });
                                 },
                           icon: const Icon(Icons.chevron_left),
-                          tooltip: "上一个",
+                          tooltip: AppLocalizations.of(context)!.prev,
                         ),
                         IconButton(
                           onPressed:
@@ -187,7 +178,7 @@ class _HostPageState extends State<HostPage> {
                                       });
                                     },
                           icon: const Icon(Icons.chevron_right),
-                          tooltip: "下一个",
+                          tooltip: AppLocalizations.of(context)!.next,
                         ),
                         const SizedBox(width: 16),
                         IconButton(
@@ -203,7 +194,7 @@ class _HostPageState extends State<HostPage> {
                                   });
                                 },
                           icon: const Icon(Icons.remove),
-                          tooltip: "移除",
+                          tooltip: AppLocalizations.of(context)!.remove,
                         ),
                         IconButton(
                           onPressed: () {
@@ -213,7 +204,7 @@ class _HostPageState extends State<HostPage> {
                             });
                           },
                           icon: const Icon(Icons.add),
-                          tooltip: "新增",
+                          tooltip: AppLocalizations.of(context)!.add,
                         ),
                       ],
                     )
@@ -233,22 +224,24 @@ class _HostPageState extends State<HostPage> {
             child: Divider(),
           ),
           TextFormField(
-              controller: _descriptionController,
-              onChanged: (value) {
-                updateHostModelString();
-                (_formKey.currentState as FormState?)?.validate();
-              },
-              decoration: const InputDecoration(
-                  label: Text("备注"),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(16))))),
+            controller: _descriptionController,
+            onChanged: (value) {
+              updateHostModelString();
+              (_formKey.currentState as FormState?)?.validate();
+            },
+            decoration: InputDecoration(
+              label: Text(AppLocalizations.of(context)!.remark),
+              border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16))),
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: _hostController,
-            decoration: const InputDecoration(
-                label: Text("IP地址"),
-                hintText: "支持IPV4和IPV6",
-                border: OutlineInputBorder(
+            decoration: InputDecoration(
+                label: Text(AppLocalizations.of(context)!.ip_address),
+                hintText: AppLocalizations.of(context)!.input_ip_address_hint,
+                border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(16)))),
             onChanged: (value) {
               updateHostModelString();
@@ -256,10 +249,12 @@ class _HostPageState extends State<HostPage> {
             },
             validator: (value) {
               final text = value ?? "";
-              if (text.isEmpty) return "请输入IP地址";
+              if (text.isEmpty) {
+                return AppLocalizations.of(context)!.input_ip_address;
+              }
 
               if (!(isValidIPv4(text, true) || isValidIPv6(text, true))) {
-                return "请输入IPV4或IPV6地址";
+                return AppLocalizations.of(context)!.input_ipv4_ipv6;
               }
 
               return null;
@@ -281,7 +276,7 @@ class _HostPageState extends State<HostPage> {
             child: TextFormField(
               controller: _hostControllers[index],
               decoration: InputDecoration(
-                label: const Text("域名"),
+                label: Text(AppLocalizations.of(context)!.domain),
                 prefixIcon: GestureDetector(
                   onTap: () {
                     setState(() {
@@ -322,16 +317,19 @@ class _HostPageState extends State<HostPage> {
               },
               validator: (value) {
                 final text = value ?? "";
-                if (text.isEmpty) return "请输入域名";
+                if (text.isEmpty) {
+                  return AppLocalizations.of(context)!.input_domain;
+                }
 
                 final regExp = RegExp(r' |\\n');
                 if (regExp.hasMatch(text)) {
-                  return "请不要输入空格(“ ”)和换行(“\n”)。";
+                  return AppLocalizations.of(context)!.error_domain_tip;
                 }
 
-                if (_hostControllers.where((it) => it.text == text).length >
-                    1) {
-                  return "该域名已存在";
+                final int length =
+                    _hostControllers.where((it) => it.text == text).length;
+                if (length > 1) {
+                  return AppLocalizations.of(context)!.error_exist_domain_tip;
                 }
 
                 return null;

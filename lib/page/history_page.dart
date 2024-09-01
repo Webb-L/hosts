@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/countdown_timer.dart';
+
 
 class HistoryPage extends StatefulWidget {
   final SimpleHostFileHistory? selectHistory;
@@ -48,7 +50,7 @@ class _HistoryPageState extends State<HistoryPage> {
               color:Theme.of(context).colorScheme.surfaceContainer,
             ),
             child: Text(
-              "历史记录",
+              AppLocalizations.of(context)!.history,
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
@@ -71,7 +73,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   return ListTile(
                     title: Text("$year-$month-$day $hour:$minute:$second"),
                     subtitle: deleteSimpleHostFileHistory.contains(hostFile)
-                        ? const Text("历史记录将在5秒后被移除。点击右侧按钮以取消。")
+                        ? Text(AppLocalizations.of(context)!.history_remove_tip)
                         : null,
                     selected: simpleHostFileHistory == hostFile,
                     leading: deleteSimpleHostFileHistory.contains(hostFile)
