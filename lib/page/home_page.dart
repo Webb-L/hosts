@@ -14,7 +14,6 @@ import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
 import 'package:hosts/widget/home_drawer.dart';
 import 'package:hosts/widget/snakbar.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -414,9 +413,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _launchUrl(String url) async {
-    if (!await launchUrl(Uri.https(url))) {
-      throw Exception('Could not launch $url');
-    }
+    // if (!await launchUrl(Uri.https(url))) {
+    //   throw Exception('Could not launch $url');
+    // }
   }
 
   Widget _buildTable(List<HostsModel> filterHosts) {
