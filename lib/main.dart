@@ -53,11 +53,8 @@ class MyApp extends StatelessWidget {
     if (!firstOpenApp) {
       const String fileName = "system";
       await fileManager.createHosts(fileName);
-      await settingsManager.setList(settingKeyHostConfigs, [
-        SimpleHostFile(
-            fileName: fileName,
-            remark: AppLocalizations.of(context)!.default_hosts_text)
-      ]);
+      await settingsManager.setList(settingKeyHostConfigs,
+          [SimpleHostFile(fileName: fileName, remark: "")]);
       await settingsManager.setString(settingKeyUseHostFile, fileName);
       File(FileManager.systemHostFilePath)
           .copy(await fileManager.getHostsFilePath(fileName));

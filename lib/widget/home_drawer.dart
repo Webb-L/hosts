@@ -46,6 +46,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
     for (Map<String, dynamic> config in hostConfigs) {
       SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
       if (hostFile.fileName == "system" && isInit) {
+        hostFile.remark = AppLocalizations.of(context)!.default_hosts_text;
         widget.onChanged(await _fileManager.getHostsFilePath(hostFile.fileName),
             hostFile.fileName);
       }
