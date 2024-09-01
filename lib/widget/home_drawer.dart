@@ -77,9 +77,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
                 CreateHostFileDialog(onSyncChanged: () {
                   loadHostFiles();
                 }),
-                IconButton(
-                    onPressed: () async {},
-                    icon: const Icon(Icons.file_open_outlined))
+                // IconButton(
+                //     onPressed: () async {},
+                //     icon: const Icon(Icons.file_open_outlined))
               ],
             ),
           ),
