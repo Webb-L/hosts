@@ -10,20 +10,6 @@ import 'package:hosts/util/settings_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SettingsManager settingsManager = SettingsManager();
-  FileManager fileManager = FileManager();
-  bool firstOpenApp = await settingsManager.getBool(settingKeyFirstOpenApp);
-  if (!firstOpenApp) {
-    const String fileName = "system";
-    await fileManager.createHosts(fileName);
-    // TODO 应该根据系统语言来显示
-    await settingsManager.setList(settingKeyHostConfigs,
-        [SimpleHostFile(fileName: fileName, remark: "默认")]);
-    await settingsManager.setString(settingKeyUseHostFile, fileName);
-    File(FileManager.systemHostFilePath)
-        .copy(await fileManager.getHostsFilePath(fileName));
-    settingsManager.setBool(settingKeyFirstOpenApp, true);
-  }
   runApp(const MyApp());
 }
 
@@ -47,7 +33,35 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
-      home: const HomePage(),
+      home: FutureBuilder<void>(
+        future: initializeApp(context),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            return const HomePage();
+          }
+        },
+      ),
     );
+  }
+
+  Future<void> initializeApp(BuildContext context) async {
+    SettingsManager settingsManager = SettingsManager();
+    FileManager fileManager = FileManager();
+    bool firstOpenApp = await settingsManager.getBool(settingKeyFirstOpenApp);
+    if (!firstOpenApp) {
+      const String fileName = "system";
+      await fileManager.createHosts(fileName);
+      await settingsManager.setList(settingKeyHostConfigs, [
+        SimpleHostFile(
+            fileName: fileName,
+            remark: AppLocalizations.of(context)!.default_hosts_text)
+      ]);
+      await settingsManager.setString(settingKeyUseHostFile, fileName);
+      File(FileManager.systemHostFilePath)
+          .copy(await fileManager.getHostsFilePath(fileName));
+      settingsManager.setBool(settingKeyFirstOpenApp, true);
+    }
   }
 }

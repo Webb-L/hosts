@@ -61,12 +61,12 @@ class _HostPageState extends State<HostPage> {
       }
 
       setState(() {
+        hosts = [
+          HostsModel("", false, "", [""])
+        ];
+        setForm(hosts.first);
         _isUse = false;
       });
-
-      _descriptionController.value = const TextEditingValue();
-      _hostController.value = const TextEditingValue();
-      _hostControllers.clear();
     });
   }
 
@@ -186,10 +186,11 @@ class _HostPageState extends State<HostPage> {
                               ? null
                               : () {
                                   setState(() {
-                                    hosts.removeAt(currentIndex);
                                     if (currentIndex > 0) {
                                       currentIndex--;
                                     }
+                                    hosts.removeAt(currentIndex);
+                                    setForm(hosts[currentIndex]);
                                     updateHostModelString();
                                   });
                                 },
@@ -200,6 +201,8 @@ class _HostPageState extends State<HostPage> {
                           onPressed: () {
                             setState(() {
                               hosts.add(HostsModel("", false, "", [""]));
+                              currentIndex++;
+                              setForm(hosts[currentIndex]);
                               updateHostModelString();
                             });
                           },
