@@ -207,6 +207,13 @@ class _HomePageState extends State<HomePage> {
                   },
                   selectHistory: selectHistory,
                   history: hostsFile.history,
+                  onSwitchHosts: (value) {
+                    setState(() {
+                      for (var host in selectHosts) {
+                        host.isUse = value;
+                      }
+                    });
+                  },
                   onHistoryChanged: (history) async {
                     List<SimpleHostFileHistory> resultHistory =
                         await _fileManager.getHistory(hostsFile.fileId);

@@ -24,6 +24,7 @@ class HomeAppBar extends StatelessWidget {
   final ValueChanged<Map<String, int?>> onSortConfChanged;
   final SimpleHostFileHistory? selectHistory;
   final List<SimpleHostFileHistory> history;
+  final ValueChanged<bool> onSwitchHosts;
   final ValueChanged<SimpleHostFileHistory?> onHistoryChanged;
 
   const HomeAppBar({
@@ -44,6 +45,7 @@ class HomeAppBar extends StatelessWidget {
     required this.onSortConfChanged,
     required this.selectHistory,
     required this.history,
+    required this.onSwitchHosts,
     required this.onHistoryChanged,
   });
 
@@ -79,6 +81,16 @@ class HomeAppBar extends StatelessWidget {
               const Expanded(child: SizedBox()),
               Row(
                 children: [
+                  if (hosts.isNotEmpty && editMode == EditMode.Table)
+                    Switch(
+                      value: true,
+                      onChanged: (value) => onSwitchHosts(true),
+                    ),
+                  if (hosts.isNotEmpty && editMode == EditMode.Table)
+                    Switch(
+                      value: false,
+                      onChanged: (value) => onSwitchHosts(false),
+                    ),
                   if (!isSave)
                     IconButton(
                       onPressed: undoHost,
