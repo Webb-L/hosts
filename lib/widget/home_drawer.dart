@@ -29,7 +29,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
   @override
   void initState() {
-    loadHostFiles(true);
+    (()async{
+      loadHostFiles(await _settingsManager.getBool(settingKeyFirstOpenApp));
+    })();
     super.initState();
   }
 
@@ -45,6 +47,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
     for (Map<String, dynamic> config in hostConfigs) {
       SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
+      tempHostFiles.add(hostFile);
+
       if (hostFile.fileName == "system") {
         hostFile.remark = AppLocalizations.of(context)!.default_hosts_text;
         if (isInit) {
@@ -52,8 +56,14 @@ class _HomeDrawerState extends State<HomeDrawer> {
               await _fileManager.getHostsFilePath(hostFile.fileName),
               hostFile.fileName);
         }
+        continue;
       }
-      tempHostFiles.add(hostFile);
+
+      if (hostFile.fileName==await _settingsManager.getString(settingKeyUseHostFile)) {
+        widget.onChanged(
+            await _fileManager.getHostsFilePath(hostFile.fileName),
+            hostFile.fileName);
+      }
     }
 
     setState(() {
