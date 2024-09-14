@@ -41,6 +41,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  file_picker: ^8.1.2
 
 dev_dependencies:
   flutter_test:

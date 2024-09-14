@@ -61,6 +61,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     List<HostsModel> filterHosts =
         hostsFile.filterHosts(searchText, sortConfig);
+
     return Scaffold(
       floatingActionButton: editMode == EditMode.Table
           ? FloatingActionButton(
@@ -73,6 +74,7 @@ class _HomePageState extends State<HomePage> {
                   for (HostsModel hostsModel in hostsModels) {
                     hostsFile.addHost(hostsModel);
                   }
+                  selectHosts.clear();
                 });
               },
               child: const Icon(Icons.add),
@@ -144,76 +146,67 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Column(
               children: [
-                const SizedBox(height: 12),
                 HomeAppBar(
                   isSave: hostsFile.isSave,
-                  undoHost: () {
-                    setState(() {
-                      hostsFile.undoHost();
+                  onOpenFile: (content) => setState(() {
+                    hostsFile.formString(content);
+                    hostsFile.defaultContent = content;
+                    hostsFile.isUpdateHost();
+                  }),
+                  undoHost: () => setState(() {
+                    hostsFile.undoHost();
+                    _textEditingController.value =
+                        TextEditingValue(text: hostsFile.toString());
+                    selectHosts.clear();
+                  }),
+                  searchText: searchText,
+                  onSearchChanged: (value) => setState(() {
+                    searchText = value;
+                  }),
+                  advancedSettingsEnum: advancedSettingsEnum,
+                  onSwitchAdvancedSettings: (AdvancedSettingsEnum value) =>
+                      setState(() {
+                    advancedSettingsEnum = value;
+                  }),
+                  editMode: editMode,
+                  onSwitchMode: (value) => setState(() {
+                    if (editMode == EditMode.Text) {
+                      editMode = EditMode.Table;
+                      hostsFile.formString(_textEditingController.text);
+                      selectHosts.clear();
+                    } else {
+                      editMode = EditMode.Text;
                       _textEditingController.value =
                           TextEditingValue(text: hostsFile.toString());
-                    });
-                  },
-                  searchText: searchText,
-                  onSearchChanged: (value) {
-                    setState(() {
-                      searchText = value;
-                    });
-                  },
-                  advancedSettingsEnum: advancedSettingsEnum,
-                  onSwitchAdvancedSettings: (AdvancedSettingsEnum value) {
-                    setState(() {
-                      advancedSettingsEnum = value;
-                    });
-                  },
-                  editMode: editMode,
-                  onSwitchMode: (value) {
-                    setState(() {
-                      if (editMode == EditMode.Text) {
-                        editMode = EditMode.Table;
-                        hostsFile.formString(_textEditingController.text);
-                        selectHosts.clear();
-                      } else {
-                        editMode = EditMode.Text;
-                        _textEditingController.value =
-                            TextEditingValue(text: hostsFile.toString());
-                      }
-                    });
-                  },
+                    }
+                  }),
                   hosts: selectHosts,
                   sortConfig: sortConfig,
-                  onDeletePressed: () {
-                    deleteMultiple(
-                      context,
-                      selectHosts.map((item) => item.host).toList(),
-                      () => setState(() {
-                        hostsFile.deleteMultiple(selectHosts);
-                      }),
-                    );
-                  },
-                  isCheckedAll: hostsFile.hosts.length == selectHosts.length,
-                  onCheckedAllChanged: (value) {
-                    setState(() {
+                  onDeletePressed: () => deleteMultiple(
+                    context,
+                    selectHosts.map((item) => item.host).toList(),
+                    () => setState(() {
+                      hostsFile.deleteMultiple(selectHosts);
                       selectHosts.clear();
-                      if (value ?? false) {
-                        selectHosts.addAll(hostsFile.hosts);
-                      }
-                    });
-                  },
-                  onSortConfChanged: (value) {
-                    setState(() {
-                      sortConfig = value;
-                    });
-                  },
+                    }),
+                  ),
+                  isCheckedAll: hostsFile.hosts.length == selectHosts.length,
+                  onCheckedAllChanged: (value) =>setState(() {
+                    selectHosts.clear();
+                    if (value ?? false) {
+                      selectHosts.addAll(hostsFile.hosts);
+                    }
+                  }),
+                  onSortConfChanged: (value) =>setState(() {
+                    sortConfig = value;
+                  }),
                   selectHistory: selectHistory,
                   history: hostsFile.history,
-                  onSwitchHosts: (value) {
-                    setState(() {
-                      for (var host in selectHosts) {
-                        host.isUse = value;
-                      }
-                    });
-                  },
+                  onSwitchHosts: (value) =>setState(() {
+                    for (var host in selectHosts) {
+                      host.isUse = value;
+                    }
+                  }),
                   onHistoryChanged: (history) async {
                     List<SimpleHostFileHistory> resultHistory =
                         await _fileManager.getHistory(hostsFile.fileId);
@@ -344,6 +337,7 @@ class _HomePageState extends State<HomePage> {
                   setState(() {
                     it.isUse = value;
                     hostsFile.updateHost(index, it);
+                    selectHosts.clear();
                   });
                 })),
         Padding(
@@ -370,6 +364,7 @@ class _HomePageState extends State<HomePage> {
                     if (hostsModels == null) return;
                     setState(() {
                       hostsFile.updateHost(index, hostsModels.first);
+                      selectHosts.clear();
                     });
                   },
                   icon: const Icon(Icons.edit)),

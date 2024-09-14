@@ -1,20 +1,30 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/home_page.dart';
+import 'package:hosts/page/simple_home_page.dart';
 import 'package:hosts/theme.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  final Iterable<String> files = args.where((path) => File(path).existsSync());
+  if (files.isNotEmpty) {
+    runApp(MyApp(fileContent: File(files.first).readAsStringSync()));
+  } else {
+    runApp(const MyApp(fileContent: ""));
+  }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String fileContent;
+
+  const MyApp({super.key, required this.fileContent});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +43,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
-      home: FutureBuilder<void>(
+      home: platformSpecificWidget(context),
+    );
+  }
+
+  Widget platformSpecificWidget(BuildContext context) {
+    GlobalSettings().isSimple = kIsWeb || fileContent.isNotEmpty;
+    if (GlobalSettings().isSimple) {
+      return SimpleHomePage(fileContent: fileContent);
+    } else {
+      return FutureBuilder<void>(
         future: initializeApp(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -42,8 +61,8 @@ class MyApp extends StatelessWidget {
             return const HomePage();
           }
         },
-      ),
-    );
+      );
+    }
   }
 
   Future<void> initializeApp(BuildContext context) async {

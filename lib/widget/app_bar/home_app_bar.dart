@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
+import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/history_page.dart';
@@ -10,6 +16,7 @@ import 'package:hosts/widget/text_field/search_text_field.dart';
 class HomeAppBar extends StatelessWidget {
   final bool isSave;
   final VoidCallback undoHost;
+  final ValueChanged<String> onOpenFile;
   final String searchText;
   final ValueChanged<String> onSearchChanged;
   final AdvancedSettingsEnum advancedSettingsEnum;
@@ -30,6 +37,7 @@ class HomeAppBar extends StatelessWidget {
   const HomeAppBar({
     super.key,
     required this.isSave,
+    required this.onOpenFile,
     required this.undoHost,
     required this.searchText,
     required this.onSearchChanged,
@@ -58,17 +66,57 @@ class HomeAppBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Row(
             children: [
-              IconButton(
-                onPressed: () {
-                  onSwitchAdvancedSettings(
-                    advancedSettingsEnum == AdvancedSettingsEnum.Close
-                        ? AdvancedSettingsEnum.Open
-                        : AdvancedSettingsEnum.Close,
-                  );
-                },
-                icon: const Icon(Icons.settings),
-                tooltip: AppLocalizations.of(context)!.advanced_settings,
-              ),
+              if (GlobalSettings().isSimple)
+                IconButton(
+                  onPressed: () async {
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles();
+                    if (result == null) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text("请选择文件")));
+                      return;
+                    }
+                    if (result.files.first.size > 10 * 1024 * 1024) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("读取文件不能大于10MB")));
+                      return;
+                    }
+
+                    try {
+                      String path = "";
+                      try {
+                        path = result.files.single.path ?? "";
+                      } catch (e) {
+                        path = "";
+                      }
+                      final Uint8List? bytes = result.files.first.bytes;
+                      if (path.isNotEmpty && bytes == null) {
+                        onOpenFile(File(path).readAsStringSync());
+                      }
+
+                      if (path.isEmpty && bytes != null) {
+                        onOpenFile(utf8.decode(bytes));
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("文件读取失败")));
+                    }
+                  },
+                  icon: const Icon(Icons.file_open_outlined),
+                  tooltip: "打开文件",
+                )
+              else
+                IconButton(
+                  onPressed: () {
+                    onSwitchAdvancedSettings(
+                      advancedSettingsEnum == AdvancedSettingsEnum.Close
+                          ? AdvancedSettingsEnum.Open
+                          : AdvancedSettingsEnum.Close,
+                    );
+                  },
+                  icon: const Icon(Icons.settings),
+                  tooltip: AppLocalizations.of(context)!.advanced_settings,
+                ),
               const SizedBox(width: 10),
               if (editMode == EditMode.Table)
                 SizedBox(
@@ -81,37 +129,7 @@ class HomeAppBar extends StatelessWidget {
               const Expanded(child: SizedBox()),
               Row(
                 children: [
-                  if (hosts.isNotEmpty && editMode == EditMode.Table)
-                    Switch(
-                      value: true,
-                      onChanged: (value) => onSwitchHosts(true),
-                    ),
-                  if (hosts.isNotEmpty && editMode == EditMode.Table)
-                    Switch(
-                      value: false,
-                      onChanged: (value) => onSwitchHosts(false),
-                    ),
-                  if (!isSave)
-                    IconButton(
-                      onPressed: undoHost,
-                      icon: const Icon(Icons.undo),
-                      tooltip: AppLocalizations.of(context)!.reduction,
-                    ),
-                  if (hosts.isNotEmpty && editMode == EditMode.Table)
-                    IconButton(
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) =>
-                                  CopyMultipleDialog(hosts: hosts));
-                        },
-                        tooltip: AppLocalizations.of(context)!.copy_selected,
-                        icon: const Icon(Icons.copy)),
-                  if (hosts.isNotEmpty && editMode == EditMode.Table)
-                    IconButton(
-                        onPressed: onDeletePressed,
-                        tooltip: AppLocalizations.of(context)!.delete_selected,
-                        icon: const Icon(Icons.delete_outline)),
+                  batchGroupButton(context),
                   if (history.isNotEmpty)
                     IconButton(
                       onPressed: () async {
@@ -131,6 +149,14 @@ class HomeAppBar extends StatelessWidget {
                       },
                       icon: const Icon(Icons.history),
                     ),
+                  const SizedBox(width: 16),
+                  if (!isSave)
+                    IconButton(
+                      onPressed: undoHost,
+                      icon: const Icon(Icons.undo),
+                      tooltip: AppLocalizations.of(context)!.reduction,
+                    ),
+                  const SizedBox(width: 16),
                   _buildEditModeButton(context),
                 ],
               )
@@ -222,6 +248,37 @@ class HomeAppBar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget batchGroupButton(BuildContext context) {
+    return Row(
+      children: [
+        if (hosts.isNotEmpty && editMode == EditMode.Table)
+          Switch(
+            value: true,
+            onChanged: (value) => onSwitchHosts(true),
+          ),
+        if (hosts.isNotEmpty && editMode == EditMode.Table)
+          Switch(
+            value: false,
+            onChanged: (value) => onSwitchHosts(false),
+          ),
+        if (hosts.isNotEmpty && editMode == EditMode.Table)
+          IconButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) => CopyMultipleDialog(hosts: hosts));
+              },
+              tooltip: AppLocalizations.of(context)!.copy_selected,
+              icon: const Icon(Icons.copy)),
+        if (hosts.isNotEmpty && editMode == EditMode.Table)
+          IconButton(
+              onPressed: onDeletePressed,
+              tooltip: AppLocalizations.of(context)!.delete_selected,
+              icon: const Icon(Icons.delete_outline)),
+      ],
     );
   }
 }
