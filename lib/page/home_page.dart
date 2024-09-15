@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
@@ -10,9 +9,8 @@ import 'package:hosts/page/host_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
-import 'package:hosts/widget/dialog/copy_dialog.dart';
-import 'package:hosts/widget/error/error_empty.dart';
 import 'package:hosts/widget/home_drawer.dart';
+import 'package:hosts/widget/host_table.dart';
 import 'package:hosts/widget/snakbar.dart';
 
 class HomePage extends StatefulWidget {
@@ -59,9 +57,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<HostsModel> filterHosts =
-        hostsFile.filterHosts(searchText, sortConfig);
-
     return Scaffold(
       floatingActionButton: editMode == EditMode.Table
           ? FloatingActionButton(
@@ -83,66 +78,7 @@ class _HomePageState extends State<HomePage> {
       body: Row(
         children: [
           if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
-            HomeDrawer(
-              isSave: hostsFile.isSave,
-              onChanged: (String value, String fileId) async {
-                if (await _settingsManager.getString(settingKeyUseHostFile) ==
-                    fileId) {
-                  if (!await _fileManager.areFilesEqual(fileId)) {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text(AppLocalizations.of(context)!.warning),
-                            content: Text(AppLocalizations.of(context)!
-                                .warning_different),
-                            actions: [
-                              TextButton(
-                                onPressed: () async {
-                                  try {
-                                    await _fileManager
-                                        .saveToHosts(hostsFile.toString());
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .error_save_fail)));
-                                    return;
-                                  }
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text(AppLocalizations.of(context)!
-                                    .warning_different_covering_system),
-                              ),
-                              TextButton(
-                                onPressed: () async {
-                                  setState(() {
-                                    hostsFile.formString(
-                                        File(FileManager.systemHostFilePath)
-                                            .readAsStringSync());
-                                    hostsFile.save(true);
-                                    Navigator.of(context).pop();
-                                  });
-                                },
-                                child: Text(AppLocalizations.of(context)!
-                                    .warning_different_covering_current),
-                              ),
-                            ],
-                          );
-                        });
-                  }
-                }
-                setState(() {
-                  selectHosts.clear();
-                  hostsFile = HostsFile(value, fileId);
-                  if (editMode == EditMode.Text) {
-                    _textEditingController.value =
-                        TextEditingValue(text: hostsFile.toString());
-                  }
-                });
-              },
-            ),
+            buildHomeDrawer(context),
           Expanded(
             child: Column(
               children: [
@@ -191,18 +127,18 @@ class _HomePageState extends State<HomePage> {
                     }),
                   ),
                   isCheckedAll: hostsFile.hosts.length == selectHosts.length,
-                  onCheckedAllChanged: (value) =>setState(() {
+                  onCheckedAllChanged: (value) => setState(() {
                     selectHosts.clear();
                     if (value ?? false) {
                       selectHosts.addAll(hostsFile.hosts);
                     }
                   }),
-                  onSortConfChanged: (value) =>setState(() {
+                  onSortConfChanged: (value) => setState(() {
                     sortConfig = value;
                   }),
                   selectHistory: selectHistory,
                   history: hostsFile.history,
-                  onSwitchHosts: (value) =>setState(() {
+                  onSwitchHosts: (value) => setState(() {
                     for (var host in selectHosts) {
                       host.isUse = value;
                     }
@@ -235,15 +171,74 @@ class _HomePageState extends State<HomePage> {
                         }
                         return const SizedBox();
                       }),
-                Expanded(
-                    child: editMode == EditMode.Table
-                        ? _buildTable(filterHosts)
-                        : _buildTextEdit())
+                buildHostTableOrTextEdit(
+                  hostsFile.filterHosts(searchText, sortConfig),
+                )
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  HomeDrawer buildHomeDrawer(BuildContext context) {
+    return HomeDrawer(
+      isSave: hostsFile.isSave,
+      onChanged: (String value, String fileId) async {
+        if (await _settingsManager.getString(settingKeyUseHostFile) == fileId) {
+          if (!await _fileManager.areFilesEqual(fileId)) {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(AppLocalizations.of(context)!.warning),
+                    content:
+                        Text(AppLocalizations.of(context)!.warning_different),
+                    actions: [
+                      TextButton(
+                        onPressed: () async {
+                          try {
+                            await _fileManager
+                                .saveToHosts(hostsFile.toString());
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(AppLocalizations.of(context)!
+                                    .error_save_fail)));
+                            return;
+                          }
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(AppLocalizations.of(context)!
+                            .warning_different_covering_system),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          setState(() {
+                            hostsFile.formString(
+                                File(FileManager.systemHostFilePath)
+                                    .readAsStringSync());
+                            hostsFile.save(true);
+                            Navigator.of(context).pop();
+                          });
+                        },
+                        child: Text(AppLocalizations.of(context)!
+                            .warning_different_covering_current),
+                      ),
+                    ],
+                  );
+                });
+          }
+        }
+        setState(() {
+          selectHosts.clear();
+          hostsFile = HostsFile(value, fileId);
+          if (editMode == EditMode.Text) {
+            _textEditingController.value =
+                TextEditingValue(text: hostsFile.toString());
+          }
+        });
+      },
     );
   }
 
@@ -300,158 +295,63 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<TableRow> tableBody(List<HostsModel> hosts) {
-    return hosts.asMap().entries.map((entry) {
-      final int index = entry.key;
-      final it = entry.value;
-      return TableRow(children: [
-        Checkbox(
-            value: selectHosts.contains(it),
-            onChanged: (bool? newValue) {
-              setState(() {
-                if (selectHosts.contains(it)) {
-                  selectHosts.remove(it);
-                } else {
-                  selectHosts.add(it);
-                }
-              });
-            }),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: GestureDetector(
-            onTap: () => _launchUrl(it.host),
-            child: Text(
-              it.host,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        Align(
-            alignment: Alignment.centerLeft,
-            child: Switch(
-                value: it.isUse,
-                onChanged: (value) {
+  Widget buildHostTableOrTextEdit(List<HostsModel> filterHosts) {
+    return Expanded(
+        child: editMode == EditMode.Table
+            ? HostTable(
+                hosts: filterHosts,
+                selectHosts: selectHosts,
+                onChecked: (index, host) {
                   setState(() {
-                    it.isUse = value;
-                    hostsFile.updateHost(index, it);
+                    if (selectHosts.contains(host)) {
+                      selectHosts.remove(host);
+                    } else {
+                      selectHosts.add(host);
+                    }
+                  });
+                },
+                onEdit: (index, host) async {
+                  List<HostsModel>? hostsModels =
+                      await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => HostPage(hostModel: host),
+                    ),
+                  );
+                  if (hostsModels == null) return;
+                  setState(() {
+                    hostsFile.updateHost(index, hostsModels.first);
                     selectHosts.clear();
                   });
-                })),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text.rich(TextSpan(
-              children: _buildTextSpans(it.hosts),
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold))),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SelectableText(it.description),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              IconButton(
-                  onPressed: () async {
-                    List<HostsModel>? hostsModels = await Navigator.of(context)
-                        .push(MaterialPageRoute(
-                            builder: (context) => HostPage(hostModel: it)));
-                    if (hostsModels == null) return;
-                    setState(() {
-                      hostsFile.updateHost(index, hostsModels.first);
-                      selectHosts.clear();
-                    });
-                  },
-                  icon: const Icon(Icons.edit)),
-              const SizedBox(width: 8),
-              CopyDialog(context: context, hosts: hosts, index: index),
-              const SizedBox(width: 8),
-              IconButton(
-                  onPressed: () {
-                    final List<HostsModel> list = [it];
-                    deleteMultiple(
-                      context,
-                      list.map((item) => item.host).toList(),
-                      () => setState(() {
-                        hostsFile.deleteMultiple(list);
-                      }),
-                    );
-                  },
-                  icon: const Icon(Icons.delete_outline)),
-            ],
-          ),
-        )
-      ]);
-    }).toList();
-  }
-
-  List<InlineSpan> _buildTextSpans(List<String> hosts) {
-    List<InlineSpan> textSpans = [];
-
-    for (int i = 0; i < hosts.length; i++) {
-      textSpans.add(TextSpan(
-        text: hosts[i],
-        recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            _launchUrl(hosts[i]);
-          },
-      ));
-
-      if (i < hosts.length - 1) {
-        textSpans.add(TextSpan(
-            text: ' - ',
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.inverseSurface,
-                fontWeight: FontWeight.w900)));
-      }
-    }
-
-    return textSpans;
-  }
-
-  Future<void> _launchUrl(String url) async {
-    // if (!await launchUrl(Uri.https(url))) {
-    //   throw Exception('Could not launch $url');
-    // }
-  }
-
-  Widget _buildTable(List<HostsModel> filterHosts) {
-    if (filterHosts.isEmpty) {
-      return Container(
-        alignment: Alignment.center,
-        width: double.maxFinite,
-        height: double.maxFinite,
-        child: const ErrorEmpty(),
-      );
-    } else {
-      return SingleChildScrollView(
-        child: Table(
-          columnWidths: const {
-            0: FixedColumnWidth(50),
-            2: FixedColumnWidth(100),
-            3: FlexColumnWidth(2),
-            5: FixedColumnWidth(180),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          children: tableBody(filterHosts),
-        ),
-      );
-    }
-  }
-
-  _buildTextEdit() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16),
-      child: TextField(
-        controller: _textEditingController,
-        maxLines: double.maxFinite.toInt(),
-        decoration: const InputDecoration(border: InputBorder.none),
-      ),
-    );
+                },
+                onDelete: (hosts) {
+                  deleteMultiple(
+                    context,
+                    hosts.map((item) => item.host).toList(),
+                    () => setState(() {
+                      hostsFile.deleteMultiple(hosts);
+                    }),
+                  );
+                },
+                onToggleUse: (index, host) {
+                  setState(() {
+                    hostsFile.updateHost(index, host);
+                    selectHosts.clear();
+                  });
+                },
+                onLaunchUrl: (url) {
+                  // Uncomment and implement the URL launching logic if needed
+                  // if (!await launchUrl(Uri.https(url))) {
+                  //   throw Exception('Could not launch $url');
+                  // }
+                },
+              )
+            : Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: TextField(
+                  controller: _textEditingController,
+                  maxLines: double.maxFinite.toInt(),
+                  decoration: const InputDecoration(border: InputBorder.none),
+                ),
+              ));
   }
 }
