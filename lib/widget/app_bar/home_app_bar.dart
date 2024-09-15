@@ -76,6 +76,9 @@ class HomeAppBar extends StatelessWidget {
                           .showSnackBar(const SnackBar(content: Text("请选择文件")));
                       return;
                     }
+
+                    print(result.files.single);
+
                     if (result.files.first.size > 10 * 1024 * 1024) {
                       ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("读取文件不能大于10MB")));

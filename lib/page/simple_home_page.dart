@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
@@ -159,22 +163,80 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
       actions: [
         TextButton(
           onPressed: () async {
+            final String hostContent = hostsFile.toString();
+            if (kIsWeb) {
+              showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("保存"),
+                    content: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: SelectableText(hostContent),
+                    ),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            writeClipboard(
+                                'echo "$hostContent" > /etc/hosts', context);
+                          },
+                          child: const Text("Linux(echo)")),
+                      TextButton(
+                        // TODO 需要特殊处理
+                          onPressed: () {},
+                          child: const Text("Windows(echo)")),
+                      TextButton(
+                          onPressed: () {
+                            writeClipboard(
+                                'echo "$hostContent" > /etc/hosts', context);
+                          },
+                          child: const Text("MacOS(echo)")),
+                    ],
+                  ));
+              return;
+            }
+
+            // bool canWrite = await File("/etc/hosts").stat().then((stat) => stat.mode & 0b010 != 0);
+            final File file = File("/etc/hosts");
+
+            try {
+              file.writeAsStringSync("", mode: FileMode.append);
+            } on PathAccessException catch (e) {
+              print(e);
+            }
+            print(await File("/etc/hosts")
+                .writeAsString("", mode: FileMode.append));
             try {
               // await _fileManager.saveToHosts(hostsFile.toString());
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content:
-                  Text(AppLocalizations.of(context)!.error_save_fail)));
+                      Text(AppLocalizations.of(context)!.error_save_fail)));
               return;
             }
             setState(() {
-              hostsFile.save();
+              // hostsFile.save();
             });
           },
           child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
     );
+  }
+
+  void writeClipboard(String hostContent, BuildContext context) {
+    Clipboard.setData(ClipboardData(text: hostContent)).then((_) {
+      setState(() {
+        // TODO 不会更新
+        hostsFile.defaultContent = hostContent;
+        hostsFile.isUpdateHost();
+        Navigator.pop(context);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.copy_to_tip),
+        ),
+      );
+    });
   }
 
   Widget buildHostTableOrTextEdit(List<HostsModel> filterHosts) {

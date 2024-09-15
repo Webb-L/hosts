@@ -50,7 +50,10 @@ class HostTable extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Switch(
             value: it.isUse,
-            onChanged: (value) => onToggleUse(index, it),
+            onChanged: (value)  {
+              it.isUse = value;
+              onToggleUse(index, it);
+            },
           ),
         ),
         Padding(
