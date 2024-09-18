@@ -273,7 +273,9 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
                   });
                 },
                 onLink: (index, host) async {
-                  linkDialog(context, hostsFile.hosts, host);
+                  final Map<String,List<String>>? result = await linkDialog(context, hostsFile.hosts, host);
+                  if (result==null) return;
+                  print(result);
                 },
                 onEdit: (index, host) async {
                   List<HostsModel>? hostsModels =
