@@ -172,7 +172,7 @@ class HomeAppBar extends StatelessWidget {
               0: FixedColumnWidth(50),
               2: FixedColumnWidth(100),
               3: FlexColumnWidth(2),
-              5: FixedColumnWidth(180),
+              5: FixedColumnWidth(150),
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [tableHeader(context)],

@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
@@ -52,7 +53,7 @@ class HostTable extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Switch(
             value: it.isUse,
-            onChanged: (value)  {
+            onChanged: (value) {
               it.isUse = value;
               onToggleUse(index, it);
             },
@@ -80,17 +81,11 @@ class HostTable extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: () => onLink(index, it),
-                icon: const Icon(Icons.link),
-                tooltip: "关联",
-              ),
-              const SizedBox(width: 8),
-              CopyDialog(context: context, hosts: hosts, index: index),
-              const SizedBox(width: 8),
-              IconButton(
                 onPressed: () => onDelete([it]),
                 icon: const Icon(Icons.delete_outline),
               ),
+              const SizedBox(width: 8),
+              buildMoreButton(context, index, it),
             ],
           ),
         )
@@ -122,6 +117,55 @@ class HostTable extends StatelessWidget {
     return textSpans;
   }
 
+  Widget buildMoreButton(BuildContext context, int index, HostsModel host) {
+    return PopupMenuButton<int>(
+      style: OutlinedButton.styleFrom(
+        minimumSize: Size.zero,
+        padding: EdgeInsets.zero,
+      ),
+      onSelected: (value) async {
+        switch (value) {
+          case 1:
+            onLink(index, host);
+            break;
+          case 2:
+            copyDialog(context, hosts, index);
+            break;
+        }
+      },
+      // IconButton(
+      //   onPressed: () => onLink(index, it),
+      //   icon: const Icon(Icons.link),
+      //   tooltip: "关联",
+      // ),
+      // const SizedBox(width: 8),
+      // CopyDialog(context: context, hosts: hosts, index: index),
+      itemBuilder: (BuildContext context) {
+        List<Map<String, Object>> list = [
+          {"icon": Icons.link, "text": "关联", "value": 1},
+          {
+            "icon": Icons.copy,
+            "text": AppLocalizations.of(context)!.copy,
+            "value": 2
+          },
+        ];
+
+        return list.map((item) {
+          return PopupMenuItem<int>(
+            value: int.parse(item["value"].toString()),
+            child: Row(
+              children: [
+                Icon(item["icon"]! as IconData),
+                const SizedBox(width: 8),
+                Text(item["text"]!.toString()),
+              ],
+            ),
+          );
+        }).toList();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (hosts.isEmpty) {
@@ -138,7 +182,7 @@ class HostTable extends StatelessWidget {
             0: FixedColumnWidth(50),
             2: FixedColumnWidth(100),
             3: FlexColumnWidth(2),
-            5: FixedColumnWidth(210),
+            5: FixedColumnWidth(150),
           },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           children: tableBody(context),
