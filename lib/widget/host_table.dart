@@ -8,6 +8,7 @@ class HostTable extends StatelessWidget {
   final List<HostsModel> hosts;
   final List<HostsModel> selectHosts;
   final Function(int, HostsModel) onEdit;
+  final Function(int, HostsModel) onLink;
   final Function(int, HostsModel) onChecked;
   final Function(List<HostsModel>) onDelete;
   final Function(int, HostsModel) onToggleUse;
@@ -19,6 +20,7 @@ class HostTable extends StatelessWidget {
     required this.selectHosts,
     required this.onChecked,
     required this.onEdit,
+    required this.onLink,
     required this.onDelete,
     required this.onToggleUse,
     required this.onLaunchUrl,
@@ -77,6 +79,12 @@ class HostTable extends StatelessWidget {
                 icon: const Icon(Icons.edit),
               ),
               const SizedBox(width: 8),
+              IconButton(
+                onPressed: () => onLink(index, it),
+                icon: const Icon(Icons.link),
+                tooltip: "关联",
+              ),
+              const SizedBox(width: 8),
               CopyDialog(context: context, hosts: hosts, index: index),
               const SizedBox(width: 8),
               IconButton(
@@ -130,7 +138,7 @@ class HostTable extends StatelessWidget {
             0: FixedColumnWidth(50),
             2: FixedColumnWidth(100),
             3: FlexColumnWidth(2),
-            5: FixedColumnWidth(180),
+            5: FixedColumnWidth(210),
           },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           children: tableBody(context),

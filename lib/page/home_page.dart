@@ -310,6 +310,7 @@ class _HomePageState extends State<HomePage> {
                     }
                   });
                 },
+                onLink: (index, host) async {},
                 onEdit: (index, host) async {
                   List<HostsModel>? hostsModels =
                       await Navigator.of(context).push(

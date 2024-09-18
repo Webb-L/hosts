@@ -8,10 +8,11 @@ import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/host_page.dart';
-import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
+import 'package:hosts/widget/dialog/link_dialog.dart';
 import 'package:hosts/widget/host_table.dart';
 import 'package:hosts/widget/snakbar.dart';
+import 'package:path/path.dart' as p;
 
 class SimpleHomePage extends StatefulWidget {
   final String fileContent;
@@ -23,7 +24,6 @@ class SimpleHomePage extends StatefulWidget {
 }
 
 class _SimpleHomePageState extends State<SimpleHomePage> {
-  final SettingsManager _settingsManager = SettingsManager();
   final List<HostsModel> selectHosts = [];
   HostsFile hostsFile = HostsFile("", "");
   EditMode editMode = EditMode.Table;
@@ -164,38 +164,56 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
         TextButton(
           onPressed: () async {
             final String hostContent = hostsFile.toString();
-            if (kIsWeb) {
+            if (!kIsWeb) {
               showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text("保存"),
-                    content: SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: SelectableText(hostContent),
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            writeClipboard(
-                                'echo "$hostContent" > /etc/hosts', context);
-                          },
-                          child: const Text("Linux(echo)")),
-                      TextButton(
-                        // TODO 需要特殊处理
-                          onPressed: () {},
-                          child: const Text("Windows(echo)")),
-                      TextButton(
-                          onPressed: () {
-                            writeClipboard(
-                                'echo "$hostContent" > /etc/hosts', context);
-                          },
-                          child: const Text("MacOS(echo)")),
-                    ],
-                  ));
+                        title: const Text("保存"),
+                        content: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.5,
+                          child: SelectableText(hostContent),
+                        ),
+                        actions: [
+                          TextButton(
+                              onPressed: () => writeClipboard(
+                                    'echo "$hostContent" > /etc/hosts',
+                                    hostContent,
+                                    context,
+                                  ),
+                              child: const Text("Linux(echo)")),
+                          TextButton(
+                              onPressed: () {
+                                final String systemHostPath = p.joinAll([
+                                  "C:",
+                                  "Windows",
+                                  "System32",
+                                  "drivers",
+                                  "etc",
+                                  "hosts"
+                                ]);
+                                final String content = hostContent
+                                    .split("\n")
+                                    .map((item) => 'echo "$item"')
+                                    .join("\n");
+                                writeClipboard(
+                                  '(\n$content\n) > $systemHostPath',
+                                  hostContent,
+                                  context,
+                                );
+                              },
+                              child: const Text("Windows(echo)")),
+                          TextButton(
+                              onPressed: () => writeClipboard(
+                                    'echo "$hostContent" > /etc/hosts',
+                                    hostContent,
+                                    context,
+                                  ),
+                              child: const Text("MacOS(echo)")),
+                        ],
+                      ));
               return;
             }
 
-            // bool canWrite = await File("/etc/hosts").stat().then((stat) => stat.mode & 0b010 != 0);
             final File file = File("/etc/hosts");
 
             try {
@@ -223,11 +241,11 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
     );
   }
 
-  void writeClipboard(String hostContent, BuildContext context) {
+  void writeClipboard(
+      String hostContent, String defaultContent, BuildContext context) {
     Clipboard.setData(ClipboardData(text: hostContent)).then((_) {
       setState(() {
-        // TODO 不会更新
-        hostsFile.defaultContent = hostContent;
+        hostsFile.defaultContent = defaultContent;
         hostsFile.isUpdateHost();
         Navigator.pop(context);
       });
@@ -253,6 +271,9 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
                       selectHosts.add(host);
                     }
                   });
+                },
+                onLink: (index, host) async {
+                  linkDialog(context, hostsFile.hosts, host);
                 },
                 onEdit: (index, host) async {
                   List<HostsModel>? hostsModels =
