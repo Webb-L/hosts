@@ -12,7 +12,7 @@ class HostTable extends StatelessWidget {
   final Function(int, HostsModel) onLink;
   final Function(int, HostsModel) onChecked;
   final Function(List<HostsModel>) onDelete;
-  final Function(int, HostsModel) onToggleUse;
+  final Function(List<HostsModel>) onToggleUse;
   final Function(String) onLaunchUrl;
 
   const HostTable({
@@ -55,7 +55,21 @@ class HostTable extends StatelessWidget {
             value: it.isUse,
             onChanged: (value) {
               it.isUse = value;
-              onToggleUse(index, it);
+
+              final List<HostsModel> updateUseHosts = [it];
+              void updateHostStates(List<String> hostNames, bool isUse) {
+                for (var tempHost in hosts.where((item) => hostNames.contains(item.host))) {
+                  tempHost.isUse = isUse;
+                  updateUseHosts.add(tempHost);
+                }
+              }
+
+              // 相同
+              updateHostStates(it.config["same"] ?? [], value);
+              // 相反
+              updateHostStates(it.config["contrary"] ?? [], !value);
+
+              onToggleUse(updateUseHosts);
             },
           ),
         ),

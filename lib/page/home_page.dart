@@ -333,9 +333,9 @@ class _HomePageState extends State<HomePage> {
                     }),
                   );
                 },
-                onToggleUse: (index, host) {
+                onToggleUse: (hosts) {
                   setState(() {
-                    hostsFile.updateHost(index, host);
+                    hostsFile.updateHostUseState(hosts);
                     selectHosts.clear();
                   });
                 },

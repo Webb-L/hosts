@@ -273,9 +273,10 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
                   });
                 },
                 onLink: (index, host) async {
-                  final Map<String,List<String>>? result = await linkDialog(context, hostsFile.hosts, host);
-                  if (result==null) return;
-                  print(result);
+                  final Map<String, List<String>>? result =
+                      await linkDialog(context, hostsFile.hosts, host);
+                  if (result == null) return;
+                  host.config = result;
                 },
                 onEdit: (index, host) async {
                   List<HostsModel>? hostsModels =
@@ -299,9 +300,9 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
                     }),
                   );
                 },
-                onToggleUse: (index, host) {
+                onToggleUse: (hosts) {
                   setState(() {
-                    hostsFile.updateHost(index, host);
+                    hostsFile.updateHostUseState(hosts);
                     selectHosts.clear();
                   });
                 },

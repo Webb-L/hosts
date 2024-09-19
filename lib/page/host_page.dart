@@ -22,7 +22,7 @@ class _HostPageState extends State<HostPage> {
   final TextEditingController _hostConfController = TextEditingController();
   int currentIndex = 0;
   List<HostsModel> hosts = [
-    HostsModel("", false, "", [""])
+    HostsModel("", false, "", [""], {})
   ];
 
   @override
@@ -62,7 +62,7 @@ class _HostPageState extends State<HostPage> {
 
       setState(() {
         hosts = [
-          HostsModel("", false, "", [""])
+          HostsModel("", false, "", [""], {})
         ];
         setForm(hosts.first);
         _isUse = false;
@@ -200,7 +200,7 @@ class _HostPageState extends State<HostPage> {
                         IconButton(
                           onPressed: () {
                             setState(() {
-                              hosts.add(HostsModel("", false, "", [""]));
+                              hosts.add(HostsModel("", false, "", [""], {}));
                               currentIndex++;
                               setForm(hosts[currentIndex]);
                               updateHostModelString();
@@ -348,6 +348,7 @@ class _HostPageState extends State<HostPage> {
       _isUse,
       _descriptionController.text,
       _hostControllers.map((text) => text.text).toList(),
+      {}
     );
     if (hosts.length == 1) {
       _hostConfController.value = TextEditingValue(

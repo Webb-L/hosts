@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:hosts/model/simple_host_file.dart';
@@ -11,9 +12,12 @@ class HostsModel {
   final List<String> hosts;
   int? hostLine;
   int? descLine;
+  int? configLine;
 
-  HostsModel(this.host, this.isUse, this.description, this.hosts,
-      {this.hostLine, this.descLine});
+  Map<String, dynamic> config;
+
+  HostsModel(this.host, this.isUse, this.description, this.hosts, this.config,
+      {this.hostLine, this.descLine, this.configLine});
 
   @override
   String toString() {
@@ -31,7 +35,12 @@ class HostsModel {
       return "";
     }
 
-    return "$text${isUse ? "" : "# "}$host ${hosts.join(" ")}";
+    String hostText = "$text${isUse ? "" : "# "}$host ${hosts.join(" ")}";
+
+    if (hostText.isNotEmpty && config.isNotEmpty) {
+      hostText += "\n# $host - config ${json.encode(config)}";
+    }
+    return hostText;
   }
 
   filter(String searchQuery) {
@@ -188,7 +197,7 @@ class HostsFile {
         }
 
         tempHosts.add(HostsModel(
-            host, !line.startsWith(RegExp(r"^\s?#")), description, hosts,
+            host, !line.startsWith(RegExp(r"^\s?#")), description, hosts, {},
             hostLine: i, descLine: descLine));
       }
     }
@@ -198,6 +207,23 @@ class HostsFile {
 
   addHost(HostsModel model) {
     _lines.addAll(model.toString().split("\n"));
+    final List<HostsModel> tempHosts = parseHosts(_lines);
+    hosts.clear();
+    hosts.addAll(tempHosts);
+    isUpdateHost();
+  }
+
+  updateHostUseState(List<HostsModel> hosts){
+    for (var model in hosts) {
+      final List<String> newLine = model.toString().split("\n");
+
+      if (model.hostLine != null &&
+          model.hostLine! > -1 &&
+          [1, 2].contains(newLine.length)) {
+        _lines[model.hostLine!] = newLine.length == 2 ? newLine[1] : newLine[0];
+      }
+    }
+
     final List<HostsModel> tempHosts = parseHosts(_lines);
     hosts.clear();
     hosts.addAll(tempHosts);
