@@ -32,7 +32,8 @@ Future<Map<String, List<String>>?> linkDialog(
             setState(() {
               if (host.config["same"] != null && !isInitSameHosts) {
                 sameCheckedHosts.clear();
-                sameCheckedHosts.addAll(host.config["same"]);
+                sameCheckedHosts.addAll(
+                    (host.config["same"] as List<dynamic>).cast<String>());
                 contraryHosts.clear();
                 contraryHosts.addAll(filterHosts
                     .where((item) => !sameCheckedHosts.contains(item))
@@ -42,7 +43,8 @@ Future<Map<String, List<String>>?> linkDialog(
 
               if (host.config["contrary"] != null && !isInitContraryHosts) {
                 contraryCheckedHosts.clear();
-                contraryCheckedHosts.addAll(host.config["contrary"]);
+                contraryCheckedHosts.addAll(
+                    (host.config["contrary"] as List<dynamic>).cast<String>());
                 sameHosts.clear();
                 sameHosts.addAll(filterHosts
                     .where((item) => !contraryCheckedHosts.contains(item))

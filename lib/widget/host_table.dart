@@ -58,16 +58,24 @@ class HostTable extends StatelessWidget {
 
               final List<HostsModel> updateUseHosts = [it];
               void updateHostStates(List<String> hostNames, bool isUse) {
-                for (var tempHost in hosts.where((item) => hostNames.contains(item.host))) {
+                for (var tempHost
+                    in hosts.where((item) => hostNames.contains(item.host))) {
                   tempHost.isUse = isUse;
                   updateUseHosts.add(tempHost);
                 }
               }
 
               // 相同
-              updateHostStates(it.config["same"] ?? [], value);
+              if (it.config["same"] != null) {
+                updateHostStates(
+                    (it.config["same"] as List<dynamic>).cast<String>(), value);
+              }
               // 相反
-              updateHostStates(it.config["contrary"] ?? [], !value);
+              if (it.config["contrary"] != null) {
+                updateHostStates(
+                    (it.config["contrary"] as List<dynamic>).cast<String>(),
+                    !value);
+              }
 
               onToggleUse(updateUseHosts);
             },

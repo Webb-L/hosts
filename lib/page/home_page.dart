@@ -9,6 +9,7 @@ import 'package:hosts/page/host_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
+import 'package:hosts/widget/dialog/link_dialog.dart';
 import 'package:hosts/widget/home_drawer.dart';
 import 'package:hosts/widget/host_table.dart';
 import 'package:hosts/widget/snakbar.dart';
@@ -310,7 +311,15 @@ class _HomePageState extends State<HomePage> {
                     }
                   });
                 },
-                onLink: (index, host) async {},
+                onLink: (index, host) async {
+                  final Map<String, List<String>>? result =
+                      await linkDialog(context, hostsFile.hosts, host);
+                  if (result == null) return;
+                  setState(() {
+                    host.config = result;
+                    hostsFile.updateHost(index, host);
+                  });
+                },
                 onEdit: (index, host) async {
                   List<HostsModel>? hostsModels =
                       await Navigator.of(context).push(

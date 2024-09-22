@@ -12,12 +12,11 @@ class HostsModel {
   final List<String> hosts;
   int? hostLine;
   int? descLine;
-  int? configLine;
 
   Map<String, dynamic> config;
 
   HostsModel(this.host, this.isUse, this.description, this.hosts, this.config,
-      {this.hostLine, this.descLine, this.configLine});
+      {this.hostLine, this.descLine});
 
   @override
   String toString() {
@@ -35,12 +34,7 @@ class HostsModel {
       return "";
     }
 
-    String hostText = "$text${isUse ? "" : "# "}$host ${hosts.join(" ")}";
-
-    if (hostText.isNotEmpty && config.isNotEmpty) {
-      hostText += "\n# $host - config ${json.encode(config)}";
-    }
-    return hostText;
+    return "$text${isUse ? "" : "# "}$host ${hosts.join(" ")} ${config.isNotEmpty ? '# - config ${json.encode(config)}' : ''}";
   }
 
   filter(String searchQuery) {
@@ -166,7 +160,9 @@ class HostsFile {
         int? descLine;
         String description = "";
 
-        // 解析 “IP 域名 # 描述”
+        Map<String, dynamic> config = {};
+
+        // 解析 “IP 域名 # 描述[ # 配置]”
         List<String> lineDescription = line.contains(RegExp(r"\s+#\s?"))
             ? line
                 .split(RegExp(r"\s+#\s?"))
@@ -175,8 +171,20 @@ class HostsFile {
             : [];
 
         if (lineDescription.isNotEmpty) {
-          description = lineDescription.sublist(1).join("#");
-          descLine = i;
+          final String temp = lineDescription.sublist(1).join("#");
+          final RegExp regExp = RegExp(r"- config \{([^{}]*)\}");
+
+          final String tempDescription = temp.replaceFirst(regExp, "");
+          if (tempDescription.trim().isNotEmpty) {
+            description = tempDescription;
+            descLine = i;
+          }
+
+          // 解析配置
+          final RegExpMatch? match = regExp.firstMatch(temp);
+          if (match != null) {
+            config = jsonDecode("{${match.group(1)}}");
+          }
 
           hosts = lineDescription.first
               .replaceFirst("#", "")
@@ -196,8 +204,8 @@ class HostsFile {
           }
         }
 
-        tempHosts.add(HostsModel(
-            host, !line.startsWith(RegExp(r"^\s?#")), description, hosts, {},
+        tempHosts.add(HostsModel(host, !line.startsWith(RegExp(r"^\s?#")),
+            description, hosts, config,
             hostLine: i, descLine: descLine));
       }
     }
@@ -213,7 +221,7 @@ class HostsFile {
     isUpdateHost();
   }
 
-  updateHostUseState(List<HostsModel> hosts){
+  updateHostUseState(List<HostsModel> hosts) {
     for (var model in hosts) {
       final List<String> newLine = model.toString().split("\n");
 

@@ -44,6 +44,12 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
       hostsFile.formString(widget.fileContent);
       hostsFile.defaultContent = widget.fileContent;
     });
+    _textEditingController.addListener(() {
+      setState(() {
+        hostsFile.formString(_textEditingController.text);
+        hostsFile.isUpdateHost();
+      });
+    });
     super.initState();
   }
 
@@ -174,6 +180,7 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
                           child: SelectableText(hostContent),
                         ),
                         actions: [
+                          // TODO 注意：命令执行漏洞
                           TextButton(
                               onPressed: () => writeClipboard(
                                     'echo "$hostContent" > /etc/hosts',
@@ -276,7 +283,10 @@ class _SimpleHomePageState extends State<SimpleHomePage> {
                   final Map<String, List<String>>? result =
                       await linkDialog(context, hostsFile.hosts, host);
                   if (result == null) return;
-                  host.config = result;
+                  setState(() {
+                    host.config = result;
+                    hostsFile.updateHost(index, host);
+                  });
                 },
                 onEdit: (index, host) async {
                   List<HostsModel>? hostsModels =
