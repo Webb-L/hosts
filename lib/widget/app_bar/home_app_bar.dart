@@ -66,70 +66,82 @@ class HomeAppBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Row(
             children: [
-              if (GlobalSettings().isSimple)
-                IconButton(
-                  onPressed: () async {
-                    FilePickerResult? result =
-                        await FilePicker.platform.pickFiles();
-                    if (result == null) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(const SnackBar(content: Text("请选择文件")));
-                      return;
-                    }
+              Expanded(
+                child: Row(
+                  children: [
+                    if (GlobalSettings().isSimple)
+                      IconButton(
+                        onPressed: () async {
+                          FilePickerResult? result =
+                              await FilePicker.platform.pickFiles();
+                          if (result == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("请选择文件")));
+                            return;
+                          }
 
-                    print(result.files.single);
+                          print(result.files.single);
 
-                    if (result.files.first.size > 10 * 1024 * 1024) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("读取文件不能大于10MB")));
-                      return;
-                    }
+                          if (result.files.first.size > 10 * 1024 * 1024) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("读取文件不能大于10MB")));
+                            return;
+                          }
 
-                    try {
-                      String path = "";
-                      try {
-                        path = result.files.single.path ?? "";
-                      } catch (e) {
-                        path = "";
-                      }
-                      final Uint8List? bytes = result.files.first.bytes;
-                      if (path.isNotEmpty && bytes == null) {
-                        onOpenFile(File(path).readAsStringSync());
-                      }
+                          try {
+                            String path = "";
+                            try {
+                              path = result.files.single.path ?? "";
+                            } catch (e) {
+                              path = "";
+                            }
+                            final Uint8List? bytes = result.files.first.bytes;
+                            if (path.isNotEmpty && bytes == null) {
+                              onOpenFile(File(path).readAsStringSync());
+                            }
 
-                      if (path.isEmpty && bytes != null) {
-                        onOpenFile(utf8.decode(bytes));
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("文件读取失败")));
-                    }
-                  },
-                  icon: const Icon(Icons.file_open_outlined),
-                  tooltip: "打开文件",
-                )
-              else
-                IconButton(
-                  onPressed: () {
-                    onSwitchAdvancedSettings(
-                      advancedSettingsEnum == AdvancedSettingsEnum.Close
-                          ? AdvancedSettingsEnum.Open
-                          : AdvancedSettingsEnum.Close,
-                    );
-                  },
-                  icon: const Icon(Icons.settings),
-                  tooltip: AppLocalizations.of(context)!.advanced_settings,
+                            if (path.isEmpty && bytes != null) {
+                              onOpenFile(utf8.decode(bytes));
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("文件读取失败")));
+                          }
+                        },
+                        icon: const Icon(Icons.file_open_outlined),
+                        tooltip: "打开文件",
+                      )
+                    else
+                      IconButton(
+                        onPressed: () {
+                          onSwitchAdvancedSettings(
+                            advancedSettingsEnum == AdvancedSettingsEnum.Close
+                                ? AdvancedSettingsEnum.Open
+                                : AdvancedSettingsEnum.Close,
+                          );
+                        },
+                        icon: const Icon(Icons.settings),
+                        tooltip:
+                            AppLocalizations.of(context)!.advanced_settings,
+                      ),
+                    const SizedBox(width: 10),
+                    if (editMode == EditMode.Table)
+                      Flexible(
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 430,
+                            minWidth: 100,
+                          ),
+                          child: SearchTextField(
+                            text: searchText,
+                            onChanged: onSearchChanged,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              const SizedBox(width: 10),
-              if (editMode == EditMode.Table)
-                SizedBox(
-                  width: 430,
-                  child: SearchTextField(
-                    text: searchText,
-                    onChanged: onSearchChanged,
-                  ),
-                ),
-              const Expanded(child: SizedBox()),
+              ),
+              const SizedBox(width: 32),
               Row(
                 children: [
                   batchGroupButton(context),

@@ -3,28 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
-import 'package:hosts/widget/error/error_empty.dart';
+import 'package:hosts/widget/host_base_view.dart';
 
-class HostTable extends StatelessWidget {
-  final List<HostsModel> hosts;
-  final List<HostsModel> selectHosts;
-  final Function(int, HostsModel) onEdit;
-  final Function(int, HostsModel) onLink;
-  final Function(int, HostsModel) onChecked;
-  final Function(List<HostsModel>) onDelete;
-  final Function(List<HostsModel>) onToggleUse;
-  final Function(String) onLaunchUrl;
-
+class HostTable extends HostBaseView {
   const HostTable({
     super.key,
-    required this.hosts,
-    required this.selectHosts,
-    required this.onChecked,
-    required this.onEdit,
-    required this.onLink,
-    required this.onDelete,
-    required this.onToggleUse,
-    required this.onLaunchUrl,
+    required super.hosts,
+    required super.selectHosts,
+    required super.onEdit,
+    required super.onLink,
+    required super.onChecked,
+    required super.onDelete,
+    required super.onToggleUse,
+    required super.onLaunchUrl,
   });
 
   List<TableRow> tableBody(BuildContext context) {
@@ -190,26 +181,17 @@ class HostTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (hosts.isEmpty) {
-      return Container(
-        alignment: Alignment.center,
-        width: double.maxFinite,
-        height: double.maxFinite,
-        child: const ErrorEmpty(),
-      );
-    } else {
-      return SingleChildScrollView(
-        child: Table(
-          columnWidths: const {
-            0: FixedColumnWidth(50),
-            2: FixedColumnWidth(100),
-            3: FlexColumnWidth(2),
-            5: FixedColumnWidth(150),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          children: tableBody(context),
-        ),
-      );
-    }
+    return SingleChildScrollView(
+      child: Table(
+        columnWidths: const {
+          0: FixedColumnWidth(50),
+          2: FixedColumnWidth(100),
+          3: FlexColumnWidth(2),
+          5: FixedColumnWidth(150),
+        },
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        children: tableBody(context),
+      ),
+    );
   }
 }
