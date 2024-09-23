@@ -29,7 +29,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
   @override
   void initState() {
-    (()async{
+    (() async {
       loadHostFiles(await _settingsManager.getBool(settingKeyFirstOpenApp));
     })();
     super.initState();
@@ -59,9 +59,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
         continue;
       }
 
-      if (hostFile.fileName==await _settingsManager.getString(settingKeyUseHostFile)) {
-        widget.onChanged(
-            await _fileManager.getHostsFilePath(hostFile.fileName),
+      if (hostFile.fileName ==
+          await _settingsManager.getString(settingKeyUseHostFile)) {
+        widget.onChanged(await _fileManager.getHostsFilePath(hostFile.fileName),
             hostFile.fileName);
       }
     }

@@ -15,16 +15,16 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   final Iterable<String> files = args.where((path) => File(path).existsSync());
   if (files.isNotEmpty) {
-    runApp(MyApp(fileContent: File(files.first).readAsStringSync()));
+    runApp(MyApp(filePath: files.first));
   } else {
-    runApp(const MyApp(fileContent: ""));
+    runApp(const MyApp(filePath: ""));
   }
 }
 
 class MyApp extends StatelessWidget {
-  final String fileContent;
+  final String filePath;
 
-  const MyApp({super.key, required this.fileContent});
+  const MyApp({super.key, required this.filePath});
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +48,9 @@ class MyApp extends StatelessWidget {
   }
 
   Widget platformSpecificWidget(BuildContext context) {
-    GlobalSettings().isSimple = kIsWeb || fileContent.isNotEmpty;
+    GlobalSettings().isSimple = kIsWeb || filePath.isNotEmpty;
     if (GlobalSettings().isSimple) {
-      return SimpleHomePage(fileContent: fileContent);
+      return SimpleHomePage(filePath: filePath);
     } else {
       return FutureBuilder<void>(
         future: initializeApp(context),

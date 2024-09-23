@@ -5,13 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/page/home_base_page.dart';
+import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class SimpleHomePage extends BaseHomePage {
-  final String fileContent;
+  final String filePath;
 
-  const SimpleHomePage({super.key, required this.fileContent});
+  const SimpleHomePage({super.key, required this.filePath});
 
   @override
   _SimpleHomePageState createState() => _SimpleHomePageState();
@@ -20,9 +22,10 @@ class SimpleHomePage extends BaseHomePage {
 class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
   @override
   void initState() {
+    final String fileContent = File(widget.filePath).readAsStringSync();
     setState(() {
-      hostsFile.formString(widget.fileContent);
-      hostsFile.defaultContent = widget.fileContent;
+      hostsFile.formString(fileContent);
+      hostsFile.defaultContent = fileContent;
       filterHosts.clear();
       filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
     });
@@ -86,7 +89,7 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
         TextButton(
           onPressed: () async {
             final String hostContent = hostsFile.toString();
-            if (!kIsWeb) {
+            if (kIsWeb) {
               showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -137,25 +140,31 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
               return;
             }
 
-            final File file = File("/etc/hosts");
+            final File file = File(widget.filePath);
 
             try {
-              file.writeAsStringSync("", mode: FileMode.append);
+              await file.writeAsString(hostContent);
             } on PathAccessException catch (e) {
-              print(e);
+              try {
+                final Directory cacheDirectory =
+                    await getApplicationCacheDirectory();
+                final File cacheFile =
+                    File(p.join(cacheDirectory.path, 'hosts'));
+                await cacheFile.writeAsString(hostContent);
+
+                FileManager().writeFileWithAdminPrivileges(
+                    cacheFile.path, widget.filePath);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content:
+                        Text(AppLocalizations.of(context)!.error_save_fail)));
+                return;
+              }
             }
-            print(await File("/etc/hosts")
-                .writeAsString("", mode: FileMode.append));
-            try {
-              // await _fileManager.saveToHosts(hostsFile.toString());
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content:
-                      Text(AppLocalizations.of(context)!.error_save_fail)));
-              return;
-            }
+
             setState(() {
-              // hostsFile.save();
+              hostsFile.defaultContent = hostContent;
+              hostsFile.isUpdateHost();
             });
           },
           child: Text(AppLocalizations.of(context)!.save),

@@ -166,34 +166,7 @@ class FileManager {
 
     await cacheFile.writeAsString(content);
 
-    final Process process = await Process.start(
-      "pkexec",
-      ["cp", cacheFile.path, systemHostFilePath],
-      mode: ProcessStartMode.normal,
-    );
-
-    // 处理标准输出
-    String result = "";
-    process.stdout.transform(utf8.decoder).listen((data) {
-      print('Output: $data');
-      result = data;
-    });
-
-    // 处理标准错误
-    String errorMessage = "";
-    process.stderr.transform(utf8.decoder).listen((data) {
-      errorMessage = data;
-    });
-
-    // 等待进程结束
-    int exitCode = await process.exitCode;
-
-    // 检查退出代码，如果非零则抛出异常
-    if (errorMessage.isNotEmpty) {
-      throw Exception(errorMessage);
-    }
-
-    return result;
+    return writeFileWithAdminPrivileges(cacheFile.path, systemHostFilePath);
   }
 
   void deleteFile(String path) {
@@ -229,5 +202,40 @@ class FileManager {
         .replaceAll("	", "");
     // 比较内容
     return content1 == content2;
+  }
+
+  Future<String> writeFileWithAdminPrivileges(
+      String cacheFilePath, String systemHostFilePath) async {
+    String result = "";
+
+    if (Platform.isLinux) {
+      final Process process = await Process.start(
+        "pkexec",
+        ["cp", cacheFilePath, systemHostFilePath],
+        mode: ProcessStartMode.normal,
+      );
+
+      // 处理标准输出
+      process.stdout.transform(utf8.decoder).listen((data) {
+        print('Output: $data');
+        result = data;
+      });
+
+      // 处理标准错误
+      String errorMessage = "";
+      process.stderr.transform(utf8.decoder).listen((data) {
+        errorMessage = data;
+      });
+
+      // 等待进程结束
+      int exitCode = await process.exitCode;
+
+      // 检查退出代码，如果非零则抛出异常
+      if (errorMessage.isNotEmpty) {
+        throw Exception(errorMessage);
+      }
+    }
+
+    return result;
   }
 }

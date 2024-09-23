@@ -83,16 +83,18 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   /// 切换编辑模式
   /// [value] 是新的编辑模式
   onSwitchMode(EditMode value) {
-    if (editMode == EditMode.Text) {
-      editMode = EditMode.Table;
-      hostsFile.formString(textEditingController.text);
-      selectHosts.clear();
-      updateFilterHosts();
-    } else {
-      editMode = EditMode.Text;
-      textEditingController.value =
-          TextEditingValue(text: hostsFile.toString());
-    }
+    setState(() {
+      if (editMode == EditMode.Text) {
+        editMode = EditMode.Table;
+        hostsFile.formString(textEditingController.text);
+        selectHosts.clear();
+        updateFilterHosts();
+      } else {
+        editMode = EditMode.Text;
+        textEditingController.value =
+            TextEditingValue(text: hostsFile.toString());
+      }
+    });
   }
 
   /// 处理删除操作
