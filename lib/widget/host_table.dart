@@ -22,6 +22,11 @@ class HostTable extends HostBaseView {
     return hosts.asMap().entries.map((entry) {
       final int index = entry.key;
       final it = entry.value;
+
+      bool isLink = false;
+      if (it.config.isNotEmpty) {
+        isLink = it.config["same"] != null && it.config["contrary"] != null;
+      }
       return TableRow(children: [
         Checkbox(
           value: selectHosts.contains(it),
@@ -31,13 +36,27 @@ class HostTable extends HostBaseView {
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
             onTap: () => onLaunchUrl(it.host),
-            child: Text(
-              it.host,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Text.rich(TextSpan(
+              children: [
+                if (isLink)
+                  WidgetSpan(
+                      child: Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      Icons.link,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 18,
+                    ),
+                  )),
+                TextSpan(
+                  text: it.host,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              ],
+            )),
           ),
         ),
         Align(

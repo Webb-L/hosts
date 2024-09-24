@@ -177,7 +177,6 @@ class HostsFile {
           final String tempDescription = temp.replaceFirst(regExp, "");
           if (tempDescription.trim().isNotEmpty) {
             description = tempDescription;
-            descLine = i;
           }
 
           // 解析配置

@@ -263,7 +263,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       );
     }
 
-    if (MediaQuery.of(context).size.width >= 1280) {
+    if (MediaQuery.of(context).size.width >= 1000) {
       return Expanded(
         child: HostTable(
           hosts: filterHosts,
