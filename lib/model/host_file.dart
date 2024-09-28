@@ -260,11 +260,6 @@ class HostsFile {
     if (model.descLine == null && model.description.isNotEmpty) {
       _lines.insert(model.hostLine!, "# ${model.description}");
     }
-    if (model.descLine != null &&
-        model.descLine == model.hostLine &&
-        model.description.isNotEmpty) {
-      _lines.insert(model.hostLine!, "# ${model.description}");
-    }
 
     // 移除备注
     if (model.descLine != null && model.description.isEmpty) {

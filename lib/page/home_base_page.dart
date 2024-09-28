@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
@@ -7,6 +8,7 @@ import 'package:hosts/widget/dialog/link_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
 import 'package:hosts/widget/host_list.dart';
 import 'package:hosts/widget/host_table.dart';
+import 'package:hosts/widget/host_text_editing_controller.dart';
 import 'package:hosts/widget/snakbar.dart';
 
 abstract class BaseHomePage extends StatefulWidget {
@@ -33,7 +35,10 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
     "description": null,
   };
   SimpleHostFileHistory? selectHistory;
-  final TextEditingController textEditingController = TextEditingController();
+  final HostTextEditingController textEditingController =
+      HostTextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool isControl = false;
 
   @override
   void dispose() {
@@ -243,10 +248,78 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.only(left: 16),
-          child: TextField(
-            controller: textEditingController,
-            maxLines: double.maxFinite.toInt(),
-            decoration: const InputDecoration(border: InputBorder.none),
+          child: Column(
+            children: [
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, right: 8),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: List.generate(
+                              textEditingController.text.split("\n").length,
+                              (index) => Text(
+                                    "${index + 1}",
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
+                                  )),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: KeyboardListener(
+                        focusNode: _focusNode,
+                        onKeyEvent: (event) {
+                          if ([
+                            LogicalKeyboardKey.controlLeft,
+                            LogicalKeyboardKey.controlRight
+                          ].contains(event.logicalKey)) {
+                            if (isControl) {
+                              isControl = false;
+                            } else {
+                              isControl = true;
+                            }
+                          }
+                          if (event.logicalKey == LogicalKeyboardKey.slash &&
+                              isControl &&
+                              event is KeyDownEvent) {
+                            textEditingController.updateUseStatus();
+                          }
+
+                          if (event.logicalKey == LogicalKeyboardKey.keyS &&
+                              isControl &&
+                              event is KeyDownEvent) {
+                            print("保存");
+                          }
+                        },
+                        child: TextField(
+                          controller: textEditingController,
+                          maxLines: double.maxFinite.toInt(),
+                          decoration:
+                              const InputDecoration(border: InputBorder.none),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Text(
+                        "总行数：${textEditingController.countNewlines(textEditingController.text) + 1}"),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    Text(
+                        "当前行：${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}")
+                  ],
+                ),
+              )
+            ],
           ),
         ),
       );
