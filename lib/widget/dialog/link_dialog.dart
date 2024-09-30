@@ -160,21 +160,25 @@ Widget _buildHostList(BuildContext context, List<String> hosts,
 
 RichText _buildTitle(HostsModel host, String text, BuildContext context) {
   return RichText(
-    text: TextSpan(text: "当 ", children: [
-      TextSpan(
-        text: host.host,
-        style: TextStyle(
-            fontWeight: FontWeight.w900,
-            color: Theme.of(context).colorScheme.primary),
-      ),
-      const TextSpan(text: " 状态变化时，下列数据切换为"),
-      TextSpan(
-        text: " $text ",
-        style: TextStyle(
-            fontWeight: FontWeight.w900,
-            color: Theme.of(context).colorScheme.primary),
-      ),
-      const TextSpan(text: "状态：")
-    ]),
+    text: TextSpan(
+      text: "当 ",
+      children: [
+        TextSpan(
+          text: host.host,
+          style: TextStyle(
+              fontWeight: FontWeight.w900,
+              color: Theme.of(context).colorScheme.primary),
+        ),
+        const TextSpan(text: " 状态变化时，下列数据切换为"),
+        TextSpan(
+          text: " $text ",
+          style: TextStyle(
+              fontWeight: FontWeight.w900,
+              color: Theme.of(context).colorScheme.primary),
+        ),
+        const TextSpan(text: "状态："),
+      ],
+      style: Theme.of(context).textTheme.bodyMedium,
+    ),
   );
 }

@@ -75,8 +75,6 @@ class HomeAppBar extends StatelessWidget {
                           FilePickerResult? result =
                               await FilePicker.platform.pickFiles();
                           if (result == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("请选择文件")));
                             return;
                           }
 
@@ -120,10 +118,11 @@ class HomeAppBar extends StatelessWidget {
                                 : AdvancedSettingsEnum.Close,
                           );
                         },
-                        icon: const Icon(Icons.settings),
+                        icon: const Icon(Icons.menu),
                         tooltip:
                             AppLocalizations.of(context)!.advanced_settings,
                       ),
+                    _buildEditModeButton(context),
                     const SizedBox(width: 10),
                     if (editMode == EditMode.Table)
                       Flexible(
@@ -172,7 +171,8 @@ class HomeAppBar extends StatelessWidget {
                       tooltip: AppLocalizations.of(context)!.reduction,
                     ),
                   const SizedBox(width: 16),
-                  _buildEditModeButton(context),
+                  IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.settings)),
                 ],
               )
             ],

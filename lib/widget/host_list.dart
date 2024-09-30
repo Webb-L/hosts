@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
+import 'package:hosts/widget/dialog/test_dialog.dart';
 import 'package:hosts/widget/host_base_view.dart';
 
 class HostList extends HostBaseView {
@@ -26,44 +28,37 @@ class HostList extends HostBaseView {
         return InkWell(
           onTap: () => onEdit(index, it),
           child: ListItem(
-              overline: it.description,
-              status: Switch(
-                value: it.isUse,
-                onChanged: (value) {
-                  it.isUse = value;
+            host: it,
+            onSwitchChanged: (value) {
+              it.isUse = value;
 
-                  final List<HostsModel> updateUseHosts = [it];
-                  void updateHostStates(List<String> hostNames, bool isUse) {
-                    for (var tempHost in hosts
-                        .where((item) => hostNames.contains(item.host))) {
-                      tempHost.isUse = isUse;
-                      updateUseHosts.add(tempHost);
-                    }
-                  }
+              final List<HostsModel> updateUseHosts = [it];
+              void updateHostStates(List<String> hostNames, bool isUse) {
+                for (var tempHost
+                    in hosts.where((item) => hostNames.contains(item.host))) {
+                  tempHost.isUse = isUse;
+                  updateUseHosts.add(tempHost);
+                }
+              }
 
-                  // 相同
-                  if (it.config["same"] != null) {
-                    updateHostStates(
-                        (it.config["same"] as List<dynamic>).cast<String>(),
-                        value);
-                  }
-                  // 相反
-                  if (it.config["contrary"] != null) {
-                    updateHostStates(
-                        (it.config["contrary"] as List<dynamic>).cast<String>(),
-                        !value);
-                  }
+              // 相同
+              if (it.config["same"] != null) {
+                updateHostStates(
+                    (it.config["same"] as List<dynamic>).cast<String>(), value);
+              }
+              // 相反
+              if (it.config["contrary"] != null) {
+                updateHostStates(
+                    (it.config["contrary"] as List<dynamic>).cast<String>(),
+                    !value);
+              }
 
-                  onToggleUse(updateUseHosts);
-                },
-              ),
-              title: it.host,
-              subtitle: it.hosts.join(" - "),
-              leading: Checkbox(
-                value: selectHosts.contains(it),
-                onChanged: (bool? newValue) => onChecked(index, it),
-              ),
-              trailing: buildMoreButton(context, index, it)),
+              onToggleUse(updateUseHosts);
+            },
+            onCheckChanged: (value) => onChecked(index, it),
+            trailing: buildMoreButton(context, index, it),
+            isChecked: selectHosts.contains(it),
+          ),
         );
       },
     );
@@ -71,19 +66,18 @@ class HostList extends HostBaseView {
 
   Widget buildMoreButton(BuildContext context, int index, HostsModel host) {
     return PopupMenuButton<int>(
-      style: OutlinedButton.styleFrom(
-        minimumSize: Size.zero,
-        padding: EdgeInsets.zero,
-      ),
       onSelected: (value) async {
         switch (value) {
           case 1:
             onLink(index, host);
             break;
           case 2:
-            copyDialog(context, hosts, index);
+            testDialog(context, host);
             break;
           case 3:
+            copyDialog(context, hosts, index);
+            break;
+          case 4:
             onDelete([host]);
             break;
         }
@@ -98,12 +92,13 @@ class HostList extends HostBaseView {
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
           {"icon": Icons.link, "text": "关联", "value": 1},
+          {"icon": Icons.sensors, "text": "测试", "value": 2},
           {
             "icon": Icons.copy,
             "text": AppLocalizations.of(context)!.copy,
-            "value": 2
+            "value": 3
           },
-          {"icon": Icons.delete_outline, "text": "删除", "value": 3},
+          {"icon": Icons.delete_outline, "text": "删除", "value": 4},
         ];
 
         return list.map((item) {
@@ -124,62 +119,113 @@ class HostList extends HostBaseView {
 }
 
 class ListItem extends StatelessWidget {
-  final Widget leading;
-  final Widget status;
-  final String overline;
-  final String title;
-  final String subtitle;
+  final bool isChecked;
+  final HostsModel host;
+  final ValueChanged<bool> onSwitchChanged;
+  final ValueChanged<bool?> onCheckChanged;
   final Widget trailing;
 
-  const ListItem({
-    super.key,
-    required this.leading,
-    required this.status,
-    required this.overline,
-    required this.title,
-    required this.subtitle,
-    required this.trailing,
-  });
+  const ListItem(
+      {super.key,
+      required this.host,
+      required this.onSwitchChanged,
+      required this.onCheckChanged,
+      required this.isChecked,
+      required this.trailing});
 
   @override
   Widget build(BuildContext context) {
+    bool isLink = false;
+    if (host.config.isNotEmpty) {
+      isLink = host.config["same"] != null && host.config["contrary"] != null;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          leading,
+          Checkbox(
+            value: isChecked,
+            onChanged: onCheckChanged,
+          ),
           const SizedBox(width: 16),
-          status,
+          Switch(
+            value: host.isUse,
+            onChanged: onSwitchChanged,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                if (overline.isNotEmpty)
+                if (host.description.isNotEmpty)
                   Text(
-                    overline,
+                    host.description,
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 const SizedBox(height: 4.0),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text.rich(TextSpan(
+                  children: [
+                    if (isLink)
+                      WidgetSpan(
+                          child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Icon(
+                          Icons.link,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 18,
+                        ),
+                      )),
+                    TextSpan(
+                      text: host.host,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold),
+                    )
+                  ],
+                )),
                 const SizedBox(height: 4.0),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text.rich(TextSpan(
+                    children: _buildTextSpans(host.hosts, context),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.6),
+                        fontWeight: FontWeight.bold))),
               ],
             ),
           ),
           const SizedBox(width: 16),
           trailing,
-          const SizedBox(width: 7),
         ],
       ),
     );
+  }
+
+  List<InlineSpan> _buildTextSpans(List<String> hosts, BuildContext context) {
+    List<InlineSpan> textSpans = [];
+
+    for (int i = 0; i < hosts.length; i++) {
+      textSpans.add(TextSpan(
+        text: hosts[i],
+        recognizer: TapGestureRecognizer()
+          ..onTap = () {
+            // onLaunchUrl(hosts[i]);
+          },
+      ));
+
+      if (i < hosts.length - 1) {
+        textSpans.add(TextSpan(
+            text: ' - ',
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.inverseSurface,
+                fontWeight: FontWeight.w900)));
+      }
+    }
+
+    return textSpans;
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
+import 'package:hosts/widget/dialog/test_dialog.dart';
 import 'package:hosts/widget/host_base_view.dart';
 
 class HostTable extends HostBaseView {
@@ -161,6 +162,9 @@ class HostTable extends HostBaseView {
             onLink(index, host);
             break;
           case 2:
+            testDialog(context, host);
+            break;
+          case 3:
             copyDialog(context, hosts, index);
             break;
         }
@@ -175,10 +179,11 @@ class HostTable extends HostBaseView {
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
           {"icon": Icons.link, "text": "关联", "value": 1},
+          {"icon": Icons.sensors, "text": "测试", "value": 2},
           {
             "icon": Icons.copy,
             "text": AppLocalizations.of(context)!.copy,
-            "value": 2
+            "value": 3
           },
         ];
 
