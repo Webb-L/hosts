@@ -22,13 +22,15 @@ class SimpleHomePage extends BaseHomePage {
 class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
   @override
   void initState() {
-    final String fileContent = File(widget.filePath).readAsStringSync();
-    setState(() {
-      hostsFile.formString(fileContent);
-      hostsFile.defaultContent = fileContent;
-      filterHosts.clear();
-      filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
-    });
+    if (widget.filePath.isNotEmpty) {
+      final String fileContent = File(widget.filePath).readAsStringSync();
+      setState(() {
+        hostsFile.formString(fileContent);
+        hostsFile.defaultContent = fileContent;
+        filterHosts.clear();
+        filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
+      });
+    }
     textEditingController.addListener(() {
       setState(() {
         hostsFile.formString(textEditingController.text);
