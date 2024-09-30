@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hosts/enums.dart';
@@ -40,9 +42,25 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   final FocusNode _focusNode = FocusNode();
   bool isControl = false;
 
+  final ScrollController _scrollController = ScrollController();
+  final ScrollController _textScrollController = ScrollController();
+
+  final GlobalKey _textFieldContainerKey = GlobalKey();
+
+  @override
+  void initState() {
+    _textScrollController.addListener(() {
+      if (_textScrollController.hasClients) {
+        _scrollController.jumpTo(_textScrollController.offset);
+      }
+    });
+    super.initState();
+  }
+
   @override
   void dispose() {
     super.dispose();
+    _scrollController.dispose();
     textEditingController.dispose();
   }
 
@@ -246,81 +264,69 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   Widget buildHostTableOrTextEdit(List<HostsModel> filterHosts) {
     if (editMode == EditMode.Text) {
       return Expanded(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Column(
-            children: [
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4, right: 8),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: List.generate(
-                              textEditingController.text.split("\n").length,
-                              (index) => Text(
-                                    "${index + 1}",
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  )),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: KeyboardListener(
-                        focusNode: _focusNode,
-                        onKeyEvent: (event) {
-                          if ([
-                            LogicalKeyboardKey.controlLeft,
-                            LogicalKeyboardKey.controlRight
-                          ].contains(event.logicalKey)) {
-                            if (isControl) {
-                              isControl = false;
-                            } else {
-                              isControl = true;
-                            }
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildRowLine(),
+                  Expanded(
+                    key: _textFieldContainerKey,
+                    child: KeyboardListener(
+                      focusNode: _focusNode,
+                      onKeyEvent: (event) {
+                        if ([
+                          LogicalKeyboardKey.controlLeft,
+                          LogicalKeyboardKey.controlRight
+                        ].contains(event.logicalKey)) {
+                          if (isControl) {
+                            isControl = false;
+                          } else {
+                            isControl = true;
                           }
-                          if (event.logicalKey == LogicalKeyboardKey.slash &&
-                              isControl &&
-                              event is KeyDownEvent) {
-                            textEditingController.updateUseStatus();
-                          }
+                        }
+                        if (event.logicalKey == LogicalKeyboardKey.slash &&
+                            isControl &&
+                            event is KeyDownEvent) {
+                          textEditingController
+                              .updateUseStatus(textEditingController.selection);
+                        }
 
-                          if (event.logicalKey == LogicalKeyboardKey.keyS &&
-                              isControl &&
-                              event is KeyDownEvent) {
-                            print("保存");
-                          }
-                        },
-                        child: TextField(
-                          controller: textEditingController,
-                          maxLines: double.maxFinite.toInt(),
-                          decoration:
-                              const InputDecoration(border: InputBorder.none),
-                        ),
+                        if (event.logicalKey == LogicalKeyboardKey.keyS &&
+                            isControl &&
+                            event is KeyDownEvent) {
+                          print("保存");
+                        }
+                      },
+                      child: TextField(
+                        controller: textEditingController,
+                        scrollController: _textScrollController,
+                        maxLines: double.maxFinite.toInt(),
+                        decoration:
+                            const InputDecoration(border: InputBorder.none),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Text(
-                        "总行数：${textEditingController.countNewlines(textEditingController.text) + 1}"),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Text(
-                        "当前行：${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}")
-                  ],
-                ),
-              )
-            ],
-          ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              child: Row(
+                children: [
+                  Text(
+                    "当前行：${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}",
+                  ),
+                  const SizedBox(
+                    width: 8,
+                  ),
+                  Text(
+                      "总行数：${textEditingController.countNewlines(textEditingController.text) + 1}"),
+                ],
+              ),
+            )
+          ],
         ),
       );
     }
@@ -373,5 +379,121 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
         ),
       );
     }
+  }
+
+  Widget buildRowLine() {
+    double textFieldContainerWidth = 0;
+    final RenderBox? renderBox =
+        _textFieldContainerKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      textFieldContainerWidth = renderBox.size.width;
+    }
+    final TextStyle? titleMedium = Theme.of(context).textTheme.titleMedium;
+    final TextSelection textSelection = textEditingController.selection;
+    final List<String> lines = textEditingController.lines;
+    final String text = textEditingController.text;
+
+    final double fontSize = (titleMedium?.fontSize ?? 0);
+    final double containerWidth =
+        "${lines.length}".length * fontSize + fontSize;
+
+    final Set<int> selectedLine = {};
+    final String startText = text.substring(0, max(0, textSelection.start));
+    final int startLineIndex = textEditingController.countNewlines(startText);
+    final int endLineIndex = textEditingController.countNewlines(
+        text.substring(0, max(0, min(textSelection.end, text.length))));
+
+    for (int i = startLineIndex; i <= endLineIndex; i++) {
+      selectedLine.add(i);
+    }
+
+    return Container(
+      width: containerWidth,
+      padding: const EdgeInsets.only(top: 4),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        controller: _scrollController,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: List.generate(lines.length, (index) {
+            final String line = lines[index];
+
+            final TextPainter textPainter = TextPainter(
+              text: TextSpan(
+                text: line,
+                style: titleMedium,
+              ),
+              textDirection: TextDirection.ltr,
+            )..layout();
+
+            final double width = textPainter.width + fontSize;
+
+            if (width >= textFieldContainerWidth &&
+                textFieldContainerWidth > 0) {
+              return buildIndexedLineContainer(
+                containerWidth,
+                selectedLine.contains(index),
+                "${index + 1}${List.generate((width / textFieldContainerWidth).ceil() - 1, (it) => "\n").join("")}",
+                line,
+                () {
+                  final int length =
+                      lines.sublist(0, index + 1).join("\n").length;
+                  textEditingController.updateUseStatus(textSelection.copyWith(
+                      baseOffset: length, extentOffset: length));
+                },
+              );
+            }
+
+            return buildIndexedLineContainer(
+              containerWidth,
+              selectedLine.contains(index),
+              "${index + 1}",
+              line,
+              () {
+                final int length =
+                    lines.sublist(0, index + 1).join("\n").length;
+                textEditingController.updateUseStatus(textSelection.copyWith(
+                    baseOffset: length, extentOffset: length));
+              },
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget buildIndexedLineContainer(double containerWidth, bool isSelected,
+      String text, String line, GestureTapCallback? onTap) {
+    final TextStyle? titleMedium = Theme.of(context).textTheme.titleMedium;
+    final double fontSize = (titleMedium?.fontSize ?? 0);
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 8),
+        width: containerWidth,
+        color: isSelected ? Theme.of(context).colorScheme.inversePrimary : null,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                const SizedBox(height: 2),
+                if (RegExp(r"# - config \{([^{}]*)\}").hasMatch(line) &&
+                    !line.startsWith("#"))
+                  Opacity(
+                    opacity: 0.3,
+                    child: Icon(Icons.link, size: fontSize),
+                  ),
+                const SizedBox(height: 2),
+              ],
+            ),
+            Text(text, style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
+      ),
+    );
   }
 }

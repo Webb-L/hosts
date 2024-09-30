@@ -6,6 +6,8 @@ import 'package:hosts/util/regexp_util.dart';
 class HostTextEditingController extends TextEditingController {
   final List<String> lines = [];
 
+  int currLine = 0;
+
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
@@ -15,17 +17,28 @@ class HostTextEditingController extends TextEditingController {
     lines.clear();
     lines.addAll(text.split("\n"));
 
+    this.currLine = countNewlines(
+        text.substring(0, selection.start > 0 ? selection.start : 0));
+
     final children = <TextSpan>[];
 
     final Color errorColor = Theme.of(context).colorScheme.error;
-    final Color onPrimaryContainerColor =
-        Theme.of(context).colorScheme.onPrimaryContainer;
+    final Color onPrimaryContainerColor = Theme.of(context).colorScheme.primary;
     final Color outlineColor = Theme.of(context).colorScheme.outline;
     final Color primaryContainerColor =
         Theme.of(context).colorScheme.primaryContainer;
 
-    final TextStyle annotationStyle = TextStyle(color: outlineColor);
-    final TextStyle hostStyle = TextStyle(color: onPrimaryContainerColor);
+    final double fontSize =
+        Theme.of(context).textTheme.titleMedium?.fontSize ?? 0;
+
+    final TextStyle annotationStyle = TextStyle(
+      color: outlineColor,
+      fontSize: fontSize,
+    );
+    final TextStyle hostStyle = TextStyle(
+        color: onPrimaryContainerColor,
+        fontSize: fontSize,
+        fontWeight: FontWeight.bold);
 
     final RegExp regExpConfig = RegExp(r"# - config \{([^{}]*)\}");
 
@@ -124,13 +137,17 @@ class HostTextEditingController extends TextEditingController {
             text: "$line\n",
             style: TextStyle(
               color: errorColor,
+              fontSize: fontSize,
               backgroundColor:
                   currLine == index ? errorColor.withOpacity(0.1) : null,
             )),
       );
     }
 
-    return TextSpan(style: style, children: children);
+    return TextSpan(
+      style: style?.copyWith(fontSize: fontSize),
+      children: children,
+    );
   }
 
   int countNewlines(String text) {
@@ -138,7 +155,7 @@ class HostTextEditingController extends TextEditingController {
     return text.split(RegExp(r'\r?\n')).length - 1;
   }
 
-  void updateUseStatus() {
+  void updateUseStatus(TextSelection selection) {
     List<Map<String, dynamic>> commentUpdate = [];
     String startText = "";
 
