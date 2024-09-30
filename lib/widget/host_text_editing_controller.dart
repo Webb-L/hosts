@@ -87,10 +87,10 @@ class HostTextEditingController extends TextEditingController {
               ),
             ));
 
-            for (var value in allMatches) {
+            for (var matches in allMatches) {
               children.add(
                 TextSpan(
-                  text: line.substring(value.start, value.end),
+                  text: line.substring(matches.start, matches.end),
                   style: TextStyle(
                     color: primaryContainerColor,
                     backgroundColor: currLine == index
@@ -148,6 +148,13 @@ class HostTextEditingController extends TextEditingController {
       style: style?.copyWith(fontSize: fontSize),
       children: children,
     );
+  }
+
+  @override
+  set value(TextEditingValue newValue) {
+    lines.clear();
+    lines.addAll(newValue.text.split("\n"));
+    super.value = newValue;
   }
 
   int countNewlines(String text) {

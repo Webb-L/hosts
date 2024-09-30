@@ -32,7 +32,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   String searchText = "";
   Map<String, int?> sortConfig = {
     "host": null,
-    "isUse": 1,
+    "isUse": null,
     "hosts": null,
     "description": null,
   };
@@ -463,8 +463,13 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
     );
   }
 
-  Widget buildIndexedLineContainer(double containerWidth, bool isSelected,
-      String text, String line, GestureTapCallback? onTap) {
+  Widget buildIndexedLineContainer(
+    double containerWidth,
+    bool isSelected,
+    String text,
+    String line,
+    GestureTapCallback? onTap,
+  ) {
     final TextStyle? titleMedium = Theme.of(context).textTheme.titleMedium;
     final double fontSize = (titleMedium?.fontSize ?? 0);
     return InkWell(

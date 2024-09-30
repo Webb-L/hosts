@@ -107,6 +107,7 @@ class HostTable extends HostBaseView {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
                 onPressed: () => onEdit(index, it),
@@ -152,10 +153,6 @@ class HostTable extends HostBaseView {
 
   Widget buildMoreButton(BuildContext context, int index, HostsModel host) {
     return PopupMenuButton<int>(
-      style: OutlinedButton.styleFrom(
-        minimumSize: Size.zero,
-        padding: EdgeInsets.zero,
-      ),
       onSelected: (value) async {
         switch (value) {
           case 1:
@@ -169,13 +166,6 @@ class HostTable extends HostBaseView {
             break;
         }
       },
-      // IconButton(
-      //   onPressed: () => onLink(index, it),
-      //   icon: const Icon(Icons.link),
-      //   tooltip: "关联",
-      // ),
-      // const SizedBox(width: 8),
-      // CopyDialog(context: context, hosts: hosts, index: index),
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
           {"icon": Icons.link, "text": "关联", "value": 1},
@@ -211,7 +201,7 @@ class HostTable extends HostBaseView {
           0: FixedColumnWidth(50),
           2: FixedColumnWidth(100),
           3: FlexColumnWidth(2),
-          5: FixedColumnWidth(150),
+          5: FixedColumnWidth(180),
         },
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: tableBody(context),
