@@ -207,9 +207,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
     if (hostsModels == null) return;
     setState(() {
       hostsFile.updateHost(index, hostsModels.first);
-      selectHosts.clear();
-      filterHosts.clear();
-      filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
+      syncFilterHosts();
     });
   }
 
@@ -221,6 +219,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       hosts.map((item) => item.host).toList(),
       () => setState(() {
         hostsFile.deleteMultiple(hosts);
+        syncFilterHosts();
       }),
     );
   }
@@ -230,10 +229,15 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   onToggleUse(List<HostsModel> hosts) {
     setState(() {
       hostsFile.updateHostUseState(hosts);
-      selectHosts.clear();
-      filterHosts.clear();
-      filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
+      syncFilterHosts();
     });
+  }
+
+  /// 同步变更的 Hosts 文件
+  void syncFilterHosts() {
+    selectHosts.clear();
+    filterHosts.clear();
+    filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
   }
 
   /// 构建浮动操作按钮

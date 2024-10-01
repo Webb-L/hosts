@@ -168,12 +168,12 @@ class _HomePageState extends BaseHomePageState<HomePage> {
           }
         }
         setState(() {
-          selectHosts.clear();
           hostsFile = HostsFile(value, fileId);
           if (editMode == EditMode.Text) {
             textEditingController.value =
                 TextEditingValue(text: hostsFile.toString());
           }
+          selectHosts.clear();
           filterHosts.clear();
           filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
         });
