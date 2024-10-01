@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -40,7 +41,7 @@ class HostTextEditingController extends TextEditingController {
         fontSize: fontSize,
         fontWeight: FontWeight.bold);
 
-    final RegExp regExpConfig = RegExp(r"# - config \{([^{}]*)\}");
+    final RegExp regExpConfig = RegExp(r" # - config \{([^{}]*)\}");
 
     final int currLine = countNewlines(
         text.substring(0, selection.start > 0 ? selection.start : 0));
@@ -60,75 +61,97 @@ class HostTextEditingController extends TextEditingController {
       }
 
       // 匹配 127.0.0.1 xxxxxx # xxxxxxx # - config xxxxx
-      if ((isValidIPv4(line) || isValidIPv6(line))) {
-        // 匹配 127.0.0.1 xxxxxxx # xxxxxx # - config xxxx
-        final annotationIndex = line.indexOf("#");
-        if (annotationIndex != -1) {
-          children.add(
-            TextSpan(
-              text: line.substring(0, annotationIndex),
-              style: hostStyle.copyWith(
-                backgroundColor: currLine == index
-                    ? onPrimaryContainerColor.withOpacity(0.1)
-                    : null,
-              ),
+      final Match? match = RegExp(r'^(.*?)#').firstMatch(line);
+      if (match != null &&
+          (isValidIPv4(match.group(0)!) || isValidIPv6(match.group(0)!))) {
+        // 匹配 127.0.0.1 xxxxxxx xxxxx
+        final String host = match.group(0)!.replaceFirst("#", "");
+        children.add(
+          TextSpan(
+            text: host,
+            style: hostStyle.copyWith(
+              backgroundColor: currLine == index
+                  ? onPrimaryContainerColor.withOpacity(0.1)
+                  : null,
             ),
-          );
+          ),
+        );
 
-          final Iterable<RegExpMatch> allMatches =
-              regExpConfig.allMatches(line);
-
-          if (allMatches.isNotEmpty) {
-            children.add(TextSpan(
-              text: line.substring(annotationIndex, allMatches.first.start),
-              style: annotationStyle.copyWith(
-                backgroundColor:
-                    currLine == index ? outlineColor.withOpacity(0.1) : null,
-              ),
-            ));
-
-            for (var matches in allMatches) {
-              children.add(
-                TextSpan(
-                  text: line.substring(matches.start, matches.end),
-                  style: TextStyle(
-                    color: primaryContainerColor,
-                    backgroundColor: currLine == index
-                        ? primaryContainerColor.withOpacity(0.3)
-                        : null,
-                  ),
-                ),
-              );
-            }
-          }
-
-          // 匹配 127.0.0.1 xxxxxx # dsafjslfkdjkfjaskfs
-          if (allMatches.isEmpty) {
-            children.add(TextSpan(
-              text: line.substring(annotationIndex),
-              style: annotationStyle.copyWith(
-                backgroundColor:
-                    currLine == index ? outlineColor.withOpacity(0.1) : null,
-              ),
-            ));
-          }
-        }
-
-        // 匹配 127.0.0.1 xxxxxx
-        if (annotationIndex == -1) {
-          children.add(
-            TextSpan(
-              text: line,
-              style: hostStyle.copyWith(
-                backgroundColor: currLine == index
-                    ? onPrimaryContainerColor.withOpacity(0.1)
-                    : null,
-              ),
+        // 匹配 [#xxxxxxxx] # - config xxxxx [#xxxxxxxx]
+        final String otherLine = line.substring(host.length);
+        final Match? matchConfig = regExpConfig.firstMatch(otherLine);
+        if (matchConfig != null) {
+          // [#xxxxxxxx]
+          children.add(TextSpan(
+            text: otherLine.substring(0, max(0, matchConfig.start)),
+            style: annotationStyle.copyWith(
+              backgroundColor:
+                  currLine == index ? outlineColor.withOpacity(0.1) : null,
             ),
+          ));
+
+          // # - config xxxxx
+          final String config = matchConfig.group(0) ?? "";
+          TextStyle configStyle = TextStyle(
+            color: primaryContainerColor,
+            backgroundColor: currLine == index
+                ? primaryContainerColor.withOpacity(0.3)
+                : null,
           );
+          try {
+            jsonDecode(config.replaceFirst("# - config ", ""));
+          } catch (e) {
+            configStyle = TextStyle(
+              color: errorColor,
+              fontSize: fontSize,
+              backgroundColor:
+                  currLine == index ? errorColor.withOpacity(0.1) : null,
+            );
+          }
+          children.add(TextSpan(
+            text: config,
+            style: configStyle,
+          ));
+
+          // [#xxxxxxxx]
+          children.add(TextSpan(
+            text: otherLine.substring(matchConfig.end, otherLine.length),
+            style: annotationStyle.copyWith(
+              backgroundColor:
+                  currLine == index ? outlineColor.withOpacity(0.1) : null,
+            ),
+          ));
+        } else {
+          children.add(TextSpan(
+            text: otherLine,
+            style: annotationStyle.copyWith(
+              backgroundColor:
+                  currLine == index ? outlineColor.withOpacity(0.1) : null,
+            ),
+          ));
         }
 
         children.add(const TextSpan(text: "\n"));
+        continue;
+      }
+
+      // 匹配 127.0.0.1 xxxxx xxxx xxxx
+      final parts = line
+          .split(RegExp(r"\s+"))
+          .where((it) => it.trim().isNotEmpty)
+          .toList();
+      if (parts.length >= 2 &&
+          (isValidIPv4(parts.first) || isValidIPv6(parts.first))) {
+        children.add(
+          TextSpan(
+            text: "$line\n",
+            style: hostStyle.copyWith(
+              backgroundColor: currLine == index
+                  ? onPrimaryContainerColor.withOpacity(0.1)
+                  : null,
+            ),
+          ),
+        );
         continue;
       }
 

@@ -73,6 +73,7 @@ Future<void> testDialog(BuildContext context, HostsModel host) {
       });
 }
 
+// TODO 兼容Web
 Future<String> _getRemoteIpAddress(String domain) async {
   try {
     List<InternetAddress> addresses = await InternetAddress.lookup(domain);

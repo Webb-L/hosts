@@ -172,9 +172,9 @@ class HostsFile {
 
         if (lineDescription.isNotEmpty) {
           final String temp = lineDescription.sublist(1).join("#");
-          final RegExp regExp = RegExp(r"- config \{([^{}]*)\}");
 
-          final String tempDescription = temp.replaceFirst(regExp, "");
+          final RegExp regExp = RegExp(r"#- config \{([^{}]*)\}");
+          final String tempDescription = temp.replaceAll(regExp, "");
           if (tempDescription.trim().isNotEmpty) {
             description = tempDescription;
           }
@@ -182,7 +182,11 @@ class HostsFile {
           // 解析配置
           final RegExpMatch? match = regExp.firstMatch(temp);
           if (match != null) {
-            config = jsonDecode("{${match.group(1)}}");
+            try {
+              config = jsonDecode("{${match.group(1)}}");
+            } catch (e) {
+              print("错误：解析配置失败");
+            }
           }
 
           hosts = lineDescription.first

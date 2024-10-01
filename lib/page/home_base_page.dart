@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hosts/enums.dart';
@@ -11,6 +9,7 @@ import 'package:hosts/widget/error/error_empty.dart';
 import 'package:hosts/widget/host_list.dart';
 import 'package:hosts/widget/host_table.dart';
 import 'package:hosts/widget/host_text_editing_controller.dart';
+import 'package:hosts/widget/row_line_widget.dart';
 import 'package:hosts/widget/snakbar.dart';
 
 abstract class BaseHomePage extends StatefulWidget {
@@ -270,7 +269,12 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildRowLine(),
+                  RowLineWidget(
+                    textEditingController: textEditingController,
+                    context: context,
+                    textFieldContainerKey: _textFieldContainerKey,
+                    scrollController: _scrollController,
+                  ),
                   Expanded(
                     key: _textFieldContainerKey,
                     child: KeyboardListener(
@@ -379,126 +383,5 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
         ),
       );
     }
-  }
-
-  Widget buildRowLine() {
-    double textFieldContainerWidth = 0;
-    final RenderBox? renderBox =
-        _textFieldContainerKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox != null) {
-      textFieldContainerWidth = renderBox.size.width;
-    }
-    final TextStyle? titleMedium = Theme.of(context).textTheme.titleMedium;
-    final TextSelection textSelection = textEditingController.selection;
-    final List<String> lines = textEditingController.lines;
-    final String text = textEditingController.text;
-
-    final double fontSize = (titleMedium?.fontSize ?? 0);
-    final double containerWidth =
-        "${lines.length}".length * fontSize + fontSize;
-
-    final Set<int> selectedLine = {};
-    final String startText = text.substring(0, max(0, textSelection.start));
-    final int startLineIndex = textEditingController.countNewlines(startText);
-    final int endLineIndex = textEditingController.countNewlines(
-        text.substring(0, max(0, min(textSelection.end, text.length))));
-
-    for (int i = startLineIndex; i <= endLineIndex; i++) {
-      selectedLine.add(i);
-    }
-
-    return Container(
-      width: containerWidth,
-      padding: const EdgeInsets.only(top: 4),
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: _scrollController,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(lines.length, (index) {
-            final String line = lines[index];
-
-            final TextPainter textPainter = TextPainter(
-              text: TextSpan(
-                text: line,
-                style: titleMedium,
-              ),
-              textDirection: TextDirection.ltr,
-            )..layout();
-
-            final double width = textPainter.width + fontSize;
-
-            if (width >= textFieldContainerWidth &&
-                textFieldContainerWidth > 0) {
-              return buildIndexedLineContainer(
-                containerWidth,
-                selectedLine.contains(index),
-                "${index + 1}${List.generate((width / textFieldContainerWidth).ceil() - 1, (it) => "\n").join("")}",
-                line,
-                () {
-                  final int length =
-                      lines.sublist(0, index + 1).join("\n").length;
-                  textEditingController.updateUseStatus(textSelection.copyWith(
-                      baseOffset: length, extentOffset: length));
-                },
-              );
-            }
-
-            return buildIndexedLineContainer(
-              containerWidth,
-              selectedLine.contains(index),
-              "${index + 1}",
-              line,
-              () {
-                final int length =
-                    lines.sublist(0, index + 1).join("\n").length;
-                textEditingController.updateUseStatus(textSelection.copyWith(
-                    baseOffset: length, extentOffset: length));
-              },
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  Widget buildIndexedLineContainer(
-    double containerWidth,
-    bool isSelected,
-    String text,
-    String line,
-    GestureTapCallback? onTap,
-  ) {
-    final TextStyle? titleMedium = Theme.of(context).textTheme.titleMedium;
-    final double fontSize = (titleMedium?.fontSize ?? 0);
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 8),
-        width: containerWidth,
-        color: isSelected ? Theme.of(context).colorScheme.inversePrimary : null,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                const SizedBox(height: 2),
-                if (RegExp(r"# - config \{([^{}]*)\}").hasMatch(line) &&
-                    !line.startsWith("#"))
-                  Opacity(
-                    opacity: 0.3,
-                    child: Icon(Icons.link, size: fontSize),
-                  ),
-                const SizedBox(height: 2),
-              ],
-            ),
-            Text(text, style: Theme.of(context).textTheme.titleMedium),
-          ],
-        ),
-      ),
-    );
   }
 }
