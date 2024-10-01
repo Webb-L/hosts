@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/util/regexp_util.dart';
+import 'package:hosts/widget/host_text_editing_controller.dart';
 
 class HostPage extends StatefulWidget {
   final HostsModel? hostModel;
@@ -19,7 +20,8 @@ class _HostPageState extends State<HostPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _hostController = TextEditingController();
   final List<TextEditingController> _hostControllers = [];
-  final TextEditingController _hostConfController = TextEditingController();
+  final HostTextEditingController _hostConfController =
+      HostTextEditingController();
   int currentIndex = 0;
   List<HostsModel> hosts = [
     HostsModel("", false, "", [""], {})
@@ -344,12 +346,10 @@ class _HostPageState extends State<HostPage> {
 
   void updateHostModelString() {
     hosts[currentIndex] = HostsModel(
-      _hostController.text,
-      _isUse,
-      _descriptionController.text,
-      _hostControllers.map((text) => text.text).toList(),
-      {}
-    );
+        _hostController.text,
+        _isUse,
+        _descriptionController.text,
+        _hostControllers.map((text) => text.text).toList(), {});
     if (hosts.length == 1) {
       _hostConfController.value = TextEditingValue(
         text: hosts[currentIndex].toString(),
