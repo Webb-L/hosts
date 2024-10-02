@@ -143,7 +143,6 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
             }
 
             final File file = File(widget.filePath);
-
             try {
               await file.writeAsString(hostContent);
             } on PathAccessException catch (e) {
