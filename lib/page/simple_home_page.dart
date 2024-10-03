@@ -98,7 +98,8 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
       actions: [
         TextButton(
           onPressed: () async {
-            final String hostContent = hostsFile.toString();
+            final String hostContent =
+                hostsFile.toString().replaceAll("\"", "\\\"");
             if (kIsWeb) {
               showDialog(
                   context: context,
@@ -109,7 +110,6 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
                           child: SelectableText(hostContent),
                         ),
                         actions: [
-                          // TODO 注意：命令执行漏洞
                           TextButton(
                               onPressed: () => writeClipboard(
                                     'echo "$hostContent" > /etc/hosts',
