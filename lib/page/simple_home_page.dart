@@ -37,8 +37,7 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
 
     textEditingController.addListener(() {
       setState(() {
-        hostsFile.formString(textEditingController.text);
-        hostsFile.isUpdateHost();
+        hostsFile.isUpdateHostWithText(textEditingController.text);
       });
     });
     super.initState();

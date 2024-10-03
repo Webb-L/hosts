@@ -43,6 +43,27 @@ class HostsModel {
         description.contains(searchQuery) ||
         hosts.where((it) => it.contains(searchQuery)).isNotEmpty;
   }
+
+  // 添加 withCopy 方法
+  HostsModel withCopy({
+    String? host,
+    bool? isUse,
+    String? description,
+    List<String>? hosts,
+    Map<String, dynamic>? config,
+    int? hostLine,
+    int? descLine,
+  }) {
+    return HostsModel(
+      host ?? this.host,
+      isUse ?? this.isUse,
+      description ?? this.description,
+      hosts ?? List.from(this.hosts),
+      config ?? Map.from(this.config),
+      hostLine: hostLine ?? this.hostLine,
+      descLine: descLine ?? this.descLine,
+    );
+  }
 }
 
 class HostsFile {
@@ -126,8 +147,12 @@ class HostsFile {
   }
 
   void isUpdateHost() {
+    isUpdateHostWithText(toString());
+  }
+
+  void isUpdateHostWithText(String text) {
     isSave = defaultContent.replaceAll(" ", "").replaceAll("	", "") ==
-        toString().replaceAll(" ", "").replaceAll("	", "");
+        text.replaceAll(" ", "").replaceAll("	", "");
   }
 
   void formString(String text) {
@@ -171,10 +196,16 @@ class HostsFile {
             : [];
 
         if (lineDescription.isNotEmpty) {
-          final String temp = lineDescription.sublist(1).join("#");
+          print(lineDescription);
+          final List<String> tempLineDescription = lineDescription.sublist(1);
+          final String temp = tempLineDescription.length > 1
+              ? tempLineDescription.join("# ")
+              : "# ${tempLineDescription.join("")}";
 
-          final RegExp regExp = RegExp(r"#- config \{([^{}]*)\}");
-          final String tempDescription = temp.replaceAll(regExp, "");
+          final RegExp regExp = RegExp(r"# - config \{([^{}]*)\}");
+          final String tempDescription = temp.contains(regExp)
+              ? temp.replaceAll(regExp, "")
+              : temp.replaceFirst("# ", "");
           if (tempDescription.trim().isNotEmpty) {
             description = tempDescription;
           }

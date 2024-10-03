@@ -203,7 +203,16 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
     );
     if (hostsModels == null) return;
     setState(() {
-      hostsFile.updateHost(index, hostsModels.first);
+      hostsFile.updateHost(
+          index,
+          hostsFile.hosts[index].withCopy(
+            host: hostsModels.first.host,
+            isUse: hostsModels.first.isUse,
+            description: hostsModels.first.description,
+            hosts: hostsModels.first.hosts,
+            hostLine: hostsModels.first.hostLine,
+            descLine: hostsModels.first.descLine,
+          ));
       syncFilterHosts();
     });
   }

@@ -27,9 +27,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
   void initState() {
     textEditingController.addListener(() {
       setState(() {
-        hostsFile.isSave =
-            hostsFile.defaultContent == textEditingController.text;
-        hostsFile.formString(textEditingController.text);
+        hostsFile.isUpdateHostWithText(textEditingController.text);
       });
     });
     super.initState();
@@ -164,9 +162,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
       ..text = hostsFile.toString()
       ..addListener(() {
         setState(() {
-          hostsFile.isSave =
-              hostsFile.defaultContent == textEditingController.text;
-          hostsFile.formString(textEditingController.text);
+          hostsFile.isUpdateHostWithText(textEditingController.text);
         });
       });
   }

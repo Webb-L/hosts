@@ -105,6 +105,8 @@ class _HostPageState extends State<HostPage> {
             return;
           }
 
+          print(hosts);
+
           Navigator.of(context).pop(hosts);
         },
         child: const Icon(Icons.save),

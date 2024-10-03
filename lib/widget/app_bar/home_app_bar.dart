@@ -177,7 +177,11 @@ class HomeAppBar extends StatelessWidget {
                         ],
                       );
                     },
-                    icon: const Icon(Icons.settings),
+                    icon: Image.asset(
+                      "assets/icon/logo.png",
+                      width: 20,
+                      height: 20,
+                    ),
                   ),
                 ],
               )
