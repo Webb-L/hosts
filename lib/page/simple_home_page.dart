@@ -31,6 +31,14 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
         filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
       });
     }
+
+    if (kIsWeb) {
+      setState(() {
+        hostsFile.formString("");
+        hostsFile.defaultContent = "";
+      });
+    }
+
     textEditingController.addListener(() {
       setState(() {
         hostsFile.formString(textEditingController.text);

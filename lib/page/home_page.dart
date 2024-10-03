@@ -6,7 +6,6 @@ import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/home_base_page.dart';
-import 'package:hosts/page/host_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
@@ -38,23 +37,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: editMode == EditMode.Table
-          ? FloatingActionButton(
-              onPressed: () async {
-                List<HostsModel>? hostsModels = await Navigator.of(context)
-                    .push(MaterialPageRoute(
-                        builder: (context) => const HostPage()));
-                if (hostsModels == null) return;
-                setState(() {
-                  for (HostsModel hostsModel in hostsModels) {
-                    hostsFile.addHost(hostsModel);
-                  }
-                  selectHosts.clear();
-                });
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: buildFloatingActionButton(context),
       body: Row(
         children: [
           if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
@@ -96,7 +79,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
                         });
                       }
                       hostsFile.history = resultHistory;
-                      updateFilterHosts();
+                      syncFilterHosts();
                     });
                   },
                 ),

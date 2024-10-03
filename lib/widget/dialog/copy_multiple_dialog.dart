@@ -18,6 +18,7 @@ class CopyMultipleDialog extends StatelessWidget {
         TextButton(
           onPressed: () {
             Clipboard.setData(ClipboardData(text: outputHostModel)).then((_) {
+              Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(AppLocalizations.of(context)!.copy_to_tip),

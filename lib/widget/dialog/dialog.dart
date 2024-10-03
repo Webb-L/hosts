@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-Future<String?> hostConfigDialog(BuildContext context,[String defaultText = ""]) {
-  final TextEditingController remarkController = TextEditingController(text: defaultText);
+Future<String?> hostConfigDialog(BuildContext context,
+    [String defaultText = ""]) {
+  final TextEditingController remarkController =
+      TextEditingController(text: defaultText);
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   return showDialog<String?>(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(AppLocalizations.of(context)!.create),
+        title: Text(defaultText.isEmpty
+            ? AppLocalizations.of(context)!.create
+            : AppLocalizations.of(context)!.edit),
         content: Form(
           key: formKey,
           child: TextFormField(
@@ -17,10 +21,12 @@ Future<String?> hostConfigDialog(BuildContext context,[String defaultText = ""])
             maxLength: 30,
             validator: (value) {
               final text = value ?? "";
-              if (text.isEmpty) return AppLocalizations.of(context)!.input_remark;
+              if (text.isEmpty) {
+                return AppLocalizations.of(context)!.input_remark;
+              }
               return null;
             },
-            decoration:  InputDecoration(
+            decoration: InputDecoration(
               labelText: AppLocalizations.of(context)!.remark,
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(16)),

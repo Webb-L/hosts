@@ -77,34 +77,22 @@ class HomeAppBar extends StatelessWidget {
                           if (result == null) {
                             return;
                           }
+                          if (!isSave) {
+                            ScaffoldMessenger.of(context)
+                                .removeCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  AppLocalizations.of(context)!.error_not_save),
+                              action: SnackBarAction(
+                                label: AppLocalizations.of(context)!.abort,
+                                onPressed: () => pickFile(context, result),
+                              ),
+                            ));
 
-                          print(result.files.single);
-
-                          if (result.files.first.size > 10 * 1024 * 1024) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("读取文件不能大于10MB")));
                             return;
                           }
 
-                          try {
-                            String path = "";
-                            try {
-                              path = result.files.single.path ?? "";
-                            } catch (e) {
-                              path = "";
-                            }
-                            final Uint8List? bytes = result.files.first.bytes;
-                            if (path.isNotEmpty && bytes == null) {
-                              onOpenFile(File(path).readAsStringSync());
-                            }
-
-                            if (path.isEmpty && bytes != null) {
-                              onOpenFile(utf8.decode(bytes));
-                            }
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("文件读取失败")));
-                          }
+                          pickFile(context, result);
                         },
                         icon: const Icon(Icons.file_open_outlined),
                         tooltip: "打开文件",
@@ -295,5 +283,33 @@ class HomeAppBar extends StatelessWidget {
               icon: const Icon(Icons.delete_outline)),
       ],
     );
+  }
+
+  void pickFile(BuildContext context, FilePickerResult result) {
+    if (result.files.first.size > 10 * 1024 * 1024) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("读取文件不能大于10MB")));
+      return;
+    }
+
+    try {
+      String path = "";
+      try {
+        path = result.files.single.path ?? "";
+      } catch (e) {
+        path = "";
+      }
+      final Uint8List? bytes = result.files.first.bytes;
+      if (path.isNotEmpty && bytes == null) {
+        onOpenFile(File(path).readAsStringSync());
+      }
+
+      if (path.isEmpty && bytes != null) {
+        onOpenFile(utf8.decode(bytes));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("文件读取失败")));
+    }
   }
 }

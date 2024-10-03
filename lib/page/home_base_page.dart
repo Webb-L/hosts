@@ -70,7 +70,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       hostsFile.formString(content);
       hostsFile.defaultContent = content;
       hostsFile.isUpdateHost();
-      updateFilterHosts();
+      syncFilterHosts();
     });
   }
 
@@ -80,8 +80,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       hostsFile.undoHost();
       textEditingController.value =
           TextEditingValue(text: hostsFile.toString());
-      selectHosts.clear();
-      updateFilterHosts();
+      syncFilterHosts();
     });
   }
 
@@ -90,7 +89,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   onSearchChanged(String value) {
     setState(() {
       searchText = value;
-      updateFilterHosts();
+      syncFilterHosts();
     });
   }
 
@@ -109,8 +108,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       if (editMode == EditMode.Text) {
         editMode = EditMode.Table;
         hostsFile.formString(textEditingController.text);
-        selectHosts.clear();
-        updateFilterHosts();
+        syncFilterHosts();
       } else {
         editMode = EditMode.Text;
         textEditingController.value =
@@ -126,8 +124,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       selectHosts.map((item) => item.host).toList(),
       () => setState(() {
         hostsFile.deleteMultiple(selectHosts);
-        selectHosts.clear();
-        updateFilterHosts();
+        syncFilterHosts();
       }),
     );
   }
@@ -148,7 +145,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   onSortConfChanged(Map<String, int?> value) {
     setState(() {
       sortConfig = value;
-      updateFilterHosts();
+      syncFilterHosts();
     });
   }
 
@@ -159,14 +156,8 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       for (var host in selectHosts) {
         host.isUse = value;
       }
-      updateFilterHosts();
+      // syncFilterHosts();
     });
-  }
-
-  /// 更新过滤后的主机列表
-  updateFilterHosts() {
-    filterHosts.clear();
-    filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
   }
 
   /// 处理单个主机的选中状态
@@ -253,7 +244,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
             for (HostsModel hostsModel in hostsModels) {
               hostsFile.addHost(hostsModel);
             }
-            selectHosts.clear();
+            syncFilterHosts();
           });
         },
         child: const Icon(Icons.add),
