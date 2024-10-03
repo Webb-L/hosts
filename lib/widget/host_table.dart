@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -177,7 +178,9 @@ class HostTable extends HostBaseView {
           },
         ];
 
-        return list.map((item) {
+        return list
+            .where((item) => !(item["value"] == 2 && kIsWeb))
+            .map((item) {
           return PopupMenuItem<int>(
             value: int.parse(item["value"].toString()),
             child: Row(
