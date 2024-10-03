@@ -36,8 +36,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
     "description": null,
   };
   SimpleHostFileHistory? selectHistory;
-  final HostTextEditingController textEditingController =
-      HostTextEditingController();
+  HostTextEditingController textEditingController = HostTextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool isControl = false;
 

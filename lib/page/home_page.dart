@@ -10,6 +10,7 @@ import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 import 'package:hosts/widget/home_drawer.dart';
+import 'package:hosts/widget/host_text_editing_controller.dart';
 
 class HomePage extends BaseHomePage {
   const HomePage({super.key});
@@ -72,10 +73,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
                         selectHistory = history;
                         hostsFile.setHistory(history.path).then((value) {
                           if (editMode != EditMode.Text) return;
-                          setState(() {
-                            textEditingController.value =
-                                TextEditingValue(text: hostsFile.toString());
-                          });
+                          updateTextEditingController();
                         });
                       }
                       hostsFile.history = resultHistory;
@@ -153,15 +151,27 @@ class _HomePageState extends BaseHomePageState<HomePage> {
         setState(() {
           hostsFile = HostsFile(value, fileId);
           if (editMode == EditMode.Text) {
-            textEditingController.value =
-                TextEditingValue(text: hostsFile.toString());
+            updateTextEditingController();
+          } else {
+            syncFilterHosts();
           }
-          selectHosts.clear();
-          filterHosts.clear();
-          filterHosts.addAll(hostsFile.filterHosts(searchText, sortConfig));
         });
       },
     );
+  }
+
+  void updateTextEditingController() {
+    textEditingController.dispose();
+
+    textEditingController = HostTextEditingController()
+      ..text = hostsFile.toString()
+      ..addListener(() {
+        setState(() {
+          hostsFile.isSave =
+              hostsFile.defaultContent == textEditingController.text;
+          hostsFile.formString(textEditingController.text);
+        });
+      });
   }
 
   Future<MaterialBanner> saveTipMessage(BuildContext context) async {

@@ -3,14 +3,16 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hosts/util/regexp_util.dart';
+import 'package:hosts/widget/host_text_editing_controller.dart';
 
 class RowLineWidget extends StatelessWidget {
-  final TextEditingController textEditingController;
+  final HostTextEditingController textEditingController;
   final GlobalKey textFieldContainerKey;
   final ScrollController scrollController;
   final BuildContext context;
 
   const RowLineWidget({
+    super.key,
     required this.textEditingController,
     required this.context,
     required this.textFieldContainerKey,
@@ -78,8 +80,8 @@ class RowLineWidget extends StatelessWidget {
               () {
                 final int length =
                     lines.sublist(0, index + 1).join("\n").length;
-                textEditingController.selection =
-                    TextSelection(baseOffset: length, extentOffset: length);
+                textEditingController.updateUseStatus(
+                    TextSelection(baseOffset: length, extentOffset: length));
               },
             );
           }),

@@ -160,7 +160,25 @@ class HomeAppBar extends StatelessWidget {
                     ),
                   const SizedBox(width: 16),
                   IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.settings)),
+                    onPressed: () {
+                      showAboutDialog(
+                        context: context,
+                        applicationVersion: '1.5.0',
+                        applicationIcon: Image.asset(
+                          "assets/icon/logo.png",
+                          width: 50,
+                          height: 50,
+                        ),
+                        children: [
+                          const Text(
+                              'Hosts Editor 是一个使用 Flutter 开发的应用程序，旨在简化 Linux、MacOS、Windows 系统上 hosts 文件的编辑和管理。\n该工具提供了一个用户友好的界面，使用户能够轻松地添加、修改和删除 hosts 文件中的条目。'),
+                          const SizedBox(height: 10),
+                          const Text('Developed by Webb.'),
+                        ],
+                      );
+                    },
+                    icon: const Icon(Icons.settings),
+                  ),
                 ],
               )
             ],
