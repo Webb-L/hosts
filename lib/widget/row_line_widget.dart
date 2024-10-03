@@ -84,7 +84,6 @@ class RowLineWidget extends StatelessWidget {
                 }
                 final int length =
                     lines.sublist(0, index + 1).join("\n").length;
-                print((textSelection.start, textSelection.end));
                 textEditingController.updateUseStatus(
                     TextSelection(baseOffset: length, extentOffset: length));
               },
