@@ -1,9 +1,14 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/page/host_page.dart';
+import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/dialog/link_dialog.dart';
 import 'package:hosts/widget/error/error_empty.dart';
 import 'package:hosts/widget/host_list.dart';
@@ -11,6 +16,8 @@ import 'package:hosts/widget/host_table.dart';
 import 'package:hosts/widget/host_text_editing_controller.dart';
 import 'package:hosts/widget/row_line_widget.dart';
 import 'package:hosts/widget/snakbar.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 abstract class BaseHomePage extends StatefulWidget {
   const BaseHomePage({super.key});
@@ -293,8 +300,9 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
 
                         if (event.logicalKey == LogicalKeyboardKey.keyS &&
                             isControl &&
-                            event is KeyDownEvent) {
-                          print("保存");
+                            event is KeyDownEvent &&
+                            !hostsFile.isSave) {
+                          onKeySaveChange();
                         }
                       },
                       child: TextField(
@@ -378,4 +386,99 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       );
     }
   }
+
+  Future<bool> saveHost(String filePath, String hostContent) async {
+    if (kIsWeb) {
+      final String tempContent = hostContent.replaceAll("\"", "\\\"");
+      await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text("保存"),
+                content: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: SelectableText(tempContent),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => writeClipboard(
+                            'echo "$tempContent" > /etc/hosts',
+                            tempContent,
+                            context,
+                          ),
+                      child: const Text("Linux(echo)")),
+                  TextButton(
+                      onPressed: () {
+                        final String systemHostPath = p.joinAll([
+                          "C:",
+                          "Windows",
+                          "System32",
+                          "drivers",
+                          "etc",
+                          "hosts"
+                        ]);
+                        final String content = tempContent
+                            .split("\n")
+                            .map((item) => 'echo "$item"')
+                            .join("\n");
+                        writeClipboard(
+                          '(\n$content\n) > $systemHostPath',
+                          tempContent,
+                          context,
+                        );
+                      },
+                      child: const Text("Windows(echo)")),
+                  TextButton(
+                      onPressed: () => writeClipboard(
+                            'echo "$tempContent" > /etc/hosts',
+                            tempContent,
+                            context,
+                          ),
+                      child: const Text("MacOS(echo)")),
+                ],
+              ));
+      return true;
+    }
+
+    final File file = File(filePath);
+    try {
+      await file.writeAsString(hostContent);
+    } catch (e) {
+      try {
+        final Directory cacheDirectory = await getApplicationCacheDirectory();
+        final File cacheFile = File(p.join(cacheDirectory.path, 'hosts'));
+        await cacheFile.writeAsString(hostContent);
+
+        await FileManager()
+            .writeFileWithAdminPrivileges(cacheFile.path, filePath);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.error_save_fail)));
+        return false;
+      }
+    }
+
+    setState(() {
+      hostsFile.defaultContent = hostContent;
+      hostsFile.isUpdateHost();
+    });
+    return true;
+  }
+
+  void writeClipboard(
+      String hostContent, String defaultContent, BuildContext context) {
+    Clipboard.setData(ClipboardData(text: hostContent)).then((_) {
+      setState(() {
+        hostsFile.defaultContent = defaultContent;
+        hostsFile.isUpdateHost();
+        Navigator.pop(context);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.copy_to_tip),
+        ),
+      );
+    });
+  }
+
+  void onKeySaveChange();
 }

@@ -12,8 +12,13 @@ import "package:hosts/widget/snakbar.dart";
 class HomeDrawer extends StatefulWidget {
   final bool isSave;
   final void Function(String, String) onChanged;
+  final Future<bool> Function(String) onClickUse;
 
-  const HomeDrawer({super.key, required this.isSave, required this.onChanged});
+  const HomeDrawer(
+      {super.key,
+      required this.isSave,
+      required this.onChanged,
+      required this.onClickUse});
 
   @override
   State<HomeDrawer> createState() => _HomeDrawerState();
@@ -59,8 +64,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
         continue;
       }
 
-      if (hostFile.fileName ==
-          await _settingsManager.getString(settingKeyUseHostFile)) {
+      if (hostFile.fileName == selectHostFile) {
         widget.onChanged(await _fileManager.getHostsFilePath(hostFile.fileName),
             hostFile.fileName);
       }
@@ -87,12 +91,10 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Expanded(child: SizedBox()),
-                CreateHostFileDialog(onSyncChanged: () {
+                CreateHostFileDialog(onSyncChanged: (fileName) {
+                  selectHostFile = fileName;
                   loadHostFiles();
                 }),
-                // IconButton(
-                //     onPressed: () async {},
-                //     icon: const Icon(Icons.file_open_outlined))
               ],
             ),
           ),
@@ -115,15 +117,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
                               final String path = await _fileManager
                                   .getHostsFilePath(hostFile.fileName);
 
-                              try {
-                                await _fileManager
-                                    .saveToHosts(File(path).readAsStringSync());
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            AppLocalizations.of(context)!
-                                                .error_use_fail)));
+                              if (!await widget
+                                  .onClickUse(File(path).readAsStringSync())) {
                                 return;
                               }
 
@@ -196,21 +191,45 @@ class _HomeDrawerState extends State<HomeDrawer> {
             if (result.isEmpty) return;
             int index = hostFiles.indexOf(hostFile);
             if (index == -1) return;
-            hostFile.remark = result;
-            hostFiles[index] = hostFile;
-            await _settingsManager.setList(settingKeyHostConfigs, hostFiles);
-            loadHostFiles();
+            setState(() {
+              hostFile.remark = result;
+              hostFiles[index] = hostFile;
+              _settingsManager.setList(settingKeyHostConfigs, hostFiles);
+            });
             break;
           case 2:
             final List<SimpleHostFile> list = [hostFile];
             deleteMultiple(context, list.map((item) => item.remark).toList(),
                 () async {
+              // 判断是否删除使用的 Host 文件
+              final bool isDeleteUse =
+                  list.where((host) => host.fileName == useHostFile).isNotEmpty;
+              // 判断是否删除选择的 Host 文件
+              final bool isDeleteSelect = list
+                  .where((host) => host.fileName == selectHostFile)
+                  .isNotEmpty;
+
+              if (isDeleteUse) {
+                final String path =
+                    await _fileManager.getHostsFilePath("system");
+
+                if (!await widget.onClickUse(File(path).readAsStringSync())) {
+                  return;
+                }
+                await _settingsManager.setString(
+                    settingKeyUseHostFile, "system");
+                useHostFile = "system";
+                selectHostFile = "system";
+              }
+
+              if (isDeleteSelect) {
+                selectHostFile = "system";
+              }
+
               setState(() {
                 hostFiles.removeWhere((hostFile) => list.contains(hostFile));
               });
               await _settingsManager.setList(settingKeyHostConfigs, hostFiles);
-              selectHostFile =
-                  await _settingsManager.getString(settingKeyUseHostFile);
               widget.onChanged(
                   await _fileManager.getHostsFilePath(selectHostFile!),
                   selectHostFile!);

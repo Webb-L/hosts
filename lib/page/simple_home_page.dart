@@ -2,13 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/page/home_base_page.dart';
-import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 class SimpleHomePage extends BaseHomePage {
   final String filePath;
@@ -97,104 +93,15 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
       leading: const Icon(Icons.error_outline),
       actions: [
         TextButton(
-          onPressed: () async {
-            final String hostContent =
-                hostsFile.toString().replaceAll("\"", "\\\"");
-            if (kIsWeb) {
-              showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                        title: const Text("保存"),
-                        content: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.5,
-                          child: SelectableText(hostContent),
-                        ),
-                        actions: [
-                          TextButton(
-                              onPressed: () => writeClipboard(
-                                    'echo "$hostContent" > /etc/hosts',
-                                    hostContent,
-                                    context,
-                                  ),
-                              child: const Text("Linux(echo)")),
-                          TextButton(
-                              onPressed: () {
-                                final String systemHostPath = p.joinAll([
-                                  "C:",
-                                  "Windows",
-                                  "System32",
-                                  "drivers",
-                                  "etc",
-                                  "hosts"
-                                ]);
-                                final String content = hostContent
-                                    .split("\n")
-                                    .map((item) => 'echo "$item"')
-                                    .join("\n");
-                                writeClipboard(
-                                  '(\n$content\n) > $systemHostPath',
-                                  hostContent,
-                                  context,
-                                );
-                              },
-                              child: const Text("Windows(echo)")),
-                          TextButton(
-                              onPressed: () => writeClipboard(
-                                    'echo "$hostContent" > /etc/hosts',
-                                    hostContent,
-                                    context,
-                                  ),
-                              child: const Text("MacOS(echo)")),
-                        ],
-                      ));
-              return;
-            }
-
-            final File file = File(widget.filePath);
-            try {
-              await file.writeAsString(hostContent);
-            } on PathAccessException catch (e) {
-              try {
-                final Directory cacheDirectory =
-                    await getApplicationCacheDirectory();
-                final File cacheFile =
-                    File(p.join(cacheDirectory.path, 'hosts'));
-                await cacheFile.writeAsString(hostContent);
-
-                FileManager().writeFileWithAdminPrivileges(
-                    cacheFile.path, widget.filePath);
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text(AppLocalizations.of(context)!.error_save_fail)));
-                return;
-              }
-            }
-
-            setState(() {
-              hostsFile.defaultContent = hostContent;
-              hostsFile.isUpdateHost();
-            });
-          },
+          onPressed: () => saveHost(widget.filePath, hostsFile.toString()),
           child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
     );
   }
 
-  void writeClipboard(
-      String hostContent, String defaultContent, BuildContext context) {
-    Clipboard.setData(ClipboardData(text: hostContent)).then((_) {
-      setState(() {
-        hostsFile.defaultContent = defaultContent;
-        hostsFile.isUpdateHost();
-        Navigator.pop(context);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.copy_to_tip),
-        ),
-      );
-    });
+  @override
+  void onKeySaveChange() {
+    saveHost(widget.filePath, hostsFile.toString());
   }
 }

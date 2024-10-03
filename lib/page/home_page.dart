@@ -106,7 +106,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
       onChanged: (String value, String fileId) async {
         if (await _settingsManager.getString(settingKeyUseHostFile) == fileId) {
           if (!await _fileManager.areFilesEqual(fileId)) {
-            showDialog(
+            await showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
@@ -116,16 +116,10 @@ class _HomePageState extends BaseHomePageState<HomePage> {
                     actions: [
                       TextButton(
                         onPressed: () async {
-                          try {
-                            await _fileManager
-                                .saveToHosts(hostsFile.toString());
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(AppLocalizations.of(context)!
-                                    .error_save_fail)));
-                            return;
+                          if (await saveHost(FileManager.systemHostFilePath,
+                              hostsFile.toString())) {
+                            Navigator.of(context).pop();
                           }
-                          Navigator.of(context).pop();
                         },
                         child: Text(AppLocalizations.of(context)!
                             .warning_different_covering_system),
@@ -156,6 +150,9 @@ class _HomePageState extends BaseHomePageState<HomePage> {
             syncFilterHosts();
           }
         });
+      },
+      onClickUse: (hostContent) async {
+        return await saveHost(FileManager.systemHostFilePath, hostContent);
       },
     );
   }
@@ -190,14 +187,8 @@ class _HomePageState extends BaseHomePageState<HomePage> {
         TextButton(
           onPressed: () async {
             if (isUseFile) {
-              try {
-                await _fileManager.saveToHosts(hostsFile.toString());
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text(AppLocalizations.of(context)!.error_save_fail)));
-                return;
-              }
+              saveHost(FileManager.systemHostFilePath, hostsFile.toString());
+              return;
             }
             setState(() {
               hostsFile.save(true);
@@ -208,14 +199,7 @@ class _HomePageState extends BaseHomePageState<HomePage> {
         TextButton(
           onPressed: () async {
             if (isUseFile) {
-              try {
-                await _fileManager.saveToHosts(hostsFile.toString());
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text(AppLocalizations.of(context)!.error_save_fail)));
-                return;
-              }
+              saveHost(FileManager.systemHostFilePath, hostsFile.toString());
             }
             setState(() {
               hostsFile.save();
@@ -225,5 +209,17 @@ class _HomePageState extends BaseHomePageState<HomePage> {
         ),
       ],
     );
+  }
+
+  @override
+  void onKeySaveChange() async {
+    final bool isUseFile = hostsFile.fileId ==
+        await _settingsManager.getString(settingKeyUseHostFile);
+    if (isUseFile) {
+      saveHost(FileManager.systemHostFilePath, hostsFile.toString());
+    }
+    setState(() {
+      hostsFile.save();
+    });
   }
 }

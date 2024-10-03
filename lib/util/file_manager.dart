@@ -159,22 +159,6 @@ class FileManager {
     ).writeAsString(content);
   }
 
-  Future<String> saveToHosts(String content) async {
-    final Directory cacheDirectory = await getApplicationCacheDirectory();
-    final File cacheFile = File(p.join(cacheDirectory.path, 'hosts'));
-
-    await cacheFile.writeAsString(content);
-
-    final File file = File(systemHostFilePath);
-    try {
-      await file.writeAsString(await cacheFile.readAsString());
-      return "";
-    } catch (e) {
-      return FileManager()
-          .writeFileWithAdminPrivileges(cacheFile.path, systemHostFilePath);
-    }
-  }
-
   void deleteFile(String path) {
     File(path).deleteSync();
   }
