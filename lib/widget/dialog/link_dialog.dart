@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 
 Future<Map<String, List<String>>?> linkDialog(
@@ -26,7 +27,7 @@ Future<Map<String, List<String>>?> linkDialog(
             .toList();
 
         return AlertDialog(
-          title: const Text("关联"),
+          title: Text(AppLocalizations.of(context)!.link),
           content: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
             setState(() {
@@ -58,7 +59,8 @@ Future<Map<String, List<String>>?> linkDialog(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildTitle(host, "相反", context),
+                  _buildTitle(host, AppLocalizations.of(context)!.link_contrary,
+                      context),
                   const SizedBox(height: 8),
                   _buildHostList(
                     context,
@@ -82,7 +84,8 @@ Future<Map<String, List<String>>?> linkDialog(
                   const SizedBox(height: 8),
                   const Divider(),
                   const SizedBox(height: 8),
-                  _buildTitle(host, "相同", context),
+                  _buildTitle(
+                      host, AppLocalizations.of(context)!.link_same, context),
                   const SizedBox(height: 8),
                   _buildHostList(
                     context,
@@ -118,11 +121,11 @@ Future<Map<String, List<String>>?> linkDialog(
                   "same": sameCheckedHosts,
                 });
               },
-              child: const Text("确认"),
+              child: Text(AppLocalizations.of(context)!.ok),
             ),
             TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text("取消")),
+                child: Text(AppLocalizations.of(context)!.cancel)),
           ],
         );
       });
@@ -161,7 +164,7 @@ Widget _buildHostList(BuildContext context, List<String> hosts,
 RichText _buildTitle(HostsModel host, String text, BuildContext context) {
   return RichText(
     text: TextSpan(
-      text: "当 ",
+      text: AppLocalizations.of(context)!.link_and_description,
       children: [
         TextSpan(
           text: host.host,
@@ -169,14 +172,15 @@ RichText _buildTitle(HostsModel host, String text, BuildContext context) {
               fontWeight: FontWeight.w900,
               color: Theme.of(context).colorScheme.primary),
         ),
-        const TextSpan(text: " 状态变化时，下列数据切换为"),
+        TextSpan(
+            text: AppLocalizations.of(context)!.link_status_update_description),
         TextSpan(
           text: " $text ",
           style: TextStyle(
               fontWeight: FontWeight.w900,
               color: Theme.of(context).colorScheme.primary),
         ),
-        const TextSpan(text: "状态："),
+        TextSpan(text: AppLocalizations.of(context)!.link_status_description),
       ],
       style: Theme.of(context).textTheme.bodyMedium,
     ),

@@ -169,8 +169,16 @@ class HostTable extends HostBaseView {
       },
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
-          {"icon": Icons.link, "text": "关联", "value": 1},
-          {"icon": Icons.sensors, "text": "测试", "value": 2},
+          {
+            "icon": Icons.link,
+            "text": AppLocalizations.of(context)!.link,
+            "value": 1
+          },
+          {
+            "icon": Icons.sensors,
+            "text": AppLocalizations.of(context)!.test,
+            "value": 2
+          },
           {
             "icon": Icons.copy,
             "text": AppLocalizations.of(context)!.copy,

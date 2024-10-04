@@ -49,5 +49,20 @@
   "warning_different_covering_system": "当前覆盖系统",
   "warning_different_covering_current": "系统覆盖当前",
   "error_not_update_save_tip": "内容已更新！请确保保存您的更改，以免丢失重要信息。",
-  "error_not_update_save_permission_tip": "该文件已被使用保存时需要管理员权限。"
+  "error_not_update_save_permission_tip": "该文件已被使用保存时需要管理员权限。",
+  "test": "测试",
+  "error_test_ip_notfound": "未找到 IP 地址",
+  "error_test_ip_different": "找到 IP 地址和设置 IP 地址并不一致",
+  "link": "关联",
+  "delete": "删除",
+  "open_file": "打开文件",
+  "error_open_file": "文件读取失败",
+  "error_open_file_size": "读取文件不能大于10MB",
+  "about": "关于",
+  "about_description": "Hosts Editor 是一个使用 Flutter 开发的应用程序，旨在简化 Linux、MacOS、Windows 系统上 hosts 文件的编辑和管理。\n该工具提供了一个用户友好的界面，使用户能够轻松地添加、修改和删除 hosts 文件中的条目。",
+  "link_contrary": "相反",
+  "link_same": "相同",
+  "link_and_description": "当 ",
+  "link_status_update_description": " 状态变化时，下列数据切换为",
+  "link_status_description": "状态："
 }

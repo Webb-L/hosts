@@ -73,10 +73,22 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
   /// [content] 是文件的内容
   onOpenFile(String content) {
     setState(() {
-      hostsFile.formString(content);
-      hostsFile.defaultContent = content;
-      hostsFile.isUpdateHost();
-      syncFilterHosts();
+      if (editMode == EditMode.Table) {
+        hostsFile.formString(content);
+        hostsFile.defaultContent = content;
+        hostsFile.isUpdateHost();
+        syncFilterHosts();
+      } else {
+        textEditingController.dispose();
+
+        textEditingController = HostTextEditingController()
+          ..text = content
+          ..addListener(() {
+            setState(() {
+              hostsFile.isUpdateHostWithText(textEditingController.text);
+            });
+          });
+      }
     });
   }
 

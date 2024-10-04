@@ -83,23 +83,28 @@ class HostList extends HostBaseView {
             break;
         }
       },
-      // IconButton(
-      //   onPressed: () => onLink(index, it),
-      //   icon: const Icon(Icons.link),
-      //   tooltip: "关联",
-      // ),
-      // const SizedBox(width: 8),
-      // CopyDialog(context: context, hosts: hosts, index: index),
       itemBuilder: (BuildContext context) {
         List<Map<String, Object>> list = [
-          {"icon": Icons.link, "text": "关联", "value": 1},
-          {"icon": Icons.sensors, "text": "测试", "value": 2},
+          {
+            "icon": Icons.link,
+            "text": AppLocalizations.of(context)!.link,
+            "value": 1
+          },
+          {
+            "icon": Icons.sensors,
+            "text": AppLocalizations.of(context)!.test,
+            "value": 2
+          },
           {
             "icon": Icons.copy,
             "text": AppLocalizations.of(context)!.copy,
             "value": 3
           },
-          {"icon": Icons.delete_outline, "text": "删除", "value": 4},
+          {
+            "icon": Icons.delete_outline,
+            "text": AppLocalizations.of(context)!.delete,
+            "value": 4
+          },
         ];
 
         return list

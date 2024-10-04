@@ -6,7 +6,7 @@ import 'package:hosts/model/host_file.dart';
 
 Future<void> testDialog(BuildContext context, HostsModel host) {
   for (var value in host.hosts) {
-    _getRemoteIpAddress(value);
+    _getRemoteIpAddress(context, value);
   }
   return showDialog(
       context: context,
@@ -14,12 +14,12 @@ Future<void> testDialog(BuildContext context, HostsModel host) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
-            title: const Text("测试"),
+            title: Text(AppLocalizations.of(context)!.test),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: host.hosts.map((domain) {
                 return FutureBuilder<String>(
-                  future: _getRemoteIpAddress(domain),
+                  future: _getRemoteIpAddress(context, domain),
                   builder:
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     Widget leadingIcon;
@@ -45,10 +45,11 @@ Future<void> testDialog(BuildContext context, HostsModel host) {
                               ? const Icon(Icons.check)
                               : const Icon(Icons.error));
                       subtitle = ipAddress == null
-                          ? "未找到 IP 地址"
+                          ? AppLocalizations.of(context)!.error_test_ip_notfound
                           : (ipAddress == host.host
                               ? ipAddress
-                              : "找到 IP 地址和设置 IP 地址并不一致");
+                              : AppLocalizations.of(context)!
+                                  .error_test_ip_different);
                     }
 
                     return ListTile(
@@ -73,8 +74,7 @@ Future<void> testDialog(BuildContext context, HostsModel host) {
       });
 }
 
-// TODO 兼容Web
-Future<String> _getRemoteIpAddress(String domain) async {
+Future<String> _getRemoteIpAddress(BuildContext context, String domain) async {
   try {
     List<InternetAddress> addresses = await InternetAddress.lookup(domain);
 
@@ -83,6 +83,6 @@ Future<String> _getRemoteIpAddress(String domain) async {
     }
     throw Exception('');
   } catch (e) {
-    throw Exception("未找到 IP 地址");
+    throw Exception(AppLocalizations.of(context)!.error_test_ip_notfound);
   }
 }

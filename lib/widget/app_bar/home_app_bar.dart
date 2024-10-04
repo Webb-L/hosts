@@ -95,7 +95,7 @@ class HomeAppBar extends StatelessWidget {
                           pickFile(context, result);
                         },
                         icon: const Icon(Icons.file_open_outlined),
-                        tooltip: "打开文件",
+                        tooltip: AppLocalizations.of(context)!.open_file,
                       )
                     else
                       IconButton(
@@ -159,30 +159,7 @@ class HomeAppBar extends StatelessWidget {
                       tooltip: AppLocalizations.of(context)!.reduction,
                     ),
                   const SizedBox(width: 16),
-                  IconButton(
-                    onPressed: () {
-                      showAboutDialog(
-                        context: context,
-                        applicationVersion: '1.5.0',
-                        applicationIcon: Image.asset(
-                          "assets/icon/logo.png",
-                          width: 50,
-                          height: 50,
-                        ),
-                        children: [
-                          const Text(
-                              'Hosts Editor 是一个使用 Flutter 开发的应用程序，旨在简化 Linux、MacOS、Windows 系统上 hosts 文件的编辑和管理。\n该工具提供了一个用户友好的界面，使用户能够轻松地添加、修改和删除 hosts 文件中的条目。'),
-                          const SizedBox(height: 10),
-                          const Text('Developed by Webb.'),
-                        ],
-                      );
-                    },
-                    icon: Image.asset(
-                      "assets/icon/logo.png",
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
+                  buildMoreButton(context)
                 ],
               )
             ],
@@ -227,10 +204,12 @@ class HomeAppBar extends StatelessWidget {
     return TableRow(
       children: [
         Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Checkbox(
-                value: hosts.isNotEmpty && isCheckedAll,
-                onChanged: onCheckedAllChanged)),
+          padding: const EdgeInsets.all(8.0),
+          child: Checkbox(
+            value: hosts.isNotEmpty && isCheckedAll,
+            onChanged: onCheckedAllChanged,
+          ),
+        ),
         tableHeaderItem("host", AppLocalizations.of(context)!.ip_address),
         tableHeaderItem("isUse", AppLocalizations.of(context)!.status),
         tableHeaderItem("hosts", AppLocalizations.of(context)!.domain),
@@ -309,8 +288,8 @@ class HomeAppBar extends StatelessWidget {
 
   void pickFile(BuildContext context, FilePickerResult result) {
     if (result.files.first.size > 10 * 1024 * 1024) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("读取文件不能大于10MB")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.error_open_file_size)));
       return;
     }
 
@@ -330,8 +309,50 @@ class HomeAppBar extends StatelessWidget {
         onOpenFile(utf8.decode(bytes));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("文件读取失败")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.error_open_file)));
     }
+  }
+
+  Widget buildMoreButton(BuildContext context) {
+    return PopupMenuButton(onSelected: (value) {
+      switch (value) {
+        case 1:
+          showAboutDialog(
+            context: context,
+            applicationVersion: '1.5.0',
+            applicationIcon: Image.asset(
+              "assets/icon/logo.png",
+              width: 50,
+              height: 50,
+            ),
+            children: [
+              Text(AppLocalizations.of(context)!.about_description),
+              const SizedBox(height: 10),
+              const Text('Developed by Webb.'),
+            ],
+          );
+          break;
+        default:
+          break;
+      }
+    }, itemBuilder: (BuildContext context) {
+      final List<Map<String, Object>> list = [
+        {"text": AppLocalizations.of(context)!.about, "value": 1},
+      ];
+
+      return list.map((item) {
+        return PopupMenuItem<int>(
+          value: int.parse(item["value"].toString()),
+          child: Row(
+            children: [
+              if (item["icon"] != null) Icon(item["icon"]! as IconData),
+              SizedBox(width: item["icon"] != null ? 8 : 32),
+              Text(item["text"]!.toString()),
+            ],
+          ),
+        );
+      }).toList();
+    });
   }
 }

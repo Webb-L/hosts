@@ -49,5 +49,20 @@
   "warning_different_covering_system": "Currently covering system",
   "warning_different_covering_current": "System covering current",
   "error_not_update_save_tip": "Content has been updated! Please ensure to save your changes to avoid losing important information.",
-  "error_not_update_save_permission_tip": "This file is in use and requires administrator permissions to save."
+  "error_not_update_save_permission_tip": "This file is in use and requires administrator permissions to save.",
+  "test": "Test",
+  "error_test_ip_notfound": "IP address not found",
+  "error_test_ip_different": "Found IP address does not match the set IP address",
+  "link": "Link",
+  "delete": "Delete",
+  "open_file": "Open file",
+  "error_open_file": "Failed to read the file",
+  "error_open_file_size": "The file size cannot exceed 10MB",
+  "about": "About",
+  "about_description": "Hosts Editor is an application developed using Flutter, designed to simplify the editing and management of the hosts file on Linux, MacOS, and Windows systems.\nThis tool provides a user-friendly interface that allows users to easily add, modify, and delete entries in the hosts file.",
+  "link_contrary": "Contrary",
+  "link_same": "Same",
+  "link_and_description": "When ",
+  "link_status_update_description": " the status changes, the following data switches to",
+  "link_status_description": "Status:"
 }
