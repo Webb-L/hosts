@@ -138,27 +138,37 @@ class HomeAppBar extends StatelessWidget {
                         SimpleHostFileHistory? resultHistory =
                             await showModalBottomSheet(
                           context: context,
-                          builder: (BuildContext context) {
-                            return HistoryPage(
-                                selectHistory: selectHistory, history: history);
-                          },
+                          builder: (BuildContext context) => HistoryPage(
+                              selectHistory: selectHistory, history: history),
                         );
-                        if (resultHistory != null) {
-                          onHistoryChanged(resultHistory);
+                        if (resultHistory == null) {
+                          onHistoryChanged(null);
                           return;
                         }
-                        onHistoryChanged(null);
+
+                        if (!isSave) {
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                AppLocalizations.of(context)!.error_not_save),
+                            action: SnackBarAction(
+                              label: AppLocalizations.of(context)!.abort,
+                              onPressed: () => onHistoryChanged(resultHistory),
+                            ),
+                          ));
+
+                          return;
+                        }
+                        onHistoryChanged(resultHistory);
                       },
                       icon: const Icon(Icons.history),
                     ),
-                  const SizedBox(width: 16),
                   if (!isSave)
                     IconButton(
                       onPressed: undoHost,
                       icon: const Icon(Icons.undo),
                       tooltip: AppLocalizations.of(context)!.reduction,
                     ),
-                  const SizedBox(width: 16),
                   buildMoreButton(context)
                 ],
               )

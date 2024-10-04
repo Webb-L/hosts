@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hosts/enums.dart';
 import 'package:hosts/page/home_base_page.dart';
 import 'package:hosts/widget/app_bar/home_app_bar.dart';
 
@@ -92,7 +93,7 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
       leading: const Icon(Icons.error_outline),
       actions: [
         TextButton(
-          onPressed: () => saveHost(widget.filePath, hostsFile.toString()),
+          onPressed: onKeySaveChange,
           child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
@@ -100,7 +101,10 @@ class _SimpleHomePageState extends BaseHomePageState<SimpleHomePage> {
   }
 
   @override
-  void onKeySaveChange() {
+  void onKeySaveChange() async {
+    if (editMode == EditMode.Text) {
+      hostsFile.formString(textEditingController.text);
+    }
     saveHost(widget.filePath, hostsFile.toString());
   }
 }

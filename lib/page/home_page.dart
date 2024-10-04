@@ -181,26 +181,11 @@ class _HomePageState extends BaseHomePageState<HomePage> {
       leading: const Icon(Icons.error_outline),
       actions: [
         TextButton(
-          onPressed: () async {
-            if (isUseFile) {
-              saveHost(FileManager.systemHostFilePath, hostsFile.toString());
-              return;
-            }
-            setState(() {
-              hostsFile.save(true);
-            });
-          },
+          onPressed: () => onKeySaveChange(true),
           child: Text(AppLocalizations.of(context)!.save_create_history),
         ),
         TextButton(
-          onPressed: () async {
-            if (isUseFile) {
-              saveHost(FileManager.systemHostFilePath, hostsFile.toString());
-            }
-            setState(() {
-              hostsFile.save();
-            });
-          },
+          onPressed: onKeySaveChange,
           child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
@@ -208,14 +193,20 @@ class _HomePageState extends BaseHomePageState<HomePage> {
   }
 
   @override
-  void onKeySaveChange() async {
+  void onKeySaveChange([bool isHistory = false]) async {
+    if (editMode == EditMode.Text) {
+      hostsFile.formString(textEditingController.text);
+    }
     final bool isUseFile = hostsFile.fileId ==
         await _settingsManager.getString(settingKeyUseHostFile);
     if (isUseFile) {
-      saveHost(FileManager.systemHostFilePath, hostsFile.toString());
+      if (!await saveHost(
+          FileManager.systemHostFilePath, hostsFile.toString())) {
+        return;
+      }
     }
     setState(() {
-      hostsFile.save();
+      hostsFile.save(isHistory);
     });
   }
 }

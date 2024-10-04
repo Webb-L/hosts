@@ -337,11 +337,11 @@ class HostsFile {
     final String content = toString();
     File(filePath).writeAsStringSync(content);
     if (isHistory) {
-      FileManager fileManager = FileManager();
-      fileManager.saveHistory(fileId, content);
-      fileManager.getHistory(fileId).then((value) {
-        history = value;
-      });
+      FileManager()
+        ..saveHistory(fileId, content)
+        ..getHistory(fileId).then((value) {
+          history = value;
+        });
     }
     initData(filePath);
     isUpdateHost();
