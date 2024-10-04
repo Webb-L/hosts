@@ -64,5 +64,6 @@
   "link_same": "相同",
   "link_and_description": "当 ",
   "link_status_update_description": " 状态变化时，下列数据切换为",
-  "link_status_description": "状态："
+  "link_status_description": "状态：",
+  "form": "表单"
 }

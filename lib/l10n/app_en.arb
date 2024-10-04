@@ -64,5 +64,6 @@
   "link_same": "Same",
   "link_and_description": "When ",
   "link_status_update_description": " the status changes, the following data switches to",
-  "link_status_description": "Status:"
+  "link_status_description": "Status:",
+  "form": "Form"
 }

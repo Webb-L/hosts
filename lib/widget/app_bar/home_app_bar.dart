@@ -177,12 +177,19 @@ class HomeAppBar extends StatelessWidget {
         ),
         if (editMode == EditMode.Table)
           Table(
-            columnWidths: const {
-              0: FixedColumnWidth(50),
-              2: FixedColumnWidth(100),
-              3: FlexColumnWidth(2),
-              5: FixedColumnWidth(150),
-            },
+            columnWidths: MediaQuery.of(context).size.width < 600
+                ? const {
+                    0: FixedColumnWidth(50),
+                    2: FlexColumnWidth(1),
+                    3: FlexColumnWidth(1),
+                    5: FlexColumnWidth(1),
+                  }
+                : const {
+                    0: FixedColumnWidth(50),
+                    2: FixedColumnWidth(100),
+                    3: FlexColumnWidth(2),
+                    5: FixedColumnWidth(150),
+                  },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [tableHeader(context)],
           )

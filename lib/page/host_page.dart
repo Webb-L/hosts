@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/util/regexp_util.dart';
 import 'package:hosts/widget/host_text_editing_controller.dart';
@@ -26,6 +27,7 @@ class _HostPageState extends State<HostPage> {
   List<HostsModel> hosts = [
     HostsModel("", false, "", [""], {})
   ];
+  EditMode editMode = EditMode.Table;
 
   @override
   void initState() {
@@ -98,6 +100,7 @@ class _HostPageState extends State<HostPage> {
         title: Text(widget.hostModel != null
             ? "${AppLocalizations.of(context)!.edit} - ${_hostController.text}"
             : "${AppLocalizations.of(context)!.create}(${currentIndex + 1}/${hosts.isEmpty ? 1 : hosts.length})"),
+        actions: [if (size.width < 600) _buildEditModeButton(context)],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -113,30 +116,52 @@ class _HostPageState extends State<HostPage> {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.5,
-              height: size.height,
-              child: buildForm(context),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: VerticalDivider(),
-            ),
-            Expanded(
-                child: TextFormField(
-              focusNode: _focusNode,
-              controller: _hostConfController,
-              maxLines: 10000,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: AppLocalizations.of(context)!.create_host_template,
-              ),
-            ))
-          ],
+          children: buildEditHost(context, size),
         ),
       ),
     );
+  }
+
+  List<Widget> buildEditHost(BuildContext context, Size size) {
+    if (size.width < 600) {
+      if (editMode == EditMode.Text) {
+        return [
+          Expanded(
+              child: TextFormField(
+            focusNode: _focusNode,
+            controller: _hostConfController,
+            maxLines: 10000,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: AppLocalizations.of(context)!.create_host_template,
+            ),
+          ))
+        ];
+      }
+
+      return [Expanded(child: buildForm(context))];
+    }
+    return [
+      SizedBox(
+        width: size.width * 0.5,
+        height: size.height,
+        child: buildForm(context),
+      ),
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: VerticalDivider(),
+      ),
+      Expanded(
+          child: TextFormField(
+        focusNode: _focusNode,
+        controller: _hostConfController,
+        maxLines: 10000,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: AppLocalizations.of(context)!.create_host_template,
+        ),
+      ))
+    ];
   }
 
   Form buildForm(BuildContext context) {
@@ -360,5 +385,37 @@ class _HostPageState extends State<HostPage> {
     _hostConfController.value = TextEditingValue(
       text: hosts.join("\n\n"),
     );
+  }
+
+  IconButton _buildEditModeButton(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        if (editMode == EditMode.Text) {
+          onSwitchMode(EditMode.Table);
+        } else {
+          onSwitchMode(EditMode.Text);
+        }
+      },
+      tooltip: editMode == EditMode.Text
+          ? AppLocalizations.of(context)!.form
+          : AppLocalizations.of(context)!.text,
+      icon: Icon(
+        editMode == EditMode.Text
+            ? Icons.table_rows_outlined
+            : Icons.text_snippet_outlined,
+      ),
+    );
+  }
+
+  /// 切换编辑模式
+  /// [value] 是新的编辑模式
+  onSwitchMode(EditMode value) {
+    setState(() {
+      if (editMode == EditMode.Text) {
+        editMode = EditMode.Table;
+      } else {
+        editMode = EditMode.Text;
+      }
+    });
   }
 }
