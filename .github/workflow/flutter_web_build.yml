@@ -1,0 +1,46 @@
+name: Flutter Web Build
+
+on:
+  push:
+    branches:
+      - feature/v1.5.0
+  pull_request:
+    branches:
+      - feature/v1.5.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '21.0.4'
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build web
+        run: flutter build web --release --wasm --base-href=/hosts/
+
+      - name: Archive production build
+        uses: actions/upload-artifact@v2
+        with:
+          name: web-build
+          path: build/web
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          publish_branch: gh-pages
