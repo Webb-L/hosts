@@ -20,6 +20,7 @@ class HomePage extends BaseHomePage {
 }
 
 class _HomePageState extends BaseHomePageState<HomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final SettingsManager _settingsManager = SettingsManager();
   final FileManager _fileManager = FileManager();
 
@@ -36,10 +37,15 @@ class _HomePageState extends BaseHomePageState<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       floatingActionButton: buildFloatingActionButton(context),
+      drawer: MediaQuery.of(context).size.width < 600
+          ? buildHomeDrawer(context)
+          : null,
       body: Row(
         children: [
-          if (advancedSettingsEnum == AdvancedSettingsEnum.Close)
+          if (advancedSettingsEnum == AdvancedSettingsEnum.Close &&
+              MediaQuery.of(context).size.width > 600)
             buildHomeDrawer(context),
           Expanded(
             child: Column(
@@ -51,7 +57,12 @@ class _HomePageState extends BaseHomePageState<HomePage> {
                   searchText: searchText,
                   onSearchChanged: onSearchChanged,
                   advancedSettingsEnum: advancedSettingsEnum,
-                  onSwitchAdvancedSettings: onSwitchAdvancedSettings,
+                  onSwitchAdvancedSettings: (AdvancedSettingsEnum value) {
+                    setState(() {
+                      advancedSettingsEnum = value;
+                    });
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
                   editMode: editMode,
                   onSwitchMode: onSwitchMode,
                   hosts: selectHosts,

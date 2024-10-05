@@ -104,7 +104,8 @@ class _HostPageState extends State<HostPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if (!((_formKey.currentState as FormState?)?.validate() ?? false)) {
+          if (!((_formKey.currentState as FormState?)?.validate() ?? false) &&
+              editMode == EditMode.Table) {
             return;
           }
 
