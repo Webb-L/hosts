@@ -5,6 +5,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,6 +25,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
+          channel: 'stable'
 
       - name: Get dependencies
         run: flutter pub get
@@ -32,7 +34,7 @@ jobs:
         run: flutter build web --release --wasm --base-href=/hosts/
 
       - name: Archive production build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3  # Updated to v3
         with:
           name: web-build
           path: build/web
