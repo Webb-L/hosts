@@ -31,7 +31,7 @@ jobs:
         run: flutter build web --release --wasm --base-href=/hosts/
 
       - name: Deploy to GitHub Pages
-        uses:  JamesIves/github-pages-deloy-action@v4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: build/web
