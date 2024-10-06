@@ -15,12 +15,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '21.0.4'
-          distribution: 'temurin'
-
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -35,16 +29,3 @@ jobs:
         with:
           branch: gh-pages
           folder: build/web
-
-#      - name: Archive production build
-#        uses: actions/upload-artifact@v3  # Updated to v3
-#        with:
-#          name: web-build
-#          path: build/web
-
-#      - name: Deploy to GitHub Pages
-#        uses: peaceiris/actions-gh-pages@v3
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: ./build/web
-#          publish_branch: gh-pages
