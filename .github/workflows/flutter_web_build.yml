@@ -27,17 +27,20 @@ jobs:
           flutter-version: '3.24.3'
           channel: 'stable'
 
-      - name: Get dependencies
-        run: flutter pub get
-
       - name: Build web
         run: flutter build web --release --wasm --base-href=/hosts/
 
-      - name: Archive production build
-        uses: actions/upload-artifact@v3  # Updated to v3
+      - name: Deploy to GitHub Pages
+        uses:  JamesIves/github-pages-deloy-action@v4
         with:
-          name: web-build
-          path: build/web
+          branch: gh-pages
+          folder: build/web
+
+#      - name: Archive production build
+#        uses: actions/upload-artifact@v3  # Updated to v3
+#        with:
+#          name: web-build
+#          path: build/web
 
 #      - name: Deploy to GitHub Pages
 #        uses: peaceiris/actions-gh-pages@v3
