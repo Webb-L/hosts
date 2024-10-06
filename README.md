@@ -12,5 +12,27 @@ Hosts Editor 是一个使用 Flutter 开发的应用程序，旨在简化 Linux�
 ## 页面
 
 ![1.png](image/1.png)
+
+### 简易模式
+
+```bash
+hosts /etc/hosts
+```
+
 ![2.png](image/2.png)
+
+### 文本模式
+
 ![3.png](image/3.png)
+
+### 自适应
+
+![4.png](image/4.png)
+
+### 编辑和新增
+
+![5.png](image/5.png)
+
+### 测试是否配置成功
+
+![6.png](image/6.png)
