@@ -417,7 +417,7 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
                 title: const Text("保存"),
                 content: SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
-                  child: SelectableText(tempContent),
+                  child: SelectableText(hostContent),
                 ),
                 actions: [
                   TextButton(
@@ -437,13 +437,13 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
                           "etc",
                           "hosts"
                         ]);
-                        final String content = tempContent
+                        final String content = hostContent
                             .split("\n")
-                            .map((item) => 'echo "$item"')
+                            .map((item) => 'echo $item')
                             .join("\n");
                         writeClipboard(
                           '(\n$content\n) > $systemHostPath',
-                          tempContent,
+                          hostContent,
                           context,
                         );
                       },
