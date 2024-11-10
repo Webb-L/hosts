@@ -174,7 +174,8 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
       for (var host in selectHosts) {
         host.isUse = value;
       }
-      // syncFilterHosts();
+      hostsFile.updateHostUseState(selectHosts);
+      syncFilterHosts();
     });
   }
 
