@@ -175,21 +175,12 @@ class HomeAppBar extends StatelessWidget {
             ],
           ),
         ),
-        if (editMode == EditMode.Table)
+        if (editMode == EditMode.Table &&
+            MediaQuery.of(context).size.width < 1000)
           Table(
-            columnWidths: MediaQuery.of(context).size.width < 600
-                ? const {
-                    0: FixedColumnWidth(50),
-                    2: FlexColumnWidth(1),
-                    3: FlexColumnWidth(1),
-                    5: FlexColumnWidth(1),
-                  }
-                : const {
-                    0: FixedColumnWidth(50),
-                    2: FixedColumnWidth(100),
-                    3: FlexColumnWidth(2),
-                    5: FixedColumnWidth(150),
-                  },
+            columnWidths: const {
+              0: FixedColumnWidth(50),
+            },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [tableHeader(context)],
           )
@@ -231,11 +222,6 @@ class HomeAppBar extends StatelessWidget {
         tableHeaderItem("isUse", AppLocalizations.of(context)!.status),
         tableHeaderItem("hosts", AppLocalizations.of(context)!.domain),
         tableHeaderItem("description", AppLocalizations.of(context)!.remark),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(AppLocalizations.of(context)!.action,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
       ],
     );
   }

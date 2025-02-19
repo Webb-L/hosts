@@ -375,6 +375,8 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
         child: HostTable(
           hosts: filterHosts,
           selectHosts: selectHosts,
+          isCheckedAll: hostsFile.hosts.length == selectHosts.length,
+          onCheckedAllChanged: onCheckedAllChanged,
           onChecked: onChecked,
           onLink: onLink,
           onEdit: onEdit,
@@ -393,6 +395,8 @@ abstract class BaseHomePageState<T extends BaseHomePage> extends State<T> {
         child: HostList(
           hosts: filterHosts,
           selectHosts: selectHosts,
+          isCheckedAll: hostsFile.hosts.length == selectHosts.length,
+          onCheckedAllChanged: onCheckedAllChanged,
           onChecked: onChecked,
           onLink: onLink,
           onEdit: onEdit,

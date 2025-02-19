@@ -18,6 +18,8 @@ class HostList extends HostBaseView {
     required super.onDelete,
     required super.onToggleUse,
     required super.onLaunchUrl,
+    required super.isCheckedAll,
+    required super.onCheckedAllChanged,
   });
 
   @override
