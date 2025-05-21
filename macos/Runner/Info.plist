@@ -20,6 +20,8 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
@@ -28,5 +30,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>此应用需要管理员权限以修改系统hosts文件</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>此应用需要访问系统资源</string>
+	<key>NSSystemAdministrationUsageDescription</key>
+	<string>此应用需要管理员权限修改系统hosts文件</string>
 </dict>
 </plist>
