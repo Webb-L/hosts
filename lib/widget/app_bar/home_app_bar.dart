@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/host_file.dart';
@@ -32,7 +32,7 @@ class HomeAppBar extends StatelessWidget {
   final SimpleHostFileHistory? selectHistory;
   final List<SimpleHostFileHistory> history;
   final ValueChanged<bool> onSwitchHosts;
-  final ValueChanged<SimpleHostFileHistory?> onHistoryChanged;
+  final ValueChanged<SimpleHostFileHistory?>  onHistoryChanged;
 
   const HomeAppBar({
     super.key,
