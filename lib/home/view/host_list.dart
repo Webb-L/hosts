@@ -67,12 +67,6 @@ class HostList extends StatelessWidget {
                   text: AppLocalizations.of(context)!.remark,
                   cubit: hostCubit,
                 ),
-                SizedBox(width: 16),
-                SizedBox(
-                  width: 100,
-                  child: Text(AppLocalizations.of(context)!.action,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                ),
               ],
             ),
             Expanded(

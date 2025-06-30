@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -256,11 +258,11 @@ class HomeAppBar extends StatelessWidget {
       }
       final Uint8List? bytes = result.files.first.bytes;
       if (path.isNotEmpty && bytes == null) {
-        // onOpenFile(File(path).readAsStringSync());
+        context.read<HostCubit>().fromText(File(path).readAsStringSync());
       }
 
-      if (path.isEmpty && bytes != null) {
-        // onOpenFile(utf8.decode(bytes));
+      if (bytes != null) {
+        context.read<HostCubit>().fromText(utf8.decode(bytes));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

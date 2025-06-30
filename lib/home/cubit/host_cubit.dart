@@ -427,6 +427,22 @@ class HostCubit extends Cubit<HostState> {
     );
   }
 
+  void fromText(String content) {
+    final hosts = _fileManager.parseHosts(content.split("\n"));
+
+    emit(
+      HostInitial(
+        HostStateData(
+          fileContent: content,
+          defaultFileContent: content,
+          hosts: hosts,
+          defaultHosts: hosts,
+          filterHosts: hosts,
+        ),
+      ),
+    );
+  }
+
   /// 检查是否有更新
   ///
   /// [hosts]: 当前主机列表
@@ -603,7 +619,7 @@ class HostCubit extends Cubit<HostState> {
   }
 
   /// 转换为字符串
-  /// 
+  ///
   /// 返回当前文件内容字符串
   @override
   String toString() {

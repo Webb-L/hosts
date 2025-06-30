@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
+import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
+import 'package:hosts/util/regexp_util.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -17,6 +20,9 @@ class FileManager {
 
   // 静态变量保存单例实例
   static final FileManager _instance = FileManager._internal();
+
+  static const MethodChannel _channel =
+      MethodChannel('top.webb_l.hosts/system');
 
   // 工厂构造函数返回单例实例
   factory FileManager() => _instance;
@@ -82,6 +88,16 @@ class FileManager {
     }
   }
 
+  Future<String> readAsString(String fileId) async {
+    final path = await getHostsFilePath(fileId);
+    return File(path).readAsString();
+  }
+
+  Future<List<String>> readAsLines(String fileId) async {
+    final path = await getHostsFilePath(fileId);
+    return await File(path).readAsLines();
+  }
+
   // 删除文件
   Future<void> deleteFiles(List<String> fileNames) async {
     if (_cachedDirectory == null) await _initializeDirectory();
@@ -137,7 +153,7 @@ class FileManager {
         .toList();
   }
 
-  void saveHistory(String fileId, String content) async {
+  Future<void> saveHistory(String fileId, String content) async {
     if (_cachedDirectory == null) await _initializeDirectory();
     if (fileId.isEmpty) return;
 
@@ -145,18 +161,20 @@ class FileManager {
     final safeFileName = p.basename(fileId); // 只保留文件名，不允许路径
     final filePath = p.join(_cachedDirectory!.path, safeFileName);
     Directory rootDirectory = Directory(filePath);
-    if (!rootDirectory.existsSync()) {
+    if (!(await rootDirectory.exists())) {
       rootDirectory.create(recursive: true);
     }
     Directory historyDirectory =
         Directory(p.join(rootDirectory.path, "history"));
-    if (!historyDirectory.existsSync()) {
+    if (!(await historyDirectory.exists())) {
       historyDirectory.create(recursive: true);
     }
-    File(
+    final File file = File(
       p.join(historyDirectory.path,
           DateTime.now().millisecondsSinceEpoch.toString()),
-    ).writeAsString(content);
+    );
+
+    await file.writeAsString(content);
   }
 
   void deleteFile(String path) {
@@ -227,6 +245,100 @@ class FileManager {
       }
     }
 
+    if (Platform.isMacOS) {
+      try {
+        final result = await _channel.invokeMethod<bool>('modifyHostsFile',
+            {'content': File(cacheFilePath).readAsStringSync()});
+
+        if (result == null) {
+          throw Exception("修改hosts文件失败");
+        }
+      } on PlatformException catch (e) {
+        print('修改hosts文件失败: ${e.message}');
+        throw e; // 重新抛出异常，让调用者处理
+      }
+    }
+
     return result;
+  }
+
+  List<HostsModel> parseHosts(List<String> lines) {
+    List<HostsModel> tempHosts = [];
+
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isNotEmpty && (isValidIPv4(line) || isValidIPv6(line))) {
+        final parts = line
+            .replaceFirst("#", "")
+            .split(RegExp(r"\s+"))
+            .where((it) => it.trim().isNotEmpty)
+            .toList();
+
+        if (parts.length < 2) continue;
+
+        String host = parts.first;
+        List<String> hosts = parts.sublist(1);
+
+        int? descLine;
+        String description = "";
+
+        Map<String, dynamic> config = {};
+
+        List<String> lineDescription = line.contains(RegExp(r"\s+#\s?"))
+            ? line
+                .split(RegExp(r"\s+#\s?"))
+                .where((it) => it.trim().isNotEmpty)
+                .toList()
+            : [];
+
+        if (lineDescription.isNotEmpty) {
+          print(lineDescription);
+          final List<String> tempLineDescription = lineDescription.sublist(1);
+          final String temp = tempLineDescription.length > 1
+              ? tempLineDescription.join("# ")
+              : "# ${tempLineDescription.join("")}";
+
+          final RegExp regExp = RegExp(r"# - config \{([^{}]*)\}");
+          final String tempDescription = temp.contains(regExp)
+              ? temp.replaceAll(regExp, "")
+              : temp.replaceFirst("# ", "");
+          if (tempDescription.trim().isNotEmpty) {
+            description = tempDescription;
+          }
+
+          final RegExpMatch? match = regExp.firstMatch(temp);
+          if (match != null) {
+            try {
+              config = jsonDecode("{${match.group(1)}}");
+            } catch (e) {
+              print("错误：解析配置失败");
+            }
+          }
+
+          hosts = lineDescription.first
+              .replaceFirst("#", "")
+              .split(RegExp(r"\s+"))
+              .where((it) => it.trim().isNotEmpty)
+              .toList()
+              .sublist(1);
+        }
+
+        if (i > 0 && description.isEmpty) {
+          final prevLine = lines[i - 1].trim();
+          if (prevLine.isNotEmpty &&
+              prevLine.startsWith("#") &&
+              !(isValidIPv4(prevLine) || isValidIPv6(prevLine))) {
+            description = prevLine.replaceFirst(RegExp(r"^#\s?"), "");
+            descLine = i - 1;
+          }
+        }
+
+        tempHosts.add(HostsModel(host, !line.startsWith(RegExp(r"^\s?#")),
+            description, hosts, config,
+            hostLine: i, descLine: descLine));
+      }
+    }
+
+    return tempHosts;
   }
 }

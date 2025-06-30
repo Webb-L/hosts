@@ -6,8 +6,6 @@ import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/home/view/home_page.dart';
 import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/simple_host_file.dart';
-// import 'package:hosts/page/home_page.dart';
-import 'package:hosts/page/simple_home_page.dart';
 import 'package:hosts/theme.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';

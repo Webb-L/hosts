@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/home/view/home_view.dart';
+import 'package:hosts/home/view/simple_home_view.dart';
 
 /// 首页页面组件
 ///
@@ -21,5 +22,19 @@ class HomePage extends StatelessWidget {
       ],
       child: const HomeView(),
     );
+  }
+}
+
+class SimpleHomePage extends StatelessWidget {
+  final String filePath;
+
+  const SimpleHomePage({super.key, required this.filePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(providers: [
+      BlocProvider<HomeCubit>(create: (context) => HomeCubit()),
+      BlocProvider<HostCubit>(create: (context) => HostCubit()),
+    ], child: SimpleHomeView());
   }
 }
