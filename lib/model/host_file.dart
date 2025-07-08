@@ -30,11 +30,15 @@ class HostsModel {
 
     if (text.isEmpty &&
         host.isEmpty &&
-        hosts.where((it) => it.trim().isNotEmpty).isEmpty)  {
+        hosts.where((it) => it.trim().isNotEmpty).isEmpty) {
       return "";
     }
 
-    return "$text${isUse ? "" : "# "}$host ${hosts.join(" ")} ${config.isNotEmpty ? '# - config ${json.encode(config)}' : ''}";
+    return "$text${toHostString()}";
+  }
+
+  String toHostString() {
+    return "${isUse ? "" : "# "}$host ${hosts.join(" ")} ${config.isNotEmpty ? '# - config ${json.encode(config)}' : ''}";
   }
 
   bool filter(String searchQuery) {
@@ -76,13 +80,14 @@ class HostsModel {
         _listEquals(other.hosts, hosts) &&
         _mapEquals(other.config, config);
   }
+
   @override
   int get hashCode {
     return host.hashCode ^
-    isUse.hashCode ^
-    description.hashCode ^
-    _listHash(hosts) ^
-    _mapHash(config);
+        isUse.hashCode ^
+        description.hashCode ^
+        _listHash(hosts) ^
+        _mapHash(config);
   }
 
   static bool _listEquals(List<dynamic>? list1, List<dynamic>? list2) {
@@ -94,6 +99,7 @@ class HostsModel {
     }
     return true;
   }
+
   static int _listHash(List<dynamic> list) {
     int hash = 0;
     for (var item in list) {
@@ -101,7 +107,9 @@ class HostsModel {
     }
     return hash;
   }
-  static bool _mapEquals(Map<String, dynamic>? map1, Map<String, dynamic>? map2) {
+
+  static bool _mapEquals(
+      Map<String, dynamic>? map1, Map<String, dynamic>? map2) {
     if (identical(map1, map2)) return true;
     if (map1 == null || map2 == null) return false;
     if (map1.length != map2.length) return false;
@@ -110,6 +118,7 @@ class HostsModel {
     }
     return true;
   }
+
   static int _mapHash(Map<String, dynamic> map) {
     int hash = 0;
     for (var key in map.keys) {

@@ -181,21 +181,31 @@ class HostCubit extends Cubit<HostState> {
   ///
   /// [hostsMap]: 主机映射关系
   void onToggleUse(Map<HostsModel, HostsModel> hostsMap) {
+    final lines = state.data.fileContent.split("\n");
+
     final List<HostsModel> updatedHosts = state.data.hosts.map((host) {
       return hostsMap.containsKey(host) ? hostsMap[host]! : host;
     }).toList();
 
+    for (var host in updatedHosts) {
+      if (host.hostLine == null) {
+        continue;
+      }
+      lines[host.hostLine!] = host.toHostString();
+    }
+
     emit(
       HostToggleUse(
         state.data.copyWith(
-          hosts: updatedHosts,
-          filterHosts: updatedHosts
-              .where((host) => host.filter(state.data.searchText))
-              .toList(),
-          selectHosts:
-              state.data.selectHosts.isNotEmpty ? hostsMap.values.toList() : [],
-          isSave: isUpdate(updatedHosts),
-        ),
+            hosts: updatedHosts,
+            filterHosts: updatedHosts
+                .where((host) => host.filter(state.data.searchText))
+                .toList(),
+            selectHosts: state.data.selectHosts.isNotEmpty
+                ? hostsMap.values.toList()
+                : [],
+            isSave: isUpdate(updatedHosts),
+            fileContent: lines.join("\n")),
       ),
     );
   }
