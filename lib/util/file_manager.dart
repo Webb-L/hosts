@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
@@ -260,6 +262,67 @@ class FileManager {
     }
 
     return result;
+  }
+
+  Future<bool> exportHostFile(SimpleHostFile hostFile, String dialogTitle) async {
+    try {
+      if (_cachedDirectory == null) await _initializeDirectory();
+
+      // 获取要导出的目录路径
+      final String directoryPath = p.join(_cachedDirectory!.path, hostFile.fileName);
+      final Directory exportDirectory = Directory(directoryPath);
+
+      if (!await exportDirectory.exists()) {
+        print('Directory does not exist: $directoryPath');
+        return false;
+      }
+
+      // 让用户选择保存路径
+      String? outputFilePath = await FilePicker.platform.saveFile(
+        dialogTitle: dialogTitle,
+        fileName: '${hostFile.remark}_${hostFile.fileName}.zip',
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
+
+      if (outputFilePath != null) {
+        // 创建压缩包
+        final Archive archive = Archive();
+
+        // 递归添加目录中的所有文件到压缩包
+        await _addDirectoryToArchive(exportDirectory, archive, hostFile.fileName);
+
+        // 编码压缩包
+        final List<int> zipData = ZipEncoder().encode(archive)!;
+
+        // 写入文件
+        await File(outputFilePath).writeAsBytes(zipData);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Export failed: $e');
+      return false;
+    }
+  }
+
+  // 递归添加目录到压缩包的辅助方法
+  Future<void> _addDirectoryToArchive(
+      Directory directory, Archive archive, String baseName) async {
+    final List<FileSystemEntity> entities = directory.listSync();
+
+    for (FileSystemEntity entity in entities) {
+      if (entity is File) {
+        final String relativePath = p.relative(entity.path,
+            from: p.join(_cachedDirectory!.path, baseName));
+        final List<int> fileBytes = await entity.readAsBytes();
+        final ArchiveFile file =
+            ArchiveFile(relativePath, fileBytes.length, fileBytes);
+        archive.addFile(file);
+      } else if (entity is Directory) {
+        await _addDirectoryToArchive(entity, archive, baseName);
+      }
+    }
   }
 
   List<HostsModel> parseHosts(List<String> lines) {

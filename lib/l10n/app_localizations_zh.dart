@@ -186,6 +186,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get open_file => '打开文件';
 
   @override
+  String get export => '导出';
+
+  @override
+  String get export_data => '导出 Hosts 数据';
+
+  @override
+  String get export_success => '文件导出成功';
+
+  @override
   String get error_open_file => '文件读取失败';
 
   @override

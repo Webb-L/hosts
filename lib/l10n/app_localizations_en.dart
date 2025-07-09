@@ -191,6 +191,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get open_file => 'Open file';
 
   @override
+  String get export => 'Export';
+
+  @override
+  String get export_data => 'Export hosts data';
+
+  @override
+  String get export_success => 'File exported successfully';
+
+  @override
   String get error_open_file => 'Failed to read the file';
 
   @override

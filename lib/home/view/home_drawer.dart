@@ -4,6 +4,7 @@ import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
+import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/dialog/dialog.dart';
 import 'package:hosts/widget/snakbar.dart';
 
@@ -179,6 +180,18 @@ class HomeDrawer extends StatelessWidget {
                   //     .deleteFiles(list.map((file) => file.fileName).toList());
                 });
                 break;
+              case 3:
+                final FileManager fileManager = FileManager();
+                final bool success = await fileManager.exportHostFile(
+                  hostFile, 
+                  AppLocalizations.of(context)!.export_data
+                );
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context)!.export_success)),
+                  );
+                }
+                break;
             }
           },
           itemBuilder: (BuildContext context) {
@@ -192,6 +205,11 @@ class HomeDrawer extends StatelessWidget {
                 "icon": Icons.delete_outline,
                 "text": AppLocalizations.of(context)!.remove,
                 "value": 2
+              },
+              {
+                "icon": Icons.file_download,
+                "text": AppLocalizations.of(context)!.export,
+                "value": 3
               },
             ];
 

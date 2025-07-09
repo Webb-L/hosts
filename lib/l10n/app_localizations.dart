@@ -440,6 +440,24 @@ abstract class AppLocalizations {
   /// **'打开文件'**
   String get open_file;
 
+  /// No description provided for @export.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出'**
+  String get export;
+
+  /// No description provided for @export_data.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出 Hosts 数据'**
+  String get export_data;
+
+  /// No description provided for @export_success.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件导出成功'**
+  String get export_success;
+
   /// No description provided for @error_open_file.
   ///
   /// In zh, this message translates to:
