@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/home/view/home_page.dart';
+import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/theme.dart';

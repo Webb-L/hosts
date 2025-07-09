@@ -216,7 +216,7 @@ class FileManager {
       String cacheFilePath, String systemHostFilePath) async {
     String result = "";
 
-    // TODO Windows Mac
+    // TODO Windows
     if (Platform.isLinux) {
       final Process process = await Process.start(
         "pkexec",

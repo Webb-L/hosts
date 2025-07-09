@@ -32,9 +32,12 @@ class SimpleHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(providers: [
-      BlocProvider<HomeCubit>(create: (context) => HomeCubit()),
-      BlocProvider<HostCubit>(create: (context) => HostCubit()),
-    ], child: SimpleHomeView());
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<HomeCubit>(create: (context) => HomeCubit()),
+        BlocProvider<HostCubit>(create: (context) => HostCubit()),
+      ],
+      child: SimpleHomeView(filePath: filePath),
+    );
   }
 }
