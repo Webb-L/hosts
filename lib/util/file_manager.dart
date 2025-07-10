@@ -10,6 +10,21 @@ import 'package:hosts/util/regexp_util.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+// 导入hosts文件的数据模型
+class ImportableHost {
+  final String remark;
+  final String fileName;
+  final String folderPath;
+  final bool hasContent;
+  
+  ImportableHost({
+    required this.remark,
+    required this.fileName,
+    required this.folderPath,
+    required this.hasContent,
+  });
+}
+
 class FileManager {
   // 私有构造函数
   FileManager._internal() {
@@ -322,6 +337,230 @@ class FileManager {
       } else if (entity is Directory) {
         await _addDirectoryToArchive(entity, archive, baseName);
       }
+    }
+  }
+
+  // 递归添加目录到压缩包的辅助方法（自定义文件夹名称）
+  Future<void> _addDirectoryToArchiveWithCustomName(
+      Directory directory, Archive archive, String baseName, String customFolderName) async {
+    final List<FileSystemEntity> entities = directory.listSync();
+
+    for (FileSystemEntity entity in entities) {
+      if (entity is File) {
+        final String relativePath = p.relative(entity.path,
+            from: p.join(_cachedDirectory!.path, baseName));
+        final String customPath = p.join(customFolderName, relativePath);
+        final List<int> fileBytes = await entity.readAsBytes();
+        final ArchiveFile file =
+            ArchiveFile(customPath, fileBytes.length, fileBytes);
+        archive.addFile(file);
+      } else if (entity is Directory) {
+        await _addDirectoryToArchiveWithCustomName(entity, archive, baseName, customFolderName);
+      }
+    }
+  }
+
+  Future<bool> exportMultipleHostFiles(List<SimpleHostFile> hostFiles, String dialogTitle) async {
+    try {
+      if (_cachedDirectory == null) await _initializeDirectory();
+      
+      if (hostFiles.isEmpty) {
+        return false;
+      }
+
+      // 让用户选择保存路径
+      String defaultFileName;
+      if (hostFiles.length == 1) {
+        // 单个文件时使用该文件的备注作为文件名
+        defaultFileName = '${hostFiles.first.remark}_${hostFiles.first.fileName}.zip';
+      } else {
+        // 多个文件时使用通用名称
+        defaultFileName = 'hosts_batch_export.zip';
+      }
+      
+      String? outputFilePath = await FilePicker.platform.saveFile(
+        dialogTitle: dialogTitle,
+        fileName: defaultFileName,
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
+
+      if (outputFilePath != null) {
+        // 创建压缩包
+        final Archive archive = Archive();
+
+        // 为每个host文件添加到压缩包
+        for (SimpleHostFile hostFile in hostFiles) {
+          final String directoryPath = p.join(_cachedDirectory!.path, hostFile.fileName);
+          final Directory exportDirectory = Directory(directoryPath);
+
+          if (await exportDirectory.exists()) {
+            // 创建以 {remark}_{fileName} 命名的文件夹
+            final String folderName = '${hostFile.remark}_${hostFile.fileName}';
+            await _addDirectoryToArchiveWithCustomName(exportDirectory, archive, hostFile.fileName, folderName);
+          }
+        }
+
+        // 编码压缩包
+        final List<int> zipData = ZipEncoder().encode(archive)!;
+
+        // 写入文件
+        await File(outputFilePath).writeAsBytes(zipData);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Batch export failed: $e');
+      return false;
+    }
+  }
+
+  // 解析导入文件，返回可导入的hosts列表
+  Future<List<ImportableHost>> parseImportFile(String filePath) async {
+    List<ImportableHost> importableHosts = [];
+    
+    try {
+      if (filePath.toLowerCase().endsWith('.zip')) {
+        // 解析ZIP文件
+        final bytes = await File(filePath).readAsBytes();
+        final archive = ZipDecoder().decodeBytes(bytes);
+        
+        // 查找所有可能的hosts文件夹
+        Map<String, String> hostFolders = {};
+        
+        for (final file in archive) {
+          if (file.isFile && file.name.endsWith('/hosts')) {
+            // 获取文件夹名称
+            final parts = file.name.split('/');
+            if (parts.length >= 2) {
+              final folderName = parts[parts.length - 2];
+              hostFolders[folderName] = file.name;
+            }
+          }
+        }
+        
+        // 为每个hosts文件夹创建ImportableHost
+        for (final entry in hostFolders.entries) {
+          final folderName = entry.key;
+          final hostFilePath = entry.value;
+          
+          // 尝试解析文件夹名称为remark和fileName
+          String remark = folderName;
+          String fileName = folderName;
+          
+          // 如果文件夹名称包含下划线，尝试分割
+          if (folderName.contains('_')) {
+            final lastUnderscoreIndex = folderName.lastIndexOf('_');
+            remark = folderName.substring(0, lastUnderscoreIndex);
+            fileName = folderName.substring(lastUnderscoreIndex + 1);
+          }
+          
+          importableHosts.add(ImportableHost(
+            remark: remark,
+            fileName: fileName,
+            folderPath: hostFilePath.substring(0, hostFilePath.lastIndexOf('/')),
+            hasContent: true,
+          ));
+        }
+      } else {
+        // 单个hosts文件
+        final fileName = p.basenameWithoutExtension(filePath);
+        importableHosts.add(ImportableHost(
+          remark: fileName,
+          fileName: fileName,
+          folderPath: filePath,
+          hasContent: await File(filePath).exists(),
+        ));
+      }
+    } catch (e) {
+      print('解析导入文件失败: $e');
+    }
+    
+    return importableHosts;
+  }
+
+  // 导入选中的hosts文件
+  Future<List<SimpleHostFile>> importSelectedHosts(String filePath, List<ImportableHost> selectedHosts, List<String> existingFileNames) async {
+    List<SimpleHostFile> importedFiles = [];
+    
+    try {
+      if (_cachedDirectory == null) await _initializeDirectory();
+      
+      if (filePath.toLowerCase().endsWith('.zip')) {
+        // 从ZIP文件导入
+        final bytes = await File(filePath).readAsBytes();
+        final archive = ZipDecoder().decodeBytes(bytes);
+        
+        for (final selectedHost in selectedHosts) {
+          // 直接使用原文件名，如果存在则覆盖
+          String fileName = selectedHost.fileName;
+          String targetDir = p.join(_cachedDirectory!.path, fileName);
+          
+          // 如果目录已存在，先删除
+          if (await Directory(targetDir).exists()) {
+            await Directory(targetDir).delete(recursive: true);
+          }
+          
+          // 创建目标目录
+          await Directory(targetDir).create(recursive: true);
+          await Directory(p.join(targetDir, 'history')).create(recursive: true);
+          
+          // 提取文件
+          for (final file in archive) {
+            if (file.isFile && file.name.startsWith(selectedHost.folderPath)) {
+              final relativePath = file.name.substring(selectedHost.folderPath.length + 1);
+              final targetPath = p.join(targetDir, relativePath);
+              
+              // 确保目标目录存在
+              await Directory(p.dirname(targetPath)).create(recursive: true);
+              
+              // 写入文件
+              await File(targetPath).writeAsBytes(file.content as List<int>);
+            }
+          }
+          
+          // 创建SimpleHostFile对象
+          final importedFile = SimpleHostFile(
+            fileName: fileName,
+            remark: selectedHost.remark,
+          );
+          importedFiles.add(importedFile);
+          existingFileNames.add(fileName);
+        }
+      } else {
+        // 单个文件导入
+        if (selectedHosts.isNotEmpty) {
+          final selectedHost = selectedHosts.first;
+          String fileName = selectedHost.fileName;
+          String targetDir = p.join(_cachedDirectory!.path, fileName);
+          
+          // 如果目录已存在，先删除
+          if (await Directory(targetDir).exists()) {
+            await Directory(targetDir).delete(recursive: true);
+          }
+          
+          // 创建目标目录
+          await Directory(targetDir).create(recursive: true);
+          await Directory(p.join(targetDir, 'history')).create(recursive: true);
+          
+          // 复制文件
+          final sourceFile = File(filePath);
+          final targetFile = File(p.join(targetDir, 'hosts'));
+          await sourceFile.copy(targetFile.path);
+          
+          // 创建SimpleHostFile对象
+          final importedFile = SimpleHostFile(
+            fileName: fileName,
+            remark: selectedHost.remark,
+          );
+          importedFiles.add(importedFile);
+        }
+      }
+      
+      return importedFiles;
+    } catch (e) {
+      print('导入失败: $e');
+      return [];
     }
   }
 

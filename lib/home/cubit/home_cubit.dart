@@ -258,4 +258,34 @@ class HomeCubit extends Cubit<HomeState> {
 
     await toggleAdvancedSettings(newSettings);
   }
+
+  /// 刷新hosts文件列表
+  /// [context] 可选的context参数，用于system文件的本地化
+  Future<void> refreshHostFiles([BuildContext? context]) async {
+    List<SimpleHostFile> tempHostFiles = [];
+    List<dynamic> hostConfigs =
+        await _settingsManager.getList(settingKeyHostConfigs);
+
+    for (Map<String, dynamic> config in hostConfigs) {
+      SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
+      tempHostFiles.add(hostFile);
+
+      // 特殊处理system文件的remark
+      if (hostFile.fileName == "system") {
+        if (context != null) {
+          hostFile.remark = gen.AppLocalizations.of(context)!.default_hosts_text;
+        } else {
+          hostFile.remark = "默认"; // 后备文本
+        }
+      }
+    }
+
+    emit(
+      HomeInitial(
+        state.data.copyWith(
+          hostFiles: tempHostFiles,
+        ),
+      ),
+    );
+  }
 }

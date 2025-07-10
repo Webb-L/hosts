@@ -230,4 +230,157 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get form => 'Form';
+
+  @override
+  String get import_data => 'Import Hosts Data';
+
+  @override
+  String get import_success => 'Import successful';
+
+  @override
+  String get select_all => 'Select All';
+
+  @override
+  String get loading => 'Loading';
+
+  @override
+  String get file_processing => 'Processing file';
+
+  @override
+  String get import_file => 'Import file';
+
+  @override
+  String get will_overwrite => 'Will overwrite existing file';
+
+  @override
+  String get remote_sync => 'Remote Sync';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String get server_settings => 'Server Settings';
+
+  @override
+  String get server_status => 'Server Status';
+
+  @override
+  String get server_config => 'Server Configuration';
+
+  @override
+  String get server_running => 'Running';
+
+  @override
+  String get server_stopped => 'Stopped';
+
+  @override
+  String get server_start => 'Start';
+
+  @override
+  String get server_stop => 'Stop';
+
+  @override
+  String get server_restart => 'Restart';
+
+  @override
+  String get server_host => 'Host Address';
+
+  @override
+  String get server_port => 'Port';
+
+  @override
+  String get server_auto_start => 'Auto Start';
+
+  @override
+  String get server_auto_start_desc =>
+      'Automatically start HTTP server when app launches';
+
+  @override
+  String get server_save_config => 'Save Configuration';
+
+  @override
+  String get server_copy_url => 'Copy URL';
+
+  @override
+  String get server_url_copied => 'URL copied to clipboard';
+
+  @override
+  String get server_started => 'Server started';
+
+  @override
+  String get server_stopped_msg => 'Server stopped';
+
+  @override
+  String get server_config_saved => 'Configuration saved successfully';
+
+  @override
+  String get server_operation_failed => 'Operation failed';
+
+  @override
+  String get server_invalid_port => 'Port must be between 1-65535';
+
+  @override
+  String get server_invalid_host => 'Host address cannot be empty';
+
+  @override
+  String get api_docs => 'API Documentation';
+
+  @override
+  String get api_endpoints => 'Available API endpoints';
+
+  @override
+  String get refresh_status => 'Refresh status';
+
+  @override
+  String get server_address => 'Server address';
+
+  @override
+  String get copy_url => 'Copy URL';
+
+  @override
+  String get operation_failed => 'Operation failed';
+
+  @override
+  String get load_server_settings_failed => 'Failed to load server settings';
+
+  @override
+  String get get_all_hosts_files => 'Get all hosts files';
+
+  @override
+  String get get_specific_hosts_file =>
+      'Get specific hosts file content (plain text)';
+
+  @override
+  String get get_hosts_file_history => 'Get hosts file history';
+
+  @override
+  String get get_specific_history_content =>
+      'Get specific history content (plain text)';
+
+  @override
+  String get server_already_running => 'Server is already running';
+
+  @override
+  String get http_server_start_success => 'HTTP server started successfully';
+
+  @override
+  String get http_server_start_failed => 'Failed to start HTTP server';
+
+  @override
+  String get http_server_stopped => 'HTTP server stopped';
+
+  @override
+  String get missing_file_id => 'Missing file ID';
+
+  @override
+  String get read_file_failed => 'Failed to read file';
+
+  @override
+  String get missing_file_id_or_history_id => 'Missing file ID or history ID';
+
+  @override
+  String get history_not_found => 'History not found';
+
+  @override
+  String get read_history_failed => 'Failed to read history';
 }

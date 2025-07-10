@@ -4,8 +4,11 @@ import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
+import 'package:hosts/server/server_settings_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/dialog/dialog.dart';
+import 'package:hosts/widget/dialog/export_hosts_dialog.dart';
+import 'package:hosts/widget/dialog/import_hosts_dialog.dart';
 import 'package:hosts/widget/snakbar.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -34,7 +37,68 @@ class HomeDrawer extends StatelessWidget {
                           if (remark == null || remark.isEmpty) return;
                           context.read<HomeCubit>().addHostFile(remark);
                         },
-                        icon: const Icon(Icons.add))
+                        icon: const Icon(Icons.add)),
+                    PopupMenuButton<int>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: (value) async {
+                        switch (value) {
+                          case 1:
+                          // Import functionality
+                            await importHostsDialog(context, state.data.hostFiles,
+                                onImportSuccess: () {
+                                  context.read<HomeCubit>().refreshHostFiles(context);
+                                });
+                            break;
+                          case 2:
+                          // Export functionality
+                            await exportHostsDialog(context, state.data.hostFiles);
+                            break;
+                          case 3:
+                          // Remote sync functionality
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ServerSettingsPage(),
+                              ),
+                            );
+                            break;
+                        }
+                      },
+                      itemBuilder: (BuildContext context) {
+                        return [
+                          PopupMenuItem<int>(
+                            value: 1,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.file_upload),
+                                const SizedBox(width: 8),
+                                Text(AppLocalizations.of(context)!.import),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<int>(
+                            value: 2,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.file_download),
+                                const SizedBox(width: 8),
+                                Text(AppLocalizations.of(context)!.export),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<int>(
+                            value: 3,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.cloud_sync),
+                                const SizedBox(width: 8),
+                                Text(AppLocalizations.of(context)!.remote_sync),
+                              ],
+                            ),
+                          ),
+                        ];
+                      },
+                    )
                   ],
                 ),
               ),
@@ -52,30 +116,30 @@ class HomeDrawer extends StatelessWidget {
                           padding: EdgeInsets.zero,
                         ),
                         onPressed:
-                            state.data.useHostFiles.contains(hostFile.fileName)
-                                ? null
-                                : () async {
-                                    // final String path = await _fileManager
-                                    //     .getHostsFilePath(hostFile.fileName);
-                                    //
-                                    // if (!await widget
-                                    //     .onClickUse(File(path).readAsStringSync())) {
-                                    //   return;
-                                    // }
+                        state.data.useHostFiles.contains(hostFile.fileName)
+                            ? null
+                            : () async {
+                          // final String path = await _fileManager
+                          //     .getHostsFilePath(hostFile.fileName);
+                          //
+                          // if (!await widget
+                          //     .onClickUse(File(path).readAsStringSync())) {
+                          //   return;
+                          // }
 
-                                    // setState(() {
-                                    //   useHostFile = hostFile.fileName;
-                                    // });
-                                    // _settingsManager.setString(
-                                    //     settingKeyUseHostFile, hostFile.fileName);
-                                  },
+                          // setState(() {
+                          //   useHostFile = hostFile.fileName;
+                          // });
+                          // _settingsManager.setString(
+                          //     settingKeyUseHostFile, hostFile.fileName);
+                        },
                         icon: Icon(
                             state.data.useHostFiles.contains(hostFile.fileName)
                                 ? Icons.star
                                 : Icons.star_border),
                       ),
                       selectedTileColor:
-                          Theme.of(context).colorScheme.primaryContainer,
+                      Theme.of(context).colorScheme.primaryContainer,
                       selected: state.data.selectHostFile == hostFile.fileName,
                       trailing: buildMoreButton(hostFile),
                       onTap: () {
@@ -132,7 +196,7 @@ class HomeDrawer extends StatelessWidget {
             switch (value) {
               case 1:
                 String result =
-                    (await hostConfigDialog(context, hostFile.remark) ?? "");
+                (await hostConfigDialog(context, hostFile.remark) ?? "");
                 if (result.isEmpty) return;
                 homeCubit.updateHostFileRemark(hostFile.fileName, result);
                 break;
@@ -182,9 +246,9 @@ class HomeDrawer extends StatelessWidget {
                 break;
               case 3:
                 final FileManager fileManager = FileManager();
-                final bool success = await fileManager.exportHostFile(
-                  hostFile, 
-                  AppLocalizations.of(context)!.export_data
+                final bool success = await fileManager.exportMultipleHostFiles(
+                    [hostFile],
+                    AppLocalizations.of(context)!.export_data
                 );
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(

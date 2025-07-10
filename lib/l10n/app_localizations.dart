@@ -517,6 +517,306 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'表单'**
   String get form;
+
+  /// No description provided for @import_data.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入 Hosts 数据'**
+  String get import_data;
+
+  /// No description provided for @import_success.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入成功'**
+  String get import_success;
+
+  /// No description provided for @select_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get select_all;
+
+  /// No description provided for @loading.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载中'**
+  String get loading;
+
+  /// No description provided for @file_processing.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件处理中'**
+  String get file_processing;
+
+  /// No description provided for @import_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文件'**
+  String get import_file;
+
+  /// No description provided for @will_overwrite.
+  ///
+  /// In zh, this message translates to:
+  /// **'将覆盖现有文件'**
+  String get will_overwrite;
+
+  /// No description provided for @remote_sync.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程同步'**
+  String get remote_sync;
+
+  /// No description provided for @import.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入'**
+  String get import;
+
+  /// No description provided for @server_settings.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器设置'**
+  String get server_settings;
+
+  /// No description provided for @server_status.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器状态'**
+  String get server_status;
+
+  /// No description provided for @server_config.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器配置'**
+  String get server_config;
+
+  /// No description provided for @server_running.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行中'**
+  String get server_running;
+
+  /// No description provided for @server_stopped.
+  ///
+  /// In zh, this message translates to:
+  /// **'已停止'**
+  String get server_stopped;
+
+  /// No description provided for @server_start.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动'**
+  String get server_start;
+
+  /// No description provided for @server_stop.
+  ///
+  /// In zh, this message translates to:
+  /// **'停止'**
+  String get server_stop;
+
+  /// No description provided for @server_restart.
+  ///
+  /// In zh, this message translates to:
+  /// **'重启'**
+  String get server_restart;
+
+  /// No description provided for @server_host.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机地址'**
+  String get server_host;
+
+  /// No description provided for @server_port.
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get server_port;
+
+  /// No description provided for @server_auto_start.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动启动'**
+  String get server_auto_start;
+
+  /// No description provided for @server_auto_start_desc.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用启动时自动启动HTTP服务器'**
+  String get server_auto_start_desc;
+
+  /// No description provided for @server_save_config.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存配置'**
+  String get server_save_config;
+
+  /// No description provided for @server_copy_url.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制URL'**
+  String get server_copy_url;
+
+  /// No description provided for @server_url_copied.
+  ///
+  /// In zh, this message translates to:
+  /// **'URL已复制到剪贴板'**
+  String get server_url_copied;
+
+  /// No description provided for @server_started.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器已启动'**
+  String get server_started;
+
+  /// No description provided for @server_stopped_msg.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器已停止'**
+  String get server_stopped_msg;
+
+  /// No description provided for @server_config_saved.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置保存成功'**
+  String get server_config_saved;
+
+  /// No description provided for @server_operation_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败'**
+  String get server_operation_failed;
+
+  /// No description provided for @server_invalid_port.
+  ///
+  /// In zh, this message translates to:
+  /// **'端口号必须在1-65535之间'**
+  String get server_invalid_port;
+
+  /// No description provided for @server_invalid_host.
+  ///
+  /// In zh, this message translates to:
+  /// **'主机地址不能为空'**
+  String get server_invalid_host;
+
+  /// No description provided for @api_docs.
+  ///
+  /// In zh, this message translates to:
+  /// **'API文档'**
+  String get api_docs;
+
+  /// No description provided for @api_endpoints.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用的API端点'**
+  String get api_endpoints;
+
+  /// No description provided for @refresh_status.
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新状态'**
+  String get refresh_status;
+
+  /// No description provided for @server_address.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器地址'**
+  String get server_address;
+
+  /// No description provided for @copy_url.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制URL'**
+  String get copy_url;
+
+  /// No description provided for @operation_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败'**
+  String get operation_failed;
+
+  /// No description provided for @load_server_settings_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载服务器设置失败'**
+  String get load_server_settings_failed;
+
+  /// No description provided for @get_all_hosts_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取所有hosts文件'**
+  String get get_all_hosts_files;
+
+  /// No description provided for @get_specific_hosts_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取特定hosts文件内容（纯文本）'**
+  String get get_specific_hosts_file;
+
+  /// No description provided for @get_hosts_file_history.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取hosts文件历史记录'**
+  String get get_hosts_file_history;
+
+  /// No description provided for @get_specific_history_content.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取特定历史记录内容（纯文本）'**
+  String get get_specific_history_content;
+
+  /// No description provided for @server_already_running.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器已经在运行中'**
+  String get server_already_running;
+
+  /// No description provided for @http_server_start_success.
+  ///
+  /// In zh, this message translates to:
+  /// **'HTTP服务器启动成功'**
+  String get http_server_start_success;
+
+  /// No description provided for @http_server_start_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动HTTP服务器失败'**
+  String get http_server_start_failed;
+
+  /// No description provided for @http_server_stopped.
+  ///
+  /// In zh, this message translates to:
+  /// **'HTTP服务器已停止'**
+  String get http_server_stopped;
+
+  /// No description provided for @missing_file_id.
+  ///
+  /// In zh, this message translates to:
+  /// **'缺少文件ID'**
+  String get missing_file_id;
+
+  /// No description provided for @read_file_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取文件失败'**
+  String get read_file_failed;
+
+  /// No description provided for @missing_file_id_or_history_id.
+  ///
+  /// In zh, this message translates to:
+  /// **'缺少文件ID或历史记录ID'**
+  String get missing_file_id_or_history_id;
+
+  /// No description provided for @history_not_found.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史记录不存在'**
+  String get history_not_found;
+
+  /// No description provided for @read_history_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取历史记录失败'**
+  String get read_history_failed;
 }
 
 class _AppLocalizationsDelegate

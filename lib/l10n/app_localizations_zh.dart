@@ -224,4 +224,154 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get form => '表单';
+
+  @override
+  String get import_data => '导入 Hosts 数据';
+
+  @override
+  String get import_success => '导入成功';
+
+  @override
+  String get select_all => '全选';
+
+  @override
+  String get loading => '加载中';
+
+  @override
+  String get file_processing => '文件处理中';
+
+  @override
+  String get import_file => '导入文件';
+
+  @override
+  String get will_overwrite => '将覆盖现有文件';
+
+  @override
+  String get remote_sync => '远程同步';
+
+  @override
+  String get import => '导入';
+
+  @override
+  String get server_settings => '服务器设置';
+
+  @override
+  String get server_status => '服务器状态';
+
+  @override
+  String get server_config => '服务器配置';
+
+  @override
+  String get server_running => '运行中';
+
+  @override
+  String get server_stopped => '已停止';
+
+  @override
+  String get server_start => '启动';
+
+  @override
+  String get server_stop => '停止';
+
+  @override
+  String get server_restart => '重启';
+
+  @override
+  String get server_host => '主机地址';
+
+  @override
+  String get server_port => '端口';
+
+  @override
+  String get server_auto_start => '自动启动';
+
+  @override
+  String get server_auto_start_desc => '应用启动时自动启动HTTP服务器';
+
+  @override
+  String get server_save_config => '保存配置';
+
+  @override
+  String get server_copy_url => '复制URL';
+
+  @override
+  String get server_url_copied => 'URL已复制到剪贴板';
+
+  @override
+  String get server_started => '服务器已启动';
+
+  @override
+  String get server_stopped_msg => '服务器已停止';
+
+  @override
+  String get server_config_saved => '配置保存成功';
+
+  @override
+  String get server_operation_failed => '操作失败';
+
+  @override
+  String get server_invalid_port => '端口号必须在1-65535之间';
+
+  @override
+  String get server_invalid_host => '主机地址不能为空';
+
+  @override
+  String get api_docs => 'API文档';
+
+  @override
+  String get api_endpoints => '可用的API端点';
+
+  @override
+  String get refresh_status => '刷新状态';
+
+  @override
+  String get server_address => '服务器地址';
+
+  @override
+  String get copy_url => '复制URL';
+
+  @override
+  String get operation_failed => '操作失败';
+
+  @override
+  String get load_server_settings_failed => '加载服务器设置失败';
+
+  @override
+  String get get_all_hosts_files => '获取所有hosts文件';
+
+  @override
+  String get get_specific_hosts_file => '获取特定hosts文件内容（纯文本）';
+
+  @override
+  String get get_hosts_file_history => '获取hosts文件历史记录';
+
+  @override
+  String get get_specific_history_content => '获取特定历史记录内容（纯文本）';
+
+  @override
+  String get server_already_running => '服务器已经在运行中';
+
+  @override
+  String get http_server_start_success => 'HTTP服务器启动成功';
+
+  @override
+  String get http_server_start_failed => '启动HTTP服务器失败';
+
+  @override
+  String get http_server_stopped => 'HTTP服务器已停止';
+
+  @override
+  String get missing_file_id => '缺少文件ID';
+
+  @override
+  String get read_file_failed => '读取文件失败';
+
+  @override
+  String get missing_file_id_or_history_id => '缺少文件ID或历史记录ID';
+
+  @override
+  String get history_not_found => '历史记录不存在';
+
+  @override
+  String get read_history_failed => '读取历史记录失败';
 }
