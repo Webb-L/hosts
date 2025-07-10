@@ -109,14 +109,14 @@ class HostsServer {
     router.get('/api/hosts', _handleGetHosts);
 
     // 获取特定hosts文件内容
-    router.get('/api/hosts/<fileId>', _handleGetHostFile);
+    router.get('/api/hosts/<fileName>', _handleGetHostFile);
 
     // 获取hosts文件的历史记录
-    router.get('/api/hosts/<fileId>/history', _handleGetHostHistory);
+    router.get('/api/hosts/<fileName>/history', _handleGetHostHistory);
 
     // 获取特定历史记录内容
     router.get(
-        '/api/hosts/<fileId>/history/<historyId>', _handleGetHistoryContent);
+        '/api/hosts/<fileName>/history/<historyId>', _handleGetHistoryContent);
 
     return router;
   }
@@ -151,9 +151,9 @@ class HostsServer {
       'timestamp': DateTime.now().toIso8601String(),
       'endpoints': [
         'GET /api/hosts - ${_i18nStrings['get_all_hosts_files'] ?? 'Get all hosts files (JSON)'}',
-        'GET /api/hosts/{fileId} - ${_i18nStrings['get_specific_hosts_file'] ?? 'Get specific hosts file content (plain text)'}',
-        'GET /api/hosts/{fileId}/history - ${_i18nStrings['get_hosts_file_history'] ?? 'Get hosts file history (JSON)'}',
-        'GET /api/hosts/{fileId}/history/{historyId} - ${_i18nStrings['get_specific_history_content'] ?? 'Get specific history content (plain text)'}',
+        'GET /api/hosts/{fileName} - ${_i18nStrings['get_specific_hosts_file'] ?? 'Get specific hosts file content (plain text)'}',
+        'GET /api/hosts/{fileName}/history - ${_i18nStrings['get_hosts_file_history'] ?? 'Get hosts file history (JSON)'}',
+        'GET /api/hosts/{fileName}/history/{historyId} - ${_i18nStrings['get_specific_history_content'] ?? 'Get specific history content (plain text)'}',
       ]
     };
 
@@ -198,8 +198,8 @@ class HostsServer {
 
   /// 处理获取特定hosts文件请求
   Future<Response> _handleGetHostFile(Request request) async {
-    final fileId = request.params['fileId'];
-    if (fileId == null) {
+    final fileName = request.params['fileName'];
+    if (fileName == null) {
       return Response.badRequest(
         body: _i18nStrings['missing_file_id'] ?? 'Missing file ID',
         headers: {
@@ -210,7 +210,7 @@ class HostsServer {
     }
 
     try {
-      final content = await _fileManager.readAsString(fileId);
+      final content = await _fileManager.readAsString(fileName);
       return Response.ok(
         content,
         headers: {
@@ -232,8 +232,8 @@ class HostsServer {
 
   /// 处理获取hosts文件历史记录请求
   Future<Response> _handleGetHostHistory(Request request) async {
-    final fileId = request.params['fileId'];
-    if (fileId == null) {
+    final fileName = request.params['fileName'];
+    if (fileName == null) {
       return Response.badRequest(
         body: jsonEncode({
           'success': false,
@@ -244,7 +244,7 @@ class HostsServer {
     }
 
     try {
-      final historyList = await _fileManager.getHistory(fileId);
+      final historyList = await _fileManager.getHistory(fileName);
 
       // 转换为API响应格式
       final historyData = historyList
@@ -274,10 +274,10 @@ class HostsServer {
 
   /// 处理获取特定历史记录内容请求
   Future<Response> _handleGetHistoryContent(Request request) async {
-    final fileId = request.params['fileId'];
+    final fileName = request.params['fileName'];
     final historyId = request.params['historyId'];
 
-    if (fileId == null || historyId == null) {
+    if (fileName == null || historyId == null) {
       return Response.badRequest(
         body: _i18nStrings['missing_file_id_or_history_id'] ??
             'Missing file ID or history ID',
@@ -289,7 +289,7 @@ class HostsServer {
     }
 
     try {
-      final historyList = await _fileManager.getHistory(fileId);
+      final historyList = await _fileManager.getHistory(fileName);
       final historyItem = historyList.firstWhere(
         (h) => h.fileName == historyId,
         orElse: () => throw Exception(

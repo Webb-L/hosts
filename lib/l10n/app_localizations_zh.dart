@@ -232,9 +232,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get import_success => '导入成功';
 
   @override
-  String get select_all => '全选';
-
-  @override
   String get loading => '加载中';
 
   @override
@@ -374,4 +371,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get read_history_failed => '读取历史记录失败';
+
+  @override
+  String get select_hosts_to_export => '请选择要导出hosts文件';
+
+  @override
+  String get select_all => '全选';
+
+  @override
+  String get selected_count => '已选择';
+
+  @override
+  String get export_failed => '导出失败';
 }

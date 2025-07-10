@@ -530,12 +530,6 @@ abstract class AppLocalizations {
   /// **'导入成功'**
   String get import_success;
 
-  /// No description provided for @select_all.
-  ///
-  /// In zh, this message translates to:
-  /// **'全选'**
-  String get select_all;
-
   /// No description provided for @loading.
   ///
   /// In zh, this message translates to:
@@ -817,6 +811,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'读取历史记录失败'**
   String get read_history_failed;
+
+  /// No description provided for @select_hosts_to_export.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择要导出hosts文件'**
+  String get select_hosts_to_export;
+
+  /// No description provided for @select_all.
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get select_all;
+
+  /// No description provided for @selected_count.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择'**
+  String get selected_count;
+
+  /// No description provided for @export_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出失败'**
+  String get export_failed;
 }
 
 class _AppLocalizationsDelegate

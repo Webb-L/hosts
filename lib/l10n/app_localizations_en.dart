@@ -238,9 +238,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get import_success => 'Import successful';
 
   @override
-  String get select_all => 'Select All';
-
-  @override
   String get loading => 'Loading';
 
   @override
@@ -383,4 +380,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get read_history_failed => 'Failed to read history';
+
+  @override
+  String get select_hosts_to_export => 'Please select hosts files to export';
+
+  @override
+  String get select_all => 'Select All';
+
+  @override
+  String get selected_count => 'Selected';
+
+  @override
+  String get export_failed => 'Export failed';
 }

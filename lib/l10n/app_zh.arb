@@ -71,7 +71,6 @@
   "form": "表单",
   "import_data": "导入 Hosts 数据",
   "import_success": "导入成功",
-  "select_all": "全选",
   "loading": "加载中",
   "file_processing": "文件处理中",
   "import_file": "导入文件",
