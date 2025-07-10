@@ -34,6 +34,10 @@ dependencies:
   # 国际化
   intl: any
 
+  # 服务器
+  shelf: ^1.4.2
+  shelf_router: ^1.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
