@@ -121,5 +121,12 @@
   "select_hosts_to_export": "请选择要导出hosts文件",
   "select_all": "全选",
   "selected_count": "已选择",
-  "export_failed": "导出失败"
+  "export_failed": "导出失败",
+  "nearby_devices": "附近设备",
+  "scan_nearby_devices": "扫描附近设备",
+  "no_nearby_devices": "没有发现开启共享功能的设备\n点击刷新按钮扫描附近设备",
+  "scanning_devices": "正在扫描附近设备...",
+  "sharing_enabled": "共享服务已开启",
+  "device_reachable": "设备可达",
+  "visit_device": "访问设备"
 }

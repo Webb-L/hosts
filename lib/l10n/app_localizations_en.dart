@@ -392,4 +392,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get export_failed => 'Export failed';
+
+  @override
+  String get nearby_devices => 'Nearby Devices';
+
+  @override
+  String get scan_nearby_devices => 'Scan nearby devices';
+
+  @override
+  String get no_nearby_devices =>
+      'No devices with sharing enabled found\nClick refresh button to scan nearby devices';
+
+  @override
+  String get scanning_devices => 'Scanning nearby devices...';
+
+  @override
+  String get sharing_enabled => 'Sharing service enabled';
+
+  @override
+  String get device_reachable => 'Device reachable';
+
+  @override
+  String get visit_device => 'Visit device';
 }

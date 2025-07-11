@@ -121,5 +121,12 @@
   "select_hosts_to_export": "Please select hosts files to export",
   "select_all": "Select All",
   "selected_count": "Selected",
-  "export_failed": "Export failed"
+  "export_failed": "Export failed",
+  "nearby_devices": "Nearby Devices",
+  "scan_nearby_devices": "Scan nearby devices",
+  "no_nearby_devices": "No devices with sharing enabled found\nClick refresh button to scan nearby devices",
+  "scanning_devices": "Scanning nearby devices...",
+  "sharing_enabled": "Sharing service enabled",
+  "device_reachable": "Device reachable",
+  "visit_device": "Visit device"
 }

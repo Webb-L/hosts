@@ -4,7 +4,7 @@ import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
-import 'package:hosts/server/server_settings_page.dart';
+import 'package:hosts/server/view/server_settings_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/dialog/dialog.dart';
 import 'package:hosts/widget/dialog/export_hosts_dialog.dart';

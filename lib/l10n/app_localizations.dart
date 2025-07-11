@@ -835,6 +835,48 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'导出失败'**
   String get export_failed;
+
+  /// No description provided for @nearby_devices.
+  ///
+  /// In zh, this message translates to:
+  /// **'附近设备'**
+  String get nearby_devices;
+
+  /// No description provided for @scan_nearby_devices.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描附近设备'**
+  String get scan_nearby_devices;
+
+  /// No description provided for @no_nearby_devices.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有发现开启共享功能的设备\n点击刷新按钮扫描附近设备'**
+  String get no_nearby_devices;
+
+  /// No description provided for @scanning_devices.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在扫描附近设备...'**
+  String get scanning_devices;
+
+  /// No description provided for @sharing_enabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'共享服务已开启'**
+  String get sharing_enabled;
+
+  /// No description provided for @device_reachable.
+  ///
+  /// In zh, this message translates to:
+  /// **'设备可达'**
+  String get device_reachable;
+
+  /// No description provided for @visit_device.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问设备'**
+  String get visit_device;
 }
 
 class _AppLocalizationsDelegate
