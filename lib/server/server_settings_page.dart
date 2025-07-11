@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hosts/l10n/app_localizations.dart';
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/server/server_manager.dart';
 import 'package:hosts/widget/server_status_card.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -17,7 +18,6 @@ class ServerSettingsPage extends StatefulWidget {
 class _ServerSettingsPageState extends State<ServerSettingsPage> {
   final ServerManager _serverManager = ServerManager();
 
-  bool _isServerEnabled = false;
   bool _isLoading = true;
   Map<String, dynamic>? _serverStatus;
   List<Map<String, String>> _networkInterfaces = [];
@@ -35,7 +35,6 @@ class _ServerSettingsPageState extends State<ServerSettingsPage> {
       final status = await _serverManager.getServerStatus();
       setState(() {
         _serverStatus = status;
-        _isServerEnabled = status['isEnabled'] ?? false;
         _isLoading = false;
       });
     } catch (e) {
@@ -261,29 +260,50 @@ class _ServerSettingsPageState extends State<ServerSettingsPage> {
     }
   }
 
-  /// 切换服务器状态
-  Future<void> _toggleServer() async {
+  /// 启动服务器
+  Future<void> _startServer(List<SimpleHostFile>? selectedHosts) async {
+    if (selectedHosts == null || selectedHosts.isEmpty) {
+      // 用户取消了选择或没有选择任何文件
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      bool success;
-      if (_isServerEnabled) {
-        await _serverManager.stopServer();
-        success = true;
-      } else {
-        success = await _serverManager.startServer();
-      }
+      // 提取文件名列表
+      final allowedFileNames = selectedHosts.map((f) => f.fileName).toList();
+      
+      final success = await _serverManager.startServer(
+        allowedHostFiles: allowedFileNames,
+      );
 
       if (success) {
         await _loadServerSettings();
-        _showSuccess(_isServerEnabled
-            ? AppLocalizations.of(context)!.server_started
-            : AppLocalizations.of(context)!.server_stopped_msg);
+        _showSuccess(AppLocalizations.of(context)!.server_started);
       } else {
         _showError(AppLocalizations.of(context)!.operation_failed);
       }
+    } catch (e) {
+      _showError('${AppLocalizations.of(context)!.operation_failed}: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// 停止服务器
+  Future<void> _stopServer() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _serverManager.stopServer();
+      await _loadServerSettings();
+      _showSuccess(AppLocalizations.of(context)!.server_stopped_msg);
     } catch (e) {
       _showError('${AppLocalizations.of(context)!.operation_failed}: $e');
     } finally {
@@ -346,7 +366,8 @@ class _ServerSettingsPageState extends State<ServerSettingsPage> {
     return ServerStatusCard(
       serverStatus: _serverStatus,
       networkInterfaces: _networkInterfaces,
-      onToggleServer: _toggleServer,
+      onStartServer: _startServer,
+      onStopServer: _stopServer,
     );
   }
 

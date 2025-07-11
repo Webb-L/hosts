@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/widget/dialog/qr_code_dialog.dart';
+import 'package:hosts/widget/dialog/select_hosts_dialog.dart';
+import 'package:hosts/model/simple_host_file.dart';
 
 /// 服务器状态卡片组件
 class ServerStatusCard extends StatelessWidget {
   final Map<String, dynamic>? serverStatus;
   final List<Map<String, String>> networkInterfaces;
-  final VoidCallback onToggleServer;
+  final Function(List<SimpleHostFile>?) onStartServer;
+  final VoidCallback onStopServer;
 
   const ServerStatusCard({
     super.key,
     required this.serverStatus,
     required this.networkInterfaces,
-    required this.onToggleServer,
+    required this.onStartServer,
+    required this.onStopServer,
   });
 
   /// 复制URL到剪贴板
@@ -30,6 +34,20 @@ class ServerStatusCard extends StatelessWidget {
   /// 显示二维码对话框
   void _showQrCodeDialog(BuildContext context, String url) {
     QrCodeDialog.show(context, url: url);
+  }
+
+  /// 处理服务器切换
+  Future<void> _handleServerToggle(BuildContext context) async {
+    final isRunning = serverStatus?['isRunning'] ?? false;
+    
+    if (isRunning) {
+      // 如果服务器正在运行，直接停止
+      onStopServer();
+    } else {
+      // 如果服务器未运行，显示选择hosts文件对话框
+      final selectedHosts = await SelectHostsDialog.show(context);
+      onStartServer(selectedHosts);
+    }
   }
 
   /// 构建地址芯片
@@ -176,7 +194,7 @@ class ServerStatusCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 ElevatedButton(
-                  onPressed: onToggleServer,
+                  onPressed: () => _handleServerToggle(context),
                   child: Text(isRunning
                       ? AppLocalizations.of(context)!.server_stop
                       : AppLocalizations.of(context)!.server_start),

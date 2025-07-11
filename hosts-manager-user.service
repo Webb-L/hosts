@@ -1,0 +1,13 @@
+[Unit]
+Description=Hosts Manager Application (User Service)
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pkexec /opt/hosts-manager/hosts-manager
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=%i
+
+[Install]
+WantedBy=default.target

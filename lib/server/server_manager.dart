@@ -74,7 +74,7 @@ class ServerManager {
   }
   
   /// 启动服务器
-  Future<bool> startServer() async {
+  Future<bool> startServer({List<String>? allowedHostFiles}) async {
     try {
       if (_server.isRunning) {
         return true;
@@ -83,7 +83,11 @@ class ServerManager {
       final port = await getServerPort();
       final host = await getServerHost();
       
-      await _server.start(port: port, host: host);
+      await _server.start(
+        port: port, 
+        host: host,
+        allowedHostFiles: allowedHostFiles,
+      );
       await setServerEnabled(true);
       
       return true;

@@ -22,6 +22,9 @@ class HostsServer {
   // 本地化字符串映射
   Map<String, String> _i18nStrings = {};
 
+  // 允许访问的hosts文件列表
+  List<String> _allowedHostFiles = [];
+
   int _port = _defaultPort;
   String _host = _defaultHost;
 
@@ -46,10 +49,12 @@ class HostsServer {
   /// [port] 端口号，默认1204
   /// [host] 主机地址，默认0.0.0.0
   /// [i18nStrings] 本地化字符串映射
+  /// [allowedHostFiles] 允许访问的hosts文件列表
   Future<void> start(
       {int port = _defaultPort,
       String host = _defaultHost,
-      Map<String, String>? i18nStrings}) async {
+      Map<String, String>? i18nStrings,
+      List<String>? allowedHostFiles}) async {
     if (_server != null) {
       throw Exception(_i18nStrings['server_already_running'] ??
           'Server is already running');
@@ -57,6 +62,10 @@ class HostsServer {
 
     if (i18nStrings != null) {
       _i18nStrings = i18nStrings;
+    }
+
+    if (allowedHostFiles != null) {
+      _allowedHostFiles = allowedHostFiles;
     }
 
     _port = port;
@@ -176,8 +185,18 @@ class HostsServer {
         hostFiles.add(hostFile);
       }
 
+      // 根据允许的hosts文件列表进行过滤
+      final allowedHosts = hostFiles.where((hostFile) {
+        // 如果没有设置允许列表，则返回所有文件
+        if (_allowedHostFiles.isEmpty) {
+          return true;
+        }
+        // 只返回允许访问的文件
+        return _allowedHostFiles.contains(hostFile.fileName);
+      }).toList();
+
       // 转换为API响应格式
-      final hosts = hostFiles
+      final hosts = allowedHosts
           .map((hostFile) => {
                 'fileName': hostFile.fileName,
                 'remark': hostFile.remark,
@@ -202,6 +221,17 @@ class HostsServer {
     if (fileName == null) {
       return Response.badRequest(
         body: _i18nStrings['missing_file_id'] ?? 'Missing file ID',
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+        },
+      );
+    }
+
+    // 验证文件是否在允许访问的列表中
+    if (_allowedHostFiles.isNotEmpty && !_allowedHostFiles.contains(fileName)) {
+      return Response.forbidden(
+        'Access denied: File not allowed',
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Access-Control-Allow-Origin': '*',
@@ -238,6 +268,17 @@ class HostsServer {
         body: jsonEncode({
           'success': false,
           'error': _i18nStrings['missing_file_id'] ?? 'Missing file ID'
+        }),
+        headers: _corsHeaders,
+      );
+    }
+
+    // 验证文件是否在允许访问的列表中
+    if (_allowedHostFiles.isNotEmpty && !_allowedHostFiles.contains(fileName)) {
+      return Response.forbidden(
+        jsonEncode({
+          'success': false,
+          'error': 'Access denied: File not allowed'
         }),
         headers: _corsHeaders,
       );
@@ -281,6 +322,17 @@ class HostsServer {
       return Response.badRequest(
         body: _i18nStrings['missing_file_id_or_history_id'] ??
             'Missing file ID or history ID',
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+        },
+      );
+    }
+
+    // 验证文件是否在允许访问的列表中
+    if (_allowedHostFiles.isNotEmpty && !_allowedHostFiles.contains(fileName)) {
+      return Response.forbidden(
+        'Access denied: File not allowed',
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Access-Control-Allow-Origin': '*',
