@@ -414,4 +414,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get visit_device => 'Visit device';
+
+  @override
+  String get access_denied_file_not_allowed =>
+      'Access denied: File not allowed';
+
+  @override
+  String get select_hosts_to_share => 'Please select hosts files to share';
 }

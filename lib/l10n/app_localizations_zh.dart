@@ -404,4 +404,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get visit_device => '访问设备';
+
+  @override
+  String get access_denied_file_not_allowed => '访问被拒绝：文件不被允许';
+
+  @override
+  String get select_hosts_to_share => '请选择要分享的hosts文件';
 }

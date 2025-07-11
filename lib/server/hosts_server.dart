@@ -231,7 +231,7 @@ class HostsServer {
     // 验证文件是否在允许访问的列表中
     if (_allowedHostFiles.isNotEmpty && !_allowedHostFiles.contains(fileName)) {
       return Response.forbidden(
-        'Access denied: File not allowed',
+        _i18nStrings['access_denied_file_not_allowed'] ?? 'Access denied: File not allowed',
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Access-Control-Allow-Origin': '*',
@@ -278,7 +278,7 @@ class HostsServer {
       return Response.forbidden(
         jsonEncode({
           'success': false,
-          'error': 'Access denied: File not allowed'
+          'error': _i18nStrings['access_denied_file_not_allowed'] ?? 'Access denied: File not allowed'
         }),
         headers: _corsHeaders,
       );
@@ -332,7 +332,7 @@ class HostsServer {
     // 验证文件是否在允许访问的列表中
     if (_allowedHostFiles.isNotEmpty && !_allowedHostFiles.contains(fileName)) {
       return Response.forbidden(
-        'Access denied: File not allowed',
+        _i18nStrings['access_denied_file_not_allowed'] ?? 'Access denied: File not allowed',
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Access-Control-Allow-Origin': '*',

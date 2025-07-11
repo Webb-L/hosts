@@ -128,5 +128,7 @@
   "scanning_devices": "正在扫描附近设备...",
   "sharing_enabled": "共享服务已开启",
   "device_reachable": "设备可达",
-  "visit_device": "访问设备"
+  "visit_device": "访问设备",
+  "access_denied_file_not_allowed": "访问被拒绝：文件不被允许",
+  "select_hosts_to_share": "请选择要分享的hosts文件"
 }

@@ -82,7 +82,7 @@ class _SelectHostsDialogState extends State<SelectHostsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.select_hosts_to_export),
+      title: Text(AppLocalizations.of(context)!.select_hosts_to_share),
       content: SizedBox(
         width: 500,
         height: 400,

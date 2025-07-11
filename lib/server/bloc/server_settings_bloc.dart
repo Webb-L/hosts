@@ -13,6 +13,8 @@ class ServerSettingsBloc extends Bloc<ServerSettingsEvent, ServerSettingsState> 
     on<LoadServerSettings>(_onLoadServerSettings);
     on<LoadNetworkInterfaces>(_onLoadNetworkInterfaces);
     on<ToggleServerStatus>(_onToggleServerStatus);
+    on<StartServer>(_onStartServer);
+    on<StopServer>(_onStopServer);
     on<RefreshServerStatus>(_onRefreshServerStatus);
   }
 
@@ -90,6 +92,65 @@ class ServerSettingsBloc extends Bloc<ServerSettingsEvent, ServerSettingsState> 
       emit(state.copyWith(
         isLoading: false,
         errorMessage: '操作失败: $e',
+      ));
+    }
+  }
+
+  /// 启动服务器
+  Future<void> _onStartServer(
+    StartServer event,
+    Emitter<ServerSettingsState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
+
+      // 将选中的hosts文件名传递给服务器管理器
+      final selectedHostNames = event.selectedHosts?.map((host) => host.fileName).toList();
+      final success = await _serverManager.startServer(allowedHostFiles: selectedHostNames);
+
+      if (success) {
+        // 重新加载服务器状态
+        final status = await _serverManager.getServerStatus();
+        emit(state.copyWith(
+          isLoading: false,
+          serverStatus: status,
+          isServerEnabled: status['isEnabled'] ?? false,
+        ));
+      } else {
+        emit(state.copyWith(
+          isLoading: false,
+          errorMessage: '启动服务器失败',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: '启动服务器失败: $e',
+      ));
+    }
+  }
+
+  /// 停止服务器
+  Future<void> _onStopServer(
+    StopServer event,
+    Emitter<ServerSettingsState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
+
+      await _serverManager.stopServer();
+      
+      // 重新加载服务器状态
+      final status = await _serverManager.getServerStatus();
+      emit(state.copyWith(
+        isLoading: false,
+        serverStatus: status,
+        isServerEnabled: status['isEnabled'] ?? false,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: '停止服务器失败: $e',
       ));
     }
   }

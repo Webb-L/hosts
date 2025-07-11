@@ -128,5 +128,7 @@
   "scanning_devices": "Scanning nearby devices...",
   "sharing_enabled": "Sharing service enabled",
   "device_reachable": "Device reachable",
-  "visit_device": "Visit device"
+  "visit_device": "Visit device",
+  "access_denied_file_not_allowed": "Access denied: File not allowed",
+  "select_hosts_to_share": "Please select hosts files to share"
 }

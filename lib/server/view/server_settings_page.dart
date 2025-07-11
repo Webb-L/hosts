@@ -124,8 +124,11 @@ class _ServerSettingsView extends StatelessWidget {
       key: _serverStatusKey,
       serverStatus: state.serverStatus,
       networkInterfaces: state.networkInterfaces,
-      onToggleServer: () {
-        context.read<ServerSettingsBloc>().add(ToggleServerStatus());
+      onStartServer: (selectedHosts) {
+        context.read<ServerSettingsBloc>().add(StartServer(selectedHosts));
+      },
+      onStopServer: () {
+        context.read<ServerSettingsBloc>().add(StopServer());
       },
     );
   }

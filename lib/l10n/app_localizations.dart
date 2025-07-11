@@ -877,6 +877,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'访问设备'**
   String get visit_device;
+
+  /// No description provided for @access_denied_file_not_allowed.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问被拒绝：文件不被允许'**
+  String get access_denied_file_not_allowed;
+
+  /// No description provided for @select_hosts_to_share.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择要分享的hosts文件'**
+  String get select_hosts_to_share;
 }
 
 class _AppLocalizationsDelegate
