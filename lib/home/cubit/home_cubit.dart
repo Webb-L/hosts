@@ -240,7 +240,7 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> toggleAdvancedSettings(
       AdvancedSettingsEnum advancedSettings) async {
     emit(
-      HomeInitial(
+      HomeAdvancedSettings(
         state.data.copyWith(
           advancedSettingsEnum: advancedSettings,
         ),
