@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hosts/l10n/app_localizations.dart';
+import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/widget/dialog/qr_code_dialog.dart';
 import 'package:hosts/widget/dialog/select_hosts_dialog.dart';
-import 'package:hosts/model/simple_host_file.dart';
 
 /// 服务器状态卡片组件
 class ServerStatusCard extends StatelessWidget {
@@ -39,14 +39,16 @@ class ServerStatusCard extends StatelessWidget {
   /// 处理服务器切换
   Future<void> _handleServerToggle(BuildContext context) async {
     final isRunning = serverStatus?['isRunning'] ?? false;
-    
+
     if (isRunning) {
       // 如果服务器正在运行，直接停止
       onStopServer();
     } else {
       // 如果服务器未运行，显示选择hosts文件对话框
       final selectedHosts = await SelectHostsDialog.show(context);
-      onStartServer(selectedHosts);
+      if (selectedHosts != null && selectedHosts.isNotEmpty) {
+        onStartServer(selectedHosts);
+      }
     }
   }
 
@@ -170,36 +172,161 @@ class ServerStatusCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // 服务器状态行
-            Row(
-              children: [
-                Icon(
-                  isRunning
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isRunning
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.3)
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
                   color: isRunning
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline,
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.2)
+                      : Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.1),
+                  width: 1,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  isRunning
-                      ? AppLocalizations.of(context)!.server_running
-                      : AppLocalizations.of(context)!.server_stopped,
-                  style: TextStyle(
-                    color: isRunning
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                    fontWeight: FontWeight.bold,
+              ),
+              child: Row(
+                children: [
+                  // 状态指示器
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isRunning
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline,
+                      boxShadow: isRunning
+                          ? [
+                              BoxShadow(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: isRunning
+                        ? Container(
+                            margin: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          )
+                        : null,
                   ),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: () => _handleServerToggle(context),
-                  child: Text(isRunning
-                      ? AppLocalizations.of(context)!.server_stop
-                      : AppLocalizations.of(context)!.server_start),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  // 状态文字
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isRunning
+                              ? AppLocalizations.of(context)!.server_running
+                              : AppLocalizations.of(context)!.server_stopped,
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: isRunning
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                        if (isRunning && port != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '端口: $port',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withValues(alpha: 0.7),
+                                    ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // 操作按钮
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isRunning
+                              ? Colors.red.withValues(alpha: 0.2)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () => _handleServerToggle(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isRunning
+                            ? Colors.red.shade600
+                            : Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                        shadowColor: isRunning
+                            ? Colors.red.withValues(alpha: 0.3)
+                            : Colors.green.withValues(alpha: 0.3),
+                      ),
+                      icon: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isRunning
+                              ? Icons.stop_rounded
+                              : Icons.play_arrow_rounded,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                      label: Text(
+                        isRunning
+                            ? AppLocalizations.of(context)!.server_stop
+                            : AppLocalizations.of(context)!.server_start,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             // 服务器地址信息

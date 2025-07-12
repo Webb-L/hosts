@@ -47,6 +47,8 @@ class _SelectHostsDialogState extends State<SelectHostsDialog> {
 
       setState(() {
         _hostFiles = hostFiles;
+        // 默认全选所有hosts文件
+        _selectedFileNames = hostFiles.map((f) => f.fileName).toSet();
         _isLoading = false;
       });
     } catch (e) {
