@@ -4,11 +4,11 @@ import 'package:hosts/enums.dart';
 import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/home/view/home_app_bar.dart';
+import 'package:hosts/home/view/home_drawer.dart';
 import 'package:hosts/home/view/host_view.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/page/host_page.dart';
-import 'package:hosts/home/view/home_drawer.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -18,6 +18,8 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     // 初始化时加载 hostFiles
@@ -27,9 +29,16 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      key: _scaffoldKey,
       drawer:
-      MediaQuery.of(context).size.width < 600 ? const HomeDrawer() : null,
+          MediaQuery.of(context).size.width < 600 ? const HomeDrawer() : null,
+      onDrawerChanged: (value) {
+        if (!value) {
+          context.read<HomeCubit>().toggleAdvancedSettingsSwitch();
+        }
+      },
       floatingActionButton: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           if (state.data.editMode == EditMode.Table) {
@@ -37,7 +46,7 @@ class _HomeViewState extends State<HomeView> {
               onPressed: () async {
                 List<HostsModel>? hostsModels = await Navigator.of(context)
                     .push(MaterialPageRoute(
-                    builder: (context) => const HostPage()));
+                        builder: (context) => const HostPage()));
                 if (hostsModels == null) return;
                 context.read<HostCubit>().addHosts(hostsModels);
               },
@@ -53,25 +62,33 @@ class _HomeViewState extends State<HomeView> {
             context.read<HostCubit>().updateHost(state.data.selectHostFile);
           }
 
-          if(state is HomeEditMode) {
+          if (state is HomeEditMode) {
             context.read<HostCubit>().updateEditMode(state.data.editMode);
+          }
+
+          if (state is HomeAdvancedSettings) {
+            if (state.data.advancedSettingsEnum == AdvancedSettingsEnum.Open) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scaffoldKey.currentState?.openDrawer();
+              });
+            }
           }
 
           return Row(
             children: [
               if (state.data.advancedSettingsEnum ==
-                  AdvancedSettingsEnum.Close &&
+                      AdvancedSettingsEnum.Close &&
                   MediaQuery.of(context).size.width > 600)
                 const HomeDrawer(),
               Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const HomeAppBar(),
-                      saveTipMessage(state.data),
-                      HostView(state.data)
-                    ],
-                  ))
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const HomeAppBar(),
+                  saveTipMessage(state.data),
+                  HostView(state.data)
+                ],
+              ))
             ],
           );
         },
@@ -91,7 +108,7 @@ class _HomeViewState extends State<HomeView> {
       final String updateSaveTip =
           AppLocalizations.of(context)!.error_not_update_save_tip;
       final String updateSavePermissionTip = data.selectHostFile ==
-          state.data.fileId
+              state.data.fileId
           ? '\n${AppLocalizations.of(context)!.error_not_update_save_permission_tip}'
           : '';
       return MaterialBanner(

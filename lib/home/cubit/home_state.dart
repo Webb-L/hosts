@@ -67,6 +67,10 @@ class HomeInitial extends HomeState {
   const HomeInitial(super.data);
 }
 
+class HomeAdvancedSettings extends HomeState {
+  const HomeAdvancedSettings(super.data);
+}
+
 /// 编辑模式变更状态
 /// 当用户切换编辑模式(表格/文本)时触发
 class HomeEditMode extends HomeState {
