@@ -45,21 +45,23 @@ class SimpleHomeView extends StatelessWidget {
           return const SizedBox();
         },
       ),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          if (state is HomeEditMode) {
-            context.read<HostCubit>().updateEditMode(state.data.editMode);
-          }
+      body: SafeArea(
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            if (state is HomeEditMode) {
+              context.read<HostCubit>().updateEditMode(state.data.editMode);
+            }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const HomeAppBar(),
-              saveTipMessage(state.data),
-              HostView(state.data)
-            ],
-          );
-        },
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const HomeAppBar(),
+                saveTipMessage(state.data),
+                HostView(state.data)
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -56,42 +56,44 @@ class _HomeViewState extends State<HomeView> {
           return const SizedBox();
         },
       ),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          if (state is HomeSelectHostFileChanged) {
-            context.read<HostCubit>().updateHost(state.data.selectHostFile);
-          }
-
-          if (state is HomeEditMode) {
-            context.read<HostCubit>().updateEditMode(state.data.editMode);
-          }
-
-          if (state is HomeAdvancedSettings) {
-            if (state.data.advancedSettingsEnum == AdvancedSettingsEnum.Open) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _scaffoldKey.currentState?.openDrawer();
-              });
+      body: SafeArea(
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            if (state is HomeSelectHostFileChanged) {
+              context.read<HostCubit>().updateHost(state.data.selectHostFile);
             }
-          }
 
-          return Row(
-            children: [
-              if (state.data.advancedSettingsEnum ==
-                      AdvancedSettingsEnum.Close &&
-                  MediaQuery.of(context).size.width > 600)
-                const HomeDrawer(),
-              Expanded(
-                  child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const HomeAppBar(),
-                  saveTipMessage(state.data),
-                  HostView(state.data)
-                ],
-              ))
-            ],
-          );
-        },
+            if (state is HomeEditMode) {
+              context.read<HostCubit>().updateEditMode(state.data.editMode);
+            }
+
+            if (state is HomeAdvancedSettings) {
+              if (state.data.advancedSettingsEnum == AdvancedSettingsEnum.Open) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scaffoldKey.currentState?.openDrawer();
+                });
+              }
+            }
+
+            return Row(
+              children: [
+                if (state.data.advancedSettingsEnum ==
+                        AdvancedSettingsEnum.Close &&
+                    MediaQuery.of(context).size.width > 600)
+                  const HomeDrawer(),
+                Expanded(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const HomeAppBar(),
+                    saveTipMessage(state.data),
+                    HostView(state.data)
+                  ],
+                ))
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -19,159 +19,162 @@ class HomeDrawer extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         return Drawer(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.app_name,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const Expanded(child: SizedBox()),
-                    IconButton(
-                        onPressed: () async {
-                          String? remark = await hostConfigDialog(context);
-                          if (remark == null || remark.isEmpty) return;
-                          context.read<HomeCubit>().addHostFile(remark);
+          child: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
+                  child: Row(
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.app_name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const Expanded(child: SizedBox()),
+                      IconButton(
+                          onPressed: () async {
+                            String? remark = await hostConfigDialog(context);
+                            if (remark == null || remark.isEmpty) return;
+                            context.read<HomeCubit>().addHostFile(remark);
+                          },
+                          icon: const Icon(Icons.add)),
+                      PopupMenuButton<int>(
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: (value) async {
+                          switch (value) {
+                            case 1:
+                            // Import functionality
+                              await importHostsDialog(context, state.data.hostFiles,
+                                  onImportSuccess: () {
+                                    context.read<HomeCubit>().refreshHostFiles(context);
+                                  });
+                              break;
+                            case 2:
+                            // Export functionality
+                              await exportHostsDialog(context, state.data.hostFiles);
+                              break;
+                            case 3:
+                            // Remote sync functionality
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ServerSettingsPage(),
+                                ),
+                              );
+                              break;
+                          }
                         },
-                        icon: const Icon(Icons.add)),
-                    PopupMenuButton<int>(
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: (value) async {
-                        switch (value) {
-                          case 1:
-                          // Import functionality
-                            await importHostsDialog(context, state.data.hostFiles,
-                                onImportSuccess: () {
-                                  context.read<HomeCubit>().refreshHostFiles(context);
-                                });
-                            break;
-                          case 2:
-                          // Export functionality
-                            await exportHostsDialog(context, state.data.hostFiles);
-                            break;
-                          case 3:
-                          // Remote sync functionality
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ServerSettingsPage(),
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            PopupMenuItem<int>(
+                              value: 1,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.file_upload),
+                                  const SizedBox(width: 8),
+                                  Text(AppLocalizations.of(context)!.import),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<int>(
+                              value: 2,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.file_download),
+                                  const SizedBox(width: 8),
+                                  Text(AppLocalizations.of(context)!.export),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<int>(
+                              value: 3,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.cloud_sync),
+                                  const SizedBox(width: 8),
+                                  Text(AppLocalizations.of(context)!.remote_sync),
+                                ],
+                              ),
+                            ),
+                          ];
+                        },
+                      )
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: state.data.hostFiles.length,
+                    padding: EdgeInsets.zero,
+                    itemBuilder: (context, index) {
+                      final hostFile = state.data.hostFiles[index];
+                      return ListTile(
+                        title: Text(hostFile.remark),
+                        leading: IconButton(
+                          tooltip: AppLocalizations.of(context)!.use,
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: Size.zero,
+                            padding: EdgeInsets.zero,
+                          ),
+                          onPressed:
+                          state.data.useHostFiles.contains(hostFile.fileName)
+                              ? null
+                              : () async {
+                            // final String path = await _fileManager
+                            //     .getHostsFilePath(hostFile.fileName);
+                            //
+                            // if (!await widget
+                            //     .onClickUse(File(path).readAsStringSync())) {
+                            //   return;
+                            // }
+
+                            // setState(() {
+                            //   useHostFile = hostFile.fileName;
+                            // });
+                            // _settingsManager.setString(
+                            //     settingKeyUseHostFile, hostFile.fileName);
+                          },
+                          icon: Icon(
+                              state.data.useHostFiles.contains(hostFile.fileName)
+                                  ? Icons.star
+                                  : Icons.star_border),
+                        ),
+                        selectedTileColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                        selected: state.data.selectHostFile == hostFile.fileName,
+                        trailing: buildMoreButton(hostFile),
+                        onTap: () {
+                          if (state.data.selectHostFile == hostFile.fileName) {
+                            return;
+                          }
+                          if (!context.read<HostCubit>().state.data.isSave) {
+                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    AppLocalizations.of(context)!.error_not_save),
+                                action: SnackBarAction(
+                                  label: AppLocalizations.of(context)!.abort,
+                                  onPressed: () {
+                                    context
+                                        .read<HomeCubit>()
+                                        .selectHost(hostFile.fileName);
+                                  },
+                                ),
                               ),
                             );
-                            break;
-                        }
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          PopupMenuItem<int>(
-                            value: 1,
-                            child: Row(
-                              children: [
-                                const Icon(Icons.file_upload),
-                                const SizedBox(width: 8),
-                                Text(AppLocalizations.of(context)!.import),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem<int>(
-                            value: 2,
-                            child: Row(
-                              children: [
-                                const Icon(Icons.file_download),
-                                const SizedBox(width: 8),
-                                Text(AppLocalizations.of(context)!.export),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem<int>(
-                            value: 3,
-                            child: Row(
-                              children: [
-                                const Icon(Icons.cloud_sync),
-                                const SizedBox(width: 8),
-                                Text(AppLocalizations.of(context)!.remote_sync),
-                              ],
-                            ),
-                          ),
-                        ];
-                      },
-                    )
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: state.data.hostFiles.length,
-                  itemBuilder: (context, index) {
-                    final hostFile = state.data.hostFiles[index];
-                    return ListTile(
-                      title: Text(hostFile.remark),
-                      leading: IconButton(
-                        tooltip: AppLocalizations.of(context)!.use,
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: Size.zero,
-                          padding: EdgeInsets.zero,
-                        ),
-                        onPressed:
-                        state.data.useHostFiles.contains(hostFile.fileName)
-                            ? null
-                            : () async {
-                          // final String path = await _fileManager
-                          //     .getHostsFilePath(hostFile.fileName);
-                          //
-                          // if (!await widget
-                          //     .onClickUse(File(path).readAsStringSync())) {
-                          //   return;
-                          // }
+                            return;
+                          }
 
-                          // setState(() {
-                          //   useHostFile = hostFile.fileName;
-                          // });
-                          // _settingsManager.setString(
-                          //     settingKeyUseHostFile, hostFile.fileName);
+                          context.read<HomeCubit>().selectHost(hostFile.fileName);
                         },
-                        icon: Icon(
-                            state.data.useHostFiles.contains(hostFile.fileName)
-                                ? Icons.star
-                                : Icons.star_border),
-                      ),
-                      selectedTileColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                      selected: state.data.selectHostFile == hostFile.fileName,
-                      trailing: buildMoreButton(hostFile),
-                      onTap: () {
-                        if (state.data.selectHostFile == hostFile.fileName) {
-                          return;
-                        }
-                        if (!context.read<HostCubit>().state.data.isSave) {
-                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  AppLocalizations.of(context)!.error_not_save),
-                              action: SnackBarAction(
-                                label: AppLocalizations.of(context)!.abort,
-                                onPressed: () {
-                                  context
-                                      .read<HomeCubit>()
-                                      .selectHost(hostFile.fileName);
-                                },
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-
-                        context.read<HomeCubit>().selectHost(hostFile.fileName);
-                      },
-                    );
-                  },
-                ),
-              )
-            ],
+                      );
+                    },
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },
