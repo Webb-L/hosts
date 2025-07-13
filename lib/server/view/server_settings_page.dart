@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/l10n/app_localizations.dart';
+import 'package:hosts/server/bloc/nearby_devices_cubit.dart';
 import 'package:hosts/server/bloc/server_settings_bloc.dart';
 import 'package:hosts/server/bloc/server_settings_event.dart';
 import 'package:hosts/server/bloc/server_settings_state.dart';
@@ -13,10 +14,17 @@ class ServerSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ServerSettingsBloc()
-        ..add(LoadServerSettings())
-        ..add(LoadNetworkInterfaces()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => ServerSettingsBloc()
+            ..add(LoadServerSettings())
+            ..add(LoadNetworkInterfaces()),
+        ),
+        BlocProvider(
+          create: (context) => NearbyDevicesCubit()..loadCachedDevices(),
+        ),
+      ],
       child: const _ServerSettingsView(),
     );
   }

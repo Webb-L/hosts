@@ -1,0 +1,160 @@
+import 'dart:async';
+
+import 'package:bloc/bloc.dart';
+import 'package:hosts/utils/nearby_devices_scanner.dart';
+
+part 'nearby_devices_state.dart';
+
+/// 附近设备 Cubit
+class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
+  NearbyDevicesCubit() : super(const NearbyDevicesState());
+
+  /// 加载缓存的设备
+  Future<void> loadCachedDevices() async {
+    try {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
+      
+      final cachedDevices = await NearbyDevicesScanner.getCachedDevices();
+      
+      emit(state.copyWith(
+        isLoading: false,
+        devices: cachedDevices,
+      ));
+      
+      // 如果有缓存设备，自动检查在线状态
+      if (cachedDevices.isNotEmpty) {
+        checkDevicesOnlineStatus();
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: '加载缓存设备失败: $e',
+      ));
+    }
+  }
+
+  /// 扫描附近设备
+  Future<void> scanNearbyDevices() async {
+    try {
+      emit(state.copyWith(
+        isScanning: true,
+        errorMessage: null,
+        devices: [], // 清空现有设备列表
+      ));
+
+      // 开始实时扫描
+      await NearbyDevicesScanner.scanNearbyDevicesRealTime(
+        onDeviceFound: (device) {
+          // 实时更新设备列表
+          onDeviceFound(device);
+        },
+      );
+
+      emit(state.copyWith(
+        isScanning: false,
+        successMessage: '扫描完成，发现${state.devices.length}个设备',
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isScanning: false,
+        errorMessage: '扫描附近设备失败: $e',
+      ));
+    }
+  }
+
+  /// 检查设备在线状态
+  Future<void> checkDevicesOnlineStatus() async {
+    if (state.devices.isEmpty) return;
+
+    try {
+      emit(state.copyWith(isCheckingStatus: true, errorMessage: null));
+
+      await NearbyDevicesScanner.checkCachedDevicesOnlineStatus();
+
+      // 重新加载更新后的设备列表
+      final updatedDevices = await NearbyDevicesScanner.getCachedDevices();
+      
+      emit(state.copyWith(
+        isCheckingStatus: false,
+        devices: updatedDevices,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isCheckingStatus: false,
+        errorMessage: '检查设备在线状态失败: $e',
+      ));
+    }
+  }
+
+  /// 清除设备缓存
+  Future<void> clearDeviceCache() async {
+    try {
+      await NearbyDevicesScanner.clearCache();
+      
+      emit(state.copyWith(
+        devices: [],
+        successMessage: '设备缓存已清除',
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        errorMessage: '清除设备缓存失败: $e',
+      ));
+    }
+  }
+
+  /// 设备发现处理
+  void onDeviceFound(NearbyDevice device) {
+    final updatedDevices = List<NearbyDevice>.from(state.devices);
+    
+    // 避免重复添加同一IP的设备
+    final existingIndex = updatedDevices.indexWhere((d) => d.ip == device.ip);
+    if (existingIndex >= 0) {
+      updatedDevices[existingIndex] = device;
+    } else {
+      updatedDevices.add(device);
+    }
+    
+    emit(state.copyWith(devices: updatedDevices));
+  }
+
+  /// 选择设备
+  void selectDevice(NearbyDevice? device) {
+    emit(state.copyWith(
+      selectedDevice: device,
+      clearSelectedDevice: device == null,
+    ));
+  }
+  
+  /// 切换设备选择状态
+  void toggleDeviceSelection(NearbyDevice device) {
+    if (state.selectedDevice?.ip == device.ip) {
+      // 如果已选中，则取消选择
+      selectDevice(null);
+    } else {
+      // 否则选择该设备
+      selectDevice(device);
+    }
+  }
+  
+  /// 检查设备是否被选中
+  bool isDeviceSelected(NearbyDevice device) {
+    return state.selectedDevice?.ip == device.ip;
+  }
+
+  /// 获取设备状态摘要（供其他组件使用）
+  Map<String, int> getDevicesSummary() {
+    return {
+      'total': state.totalDevicesCount,
+      'online': state.onlineDevicesCount,
+      'offline': state.totalDevicesCount - state.onlineDevicesCount,
+    };
+  }
+
+  /// 清除消息
+  void clearMessages() {
+    emit(state.copyWith(
+      errorMessage: null,
+      successMessage: null,
+    ));
+  }
+}
