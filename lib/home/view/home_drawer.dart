@@ -31,6 +31,10 @@ class HomeDrawer extends StatelessWidget {
                       BlocBuilder<NearbyDevicesCubit, NearbyDevicesState>(
                         builder: (context, state) {
                           print(state.devices);
+                          if (state is NearbyDevicesSelectionChanged) {
+                            print(
+                                "state.selectedDevice = ${state.selectedDevice}");
+                          }
 
                           if (state.devices.isEmpty) {
                             return Text(
@@ -48,7 +52,13 @@ class HomeDrawer extends StatelessWidget {
                                 context
                                     .read<NearbyDevicesCubit>()
                                     .toggleDeviceSelection(device);
+
+                                return;
                               }
+
+                              context
+                                  .read<NearbyDevicesCubit>()
+                                  .selectDevice(null);
                             },
                             itemBuilder: (BuildContext context) {
                               final List<PopupMenuEntry<String>> items = [];
@@ -159,7 +169,7 @@ class HomeDrawer extends StatelessWidget {
                                           .titleMedium,
                                     ),
                                     Text(
-                                      state.selectedDevice?.ip??"本地",
+                                      state.selectedDevice?.ip ?? "本地",
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                     )
