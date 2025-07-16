@@ -1,24 +1,29 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/material.dart';
 import 'package:hosts/utils/nearby_devices_scanner.dart';
 
 part 'nearby_devices_state.dart';
 
 /// 附近设备 Cubit
 class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
-  NearbyDevicesCubit() : super(const NearbyDevicesState());
+  NearbyDevicesCubit() : super(const NearbyDevicesInitial(NearbyDevicesStateData()));
 
   /// 加载缓存的设备
   Future<void> loadCachedDevices() async {
     try {
-      emit(state.copyWith(isLoading: true, errorMessage: null));
+      emit(NearbyDevicesLoading(
+        state.data.copyWith(isLoading: true, errorMessage: null),
+      ));
       
       final cachedDevices = await NearbyDevicesScanner.getCachedDevices();
       
-      emit(state.copyWith(
-        isLoading: false,
-        devices: cachedDevices,
+      emit(NearbyDevicesInitial(
+        state.data.copyWith(
+          isLoading: false,
+          devices: cachedDevices,
+        ),
       ));
       
       // 如果有缓存设备，自动检查在线状态
@@ -26,9 +31,11 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
         checkDevicesOnlineStatus();
       }
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        errorMessage: '加载缓存设备失败: $e',
+      emit(NearbyDevicesError(
+        state.data.copyWith(
+          isLoading: false,
+          errorMessage: '加载缓存设备失败: $e',
+        ),
       ));
     }
   }
@@ -36,10 +43,12 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
   /// 扫描附近设备
   Future<void> scanNearbyDevices() async {
     try {
-      emit(state.copyWith(
-        isScanning: true,
-        errorMessage: null,
-        devices: [], // 清空现有设备列表
+      emit(NearbyDevicesScanning(
+        state.data.copyWith(
+          isScanning: true,
+          errorMessage: null,
+          devices: [], // 清空现有设备列表
+        ),
       ));
 
       // 开始实时扫描
@@ -50,14 +59,18 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
         },
       );
 
-      emit(state.copyWith(
-        isScanning: false,
-        successMessage: '扫描完成，发现${state.devices.length}个设备',
+      emit(NearbyDevicesSuccess(
+        state.data.copyWith(
+          isScanning: false,
+          successMessage: '扫描完成，发现${state.devices.length}个设备',
+        ),
       ));
     } catch (e) {
-      emit(state.copyWith(
-        isScanning: false,
-        errorMessage: '扫描附近设备失败: $e',
+      emit(NearbyDevicesError(
+        state.data.copyWith(
+          isScanning: false,
+          errorMessage: '扫描附近设备失败: $e',
+        ),
       ));
     }
   }
@@ -67,21 +80,27 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
     if (state.devices.isEmpty) return;
 
     try {
-      emit(state.copyWith(isCheckingStatus: true, errorMessage: null));
+      emit(NearbyDevicesCheckingStatus(
+        state.data.copyWith(isCheckingStatus: true, errorMessage: null),
+      ));
 
       await NearbyDevicesScanner.checkCachedDevicesOnlineStatus();
 
       // 重新加载更新后的设备列表
       final updatedDevices = await NearbyDevicesScanner.getCachedDevices();
       
-      emit(state.copyWith(
-        isCheckingStatus: false,
-        devices: updatedDevices,
+      emit(NearbyDevicesInitial(
+        state.data.copyWith(
+          isCheckingStatus: false,
+          devices: updatedDevices,
+        ),
       ));
     } catch (e) {
-      emit(state.copyWith(
-        isCheckingStatus: false,
-        errorMessage: '检查设备在线状态失败: $e',
+      emit(NearbyDevicesError(
+        state.data.copyWith(
+          isCheckingStatus: false,
+          errorMessage: '检查设备在线状态失败: $e',
+        ),
       ));
     }
   }
@@ -91,13 +110,17 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
     try {
       await NearbyDevicesScanner.clearCache();
       
-      emit(state.copyWith(
-        devices: [],
-        successMessage: '设备缓存已清除',
+      emit(NearbyDevicesSuccess(
+        state.data.copyWith(
+          devices: [],
+          successMessage: '设备缓存已清除',
+        ),
       ));
     } catch (e) {
-      emit(state.copyWith(
-        errorMessage: '清除设备缓存失败: $e',
+      emit(NearbyDevicesError(
+        state.data.copyWith(
+          errorMessage: '清除设备缓存失败: $e',
+        ),
       ));
     }
   }
@@ -114,14 +137,18 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
       updatedDevices.add(device);
     }
     
-    emit(state.copyWith(devices: updatedDevices));
+    emit(NearbyDevicesDeviceFound(
+      state.data.copyWith(devices: updatedDevices),
+    ));
   }
 
   /// 选择设备
   void selectDevice(NearbyDevice? device) {
-    emit(state.copyWith(
-      selectedDevice: device,
-      clearSelectedDevice: device == null,
+    emit(NearbyDevicesSelectionChanged(
+      state.data.copyWith(
+        selectedDevice: device,
+        clearSelectedDevice: device == null,
+      ),
     ));
   }
   
@@ -144,17 +171,19 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
   /// 获取设备状态摘要（供其他组件使用）
   Map<String, int> getDevicesSummary() {
     return {
-      'total': state.totalDevicesCount,
-      'online': state.onlineDevicesCount,
-      'offline': state.totalDevicesCount - state.onlineDevicesCount,
+      'total': state.data.totalDevicesCount,
+      'online': state.data.onlineDevicesCount,
+      'offline': state.data.totalDevicesCount - state.data.onlineDevicesCount,
     };
   }
 
   /// 清除消息
   void clearMessages() {
-    emit(state.copyWith(
-      errorMessage: null,
-      successMessage: null,
+    emit(NearbyDevicesInitial(
+      state.data.copyWith(
+        errorMessage: null,
+        successMessage: null,
+      ),
     ));
   }
 }
