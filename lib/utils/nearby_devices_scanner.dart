@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hosts/utils/device_api_cache.dart';
 
 /// 附近设备扫描器
 class NearbyDevicesScanner {
@@ -21,7 +22,7 @@ class NearbyDevicesScanner {
   
   // 是否已初始化（加载缓存）
   static bool _isInitialized = false;
-  
+
   /// 实时扫描附近设备，发现设备时立即回调
   static Future<void> scanNearbyDevicesRealTime({
     required Function(NearbyDevice) onDeviceFound,
@@ -169,6 +170,11 @@ class NearbyDevicesScanner {
       
       // 连接成功，进一步验证是否是hosts服务器
       final bool isHostsServer = await _verifyHostsServer(ip);
+      
+      // 如果是hosts服务器，缓存API响应
+      if (isHostsServer) {
+        await DeviceApiCache.cacheDeviceAPIResponses(ip);
+      }
       
       return NearbyDevice(
         ip: ip,
@@ -369,6 +375,14 @@ class NearbyDevicesScanner {
     return _deviceCache.values.where((device) => !device.isOnline).toList();
   }
   
+  
+  
+  
+  
+  
+  
+  
+  
   /// 清除设备缓存
   static Future<void> clearCache() async {
     _deviceCache.clear();
@@ -378,6 +392,10 @@ class NearbyDevicesScanner {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_deviceCacheKey);
       await prefs.remove(_priorityIPsKey);
+      
+      // 清除API响应缓存
+      await DeviceApiCache.clearDeviceAPICache();
+      
       print('设备缓存已清除');
     } catch (e) {
       print('清除设备缓存失败: $e');

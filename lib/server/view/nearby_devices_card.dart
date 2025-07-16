@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/server/bloc/nearby_devices_cubit.dart';
 import 'package:hosts/utils/datetime_extensions.dart';
@@ -34,8 +35,8 @@ class NearbyDevicesCard extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        print(state.devices);
         return Card(
+          elevation: 1,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -107,8 +108,7 @@ class NearbyDevicesCard extends StatelessWidget {
                     style: const TextStyle(color: Colors.grey),
                   )
                 else if (state.devices.isNotEmpty)
-                  ...state.devices
-                      .map((device) => _buildDeviceItem(context, device))
+                  _buildDeviceGrid(context, state.devices)
                 else if (state.isScanning || state.isLoading)
                   Text(
                     state.isScanning
@@ -118,6 +118,43 @@ class NearbyDevicesCard extends StatelessWidget {
                   ),
               ],
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 构建设备网格
+  Widget _buildDeviceGrid(BuildContext context, List<NearbyDevice> devices) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 根据屏幕宽度确定网格列数
+        int crossAxisCount;
+        if (constraints.maxWidth > 1200) {
+          crossAxisCount = 4;
+        } else if (constraints.maxWidth > 800) {
+          crossAxisCount = 3;
+        } else if (constraints.maxWidth > 600) {
+          crossAxisCount = 2;
+        } else {
+          crossAxisCount = 1;
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: StaggeredGrid.count(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            children: devices.map((device) {
+              return StaggeredGridTile.fit(
+                crossAxisCellCount: 1,
+                child: _buildDeviceItem(context, device),
+              );
+            }).toList(),
           ),
         );
       },
@@ -145,101 +182,124 @@ class NearbyDevicesCard extends StatelessWidget {
       statusText = AppLocalizations.of(context)!.device_reachable;
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Stack(
-            children: [
-              Icon(
-                statusIcon,
-                color: statusColor,
-              ),
-              // 在线状态指示器
-              if (device.isOnline)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
               children: [
-                Row(
+                const SizedBox(width: 8,),
+                Stack(
                   children: [
-                    Text(
-                      device.ip,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: device.isOnline ? null : Colors.grey,
-                      ),
+                    Icon(
+                      statusIcon,
+                      color: statusColor,
+                      size: 24,
                     ),
-                    if (!device.isOnline) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.3)),
-                        ),
-                        child: Text(
-                          '离线',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.red[700],
-                            fontWeight: FontWeight.w500,
+                    // 在线状态指示器
+                    if (device.isOnline)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1),
                           ),
                         ),
                       ),
-                    ],
                   ],
                 ),
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: statusColor,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              device.ip,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: device.isOnline ? null : Colors.grey,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (!device.isOnline)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: Colors.red.withValues(alpha: 0.3)),
+                              ),
+                              child: Text(
+                                '离线',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.red[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: statusColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '最后见到: ${device.lastSeen.formatLastSeen()}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                // 显示最后见到时间
-                Text(
-                  '最后见到: ${device.lastSeen.formatLastSeen()}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
+                if (device.hasSharing && device.isOnline)
+                  IconButton(
+                    icon: const Icon(Icons.launch),
+                    onPressed: () {
+                      context
+                          .read<NearbyDevicesCubit>()
+                          .toggleDeviceSelection(device);
+                      Navigator.pop(context);
+                    },
+                    tooltip: AppLocalizations.of(context)!.visit_device,
                   ),
-                ),
               ],
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.launch),
-            onPressed: device.hasSharing && device.isOnline
-                ? () {
-                    context
-                        .read<NearbyDevicesCubit>()
-                        .toggleDeviceSelection(device);
-                    Navigator.pop(context);
-                  }
-                : null,
-            tooltip: AppLocalizations.of(context)!.visit_device,
-          )
-        ],
+          ],
+        ),
       ),
     );
   }
