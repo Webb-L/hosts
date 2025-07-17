@@ -6,6 +6,8 @@ import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/util/string_util.dart';
+import 'package:hosts/utils/device_api_cache.dart';
+import 'package:hosts/utils/nearby_devices_scanner.dart';
 
 part 'home_state.dart';
 
@@ -30,7 +32,7 @@ class HomeCubit extends Cubit<HomeState> {
     List<SimpleHostFile> tempHostFiles = [];
     List<String> tempSelectHostFiles = [];
     List<dynamic> hostConfigs =
-    await _settingsManager.getList(settingKeyHostConfigs);
+        await _settingsManager.getList(settingKeyHostConfigs);
 
     if (isInit) {
       // TODO 支持多个文件选择
@@ -49,7 +51,7 @@ class HomeCubit extends Cubit<HomeState> {
     }
 
     final fileId =
-    tempSelectHostFiles.isNotEmpty ? tempSelectHostFiles.first : "system";
+        tempSelectHostFiles.isNotEmpty ? tempSelectHostFiles.first : "system";
 
     emit(
       HomeInitial(
@@ -72,14 +74,14 @@ class HomeCubit extends Cubit<HomeState> {
     // 获取当前 hostFiles 列表
     List<SimpleHostFile> currentHostFiles = List.from(state.data.hostFiles);
     List<dynamic> hostConfigs =
-    await _settingsManager.getList(settingKeyHostConfigs);
+        await _settingsManager.getList(settingKeyHostConfigs);
 
     // 生成随机文件名
     final String fileName = generateRandomString(18);
 
     // 创建新的 hostFile
     SimpleHostFile newHostFile =
-    SimpleHostFile(fileName: fileName, remark: remark);
+        SimpleHostFile(fileName: fileName, remark: remark);
 
     // 添加到 hostFiles 列表
     currentHostFiles.add(newHostFile);
@@ -109,7 +111,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     List<SimpleHostFile> updatedHostFiles = [];
     List<dynamic> hostConfigs =
-    await _settingsManager.getList(settingKeyHostConfigs);
+        await _settingsManager.getList(settingKeyHostConfigs);
 
     bool updated = false;
 
@@ -187,7 +189,7 @@ class HomeCubit extends Cubit<HomeState> {
         .toList();
 
     List<dynamic> hostConfigs =
-    await _settingsManager.getList(settingKeyHostConfigs);
+        await _settingsManager.getList(settingKeyHostConfigs);
 
     hostConfigs.removeWhere((config) => config['fileName'] == fileName);
 
@@ -221,7 +223,9 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// 使用host文件
   /// [fileName] 要使用的文件名
-  Future<void> useHost(String fileName) async {}
+  Future<void> useHost(String fileName) async {
+    // TODO
+  }
 
   /// 切换编辑模式
   /// [editMode] 新的编辑模式(表格/文本)
@@ -252,9 +256,9 @@ class HomeCubit extends Cubit<HomeState> {
   /// 在Open和Close之间切换
   Future<void> toggleAdvancedSettingsSwitch() async {
     final AdvancedSettingsEnum newSettings =
-    state.data.advancedSettingsEnum == AdvancedSettingsEnum.Close
-        ? AdvancedSettingsEnum.Open
-        : AdvancedSettingsEnum.Close;
+        state.data.advancedSettingsEnum == AdvancedSettingsEnum.Close
+            ? AdvancedSettingsEnum.Open
+            : AdvancedSettingsEnum.Close;
 
     await toggleAdvancedSettings(newSettings);
   }
@@ -273,7 +277,8 @@ class HomeCubit extends Cubit<HomeState> {
       // 特殊处理system文件的remark
       if (hostFile.fileName == "system") {
         if (context != null) {
-          hostFile.remark = gen.AppLocalizations.of(context)!.default_hosts_text;
+          hostFile.remark =
+              gen.AppLocalizations.of(context)!.default_hosts_text;
         } else {
           hostFile.remark = "默认"; // 后备文本
         }
@@ -284,6 +289,31 @@ class HomeCubit extends Cubit<HomeState> {
       HomeInitial(
         state.data.copyWith(
           hostFiles: tempHostFiles,
+        ),
+      ),
+    );
+  }
+
+  void loadRemoteHostFiles(BuildContext context, NearbyDevice device) async {
+    List<SimpleHostFile> tempHostFiles = [];
+
+    final hostConfigs = await DeviceApiCache.getCachedDeviceData(device.ip);
+
+    for (Map<String, dynamic> config in hostConfigs) {
+      SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
+      tempHostFiles.add(hostFile);
+
+      if (hostFile.fileName == "system") {
+        hostFile.remark = gen.AppLocalizations.of(context)!.default_hosts_text;
+      }
+    }
+
+    emit(
+      HomeInitial(
+        HomeStateData(
+          hostFiles: tempHostFiles,
+          useHostFiles: [],
+          editMode: EditMode.Table,
         ),
       ),
     );

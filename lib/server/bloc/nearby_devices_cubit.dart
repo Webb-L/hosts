@@ -144,6 +144,7 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
 
   /// 选择设备
   void selectDevice(NearbyDevice? device) {
+    print("selectDevice = $device");
     emit(NearbyDevicesSelectionChanged(
       state.data.copyWith(
         selectedDevice: device,

@@ -7,6 +7,7 @@ import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/server/bloc/nearby_devices_cubit.dart';
 import 'package:hosts/server/view/server_settings_page.dart';
 import 'package:hosts/util/file_manager.dart';
+import 'package:hosts/utils/nearby_devices_scanner.dart';
 import 'package:hosts/widget/dialog/dialog.dart';
 import 'package:hosts/widget/dialog/export_hosts_dialog.dart';
 import 'package:hosts/widget/dialog/import_hosts_dialog.dart';
@@ -17,6 +18,8 @@ class HomeDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    NearbyDevice? selectedDevice;
+
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         return Drawer(
@@ -30,10 +33,20 @@ class HomeDrawer extends StatelessWidget {
                     children: [
                       BlocBuilder<NearbyDevicesCubit, NearbyDevicesState>(
                         builder: (context, state) {
-                          print(state.devices);
+                          // print(state.devices);
                           if (state is NearbyDevicesSelectionChanged) {
-                            print(
-                                "state.selectedDevice = ${state.selectedDevice}");
+                            if (state.selectedDevice != null) {
+                              if (selectedDevice != state.selectedDevice) {
+                                context.read<HomeCubit>().loadRemoteHostFiles(
+                                      context,
+                                      state.selectedDevice!,
+                                    );
+                              }
+                            } else {
+                              context.read<HomeCubit>().loadHostFiles(context);
+                            }
+
+                            selectedDevice = state.selectedDevice;
                           }
 
                           if (state.devices.isEmpty) {
@@ -63,7 +76,10 @@ class HomeDrawer extends StatelessWidget {
                             itemBuilder: (BuildContext context) {
                               final List<PopupMenuEntry<String>> items = [];
                               items.add(
-                                const PopupMenuItem<String>(child: Text('本地')),
+                                const PopupMenuItem<String>(
+                                  value: "local",
+                                  child: Text('本地'),
+                                ),
                               );
                               // 只显示设备列表
                               for (final device in state.devices) {
