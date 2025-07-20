@@ -110,7 +110,7 @@ class ServerStatusCard extends StatelessWidget {
                 color: primaryColor,
               ),
               onPressed: () => _showQrCodeDialog(context, url),
-              tooltip: '显示二维码',
+              tooltip: AppLocalizations.of(context)!.show_qr_code,
               padding: const EdgeInsets.all(4),
               constraints: const BoxConstraints(
                 minWidth: 28,
@@ -252,7 +252,7 @@ class ServerStatusCard extends StatelessWidget {
                         if (isRunning && port != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            '端口: $port',
+                            '${AppLocalizations.of(context)!.port}: $port',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: Theme.of(context)

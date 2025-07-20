@@ -105,8 +105,6 @@ class NearbyDevicesScanner {
         // 等待当前批次扫描完成
         await Future.wait(scanFutures);
       }
-      
-      print('实时扫描完成');
     } catch (e) {
       print('实时扫描附近设备失败: $e');
     }
@@ -170,11 +168,6 @@ class NearbyDevicesScanner {
       
       // 连接成功，进一步验证是否是hosts服务器
       final bool isHostsServer = await _verifyHostsServer(ip);
-      
-      // 如果是hosts服务器，缓存API响应
-      if (isHostsServer) {
-        await DeviceApiCache.cacheDeviceAPIResponses(ip);
-      }
       
       return NearbyDevice(
         ip: ip,
@@ -392,9 +385,6 @@ class NearbyDevicesScanner {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_deviceCacheKey);
       await prefs.remove(_priorityIPsKey);
-      
-      // 清除API响应缓存
-      await DeviceApiCache.clearDeviceAPICache();
       
       print('设备缓存已清除');
     } catch (e) {

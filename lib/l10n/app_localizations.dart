@@ -889,6 +889,84 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请选择要分享的hosts文件'**
   String get select_hosts_to_share;
+
+  /// No description provided for @offline.
+  ///
+  /// In zh, this message translates to:
+  /// **'离线'**
+  String get offline;
+
+  /// No description provided for @scan_nearby_devices_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描附近设备失败'**
+  String get scan_nearby_devices_failed;
+
+  /// No description provided for @import_remote_hosts.
+  ///
+  /// In zh, this message translates to:
+  /// **'导入远程hosts文件'**
+  String get import_remote_hosts;
+
+  /// No description provided for @refresh.
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新'**
+  String get refresh;
+
+  /// No description provided for @getting_remote_hosts.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在获取远程hosts文件...'**
+  String get getting_remote_hosts;
+
+  /// No description provided for @connection_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接设备失败'**
+  String get connection_failed;
+
+  /// No description provided for @retry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get retry;
+
+  /// No description provided for @no_hosts_files_found.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到可用的hosts文件'**
+  String get no_hosts_files_found;
+
+  /// No description provided for @device_no_shared_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'该设备可能没有共享任何hosts文件'**
+  String get device_no_shared_files;
+
+  /// No description provided for @no_importable_content.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到可导入的文件内容'**
+  String get no_importable_content;
+
+  /// No description provided for @remote_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'个远程文件'**
+  String get remote_files;
+
+  /// No description provided for @show_qr_code.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示二维码'**
+  String get show_qr_code;
+
+  /// No description provided for @port.
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get port;
 }
 
 class _AppLocalizationsDelegate

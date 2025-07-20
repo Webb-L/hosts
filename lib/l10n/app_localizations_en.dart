@@ -421,4 +421,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get select_hosts_to_share => 'Please select hosts files to share';
+
+  @override
+  String get offline => 'Offline';
+
+  @override
+  String get scan_nearby_devices_failed => 'Failed to scan nearby devices';
+
+  @override
+  String get import_remote_hosts => 'Import remote hosts files';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get getting_remote_hosts => 'Getting remote hosts files...';
+
+  @override
+  String get connection_failed => 'Failed to connect to device';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get no_hosts_files_found => 'No available hosts files found';
+
+  @override
+  String get device_no_shared_files =>
+      'This device may not be sharing any hosts files';
+
+  @override
+  String get no_importable_content => 'No importable file content found';
+
+  @override
+  String get remote_files => ' remote files';
+
+  @override
+  String get show_qr_code => 'Show QR Code';
+
+  @override
+  String get port => 'Port';
 }

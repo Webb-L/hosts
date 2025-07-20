@@ -21,7 +21,7 @@ class HomePage extends StatelessWidget {
       providers: [
         BlocProvider<HomeCubit>(create: (context) => HomeCubit()),
         BlocProvider<HostCubit>(create: (context) => HostCubit()),
-        BlocProvider<NearbyDevicesCubit>(create: (context) => NearbyDevicesCubit()..loadCachedDevices()),
+        BlocProvider<NearbyDevicesCubit>(create: (context) => NearbyDevicesCubit()),
       ],
       child: const HomeView(),
     );

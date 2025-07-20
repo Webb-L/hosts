@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/server/bloc/nearby_devices_cubit.dart';
-import 'package:hosts/utils/datetime_extensions.dart';
 import 'package:hosts/utils/nearby_devices_scanner.dart';
+import 'package:hosts/widget/dialog/access_device_dialog.dart';
 
 /// 附近设备卡片组件
 class NearbyDevicesCard extends StatelessWidget {
@@ -20,16 +20,6 @@ class NearbyDevicesCard extends StatelessWidget {
             SnackBar(
               content: Text(state.errorMessage!),
               backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        }
-
-        // 处理成功消息
-        if (state.successMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.successMessage!),
-              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           );
         }
@@ -52,32 +42,6 @@ class NearbyDevicesCard extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          icon: state.isCheckingStatus
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.wifi_find),
-                          onPressed:
-                              state.devices.isEmpty || state.isCheckingStatus
-                                  ? null
-                                  : () => context
-                                      .read<NearbyDevicesCubit>()
-                                      .checkDevicesOnlineStatus(),
-                          tooltip: '检查设备在线状态',
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.clear_all),
-                          onPressed: state.devices.isEmpty
-                              ? null
-                              : () => context
-                                  .read<NearbyDevicesCubit>()
-                                  .clearDeviceCache(),
-                          tooltip: '清除设备缓存',
-                        ),
                         IconButton(
                           icon: state.isScanning
                               ? const SizedBox(
@@ -113,7 +77,7 @@ class NearbyDevicesCard extends StatelessWidget {
                   Text(
                     state.isScanning
                         ? AppLocalizations.of(context)!.scanning_devices
-                        : '加载中...',
+                        : AppLocalizations.of(context)!.loading,
                     style: const TextStyle(color: Colors.grey),
                   ),
               ],
@@ -126,6 +90,21 @@ class NearbyDevicesCard extends StatelessWidget {
 
   /// 构建设备网格
   Widget _buildDeviceGrid(BuildContext context, List<NearbyDevice> devices) {
+    // 对设备进行排序：共享服务开启的设备在前面
+    final sortedDevices = List<NearbyDevice>.from(devices)
+      ..sort((a, b) {
+        // 首先按是否开启共享服务排序（开启的在前）
+        if (a.hasSharing && !b.hasSharing) return -1;
+        if (!a.hasSharing && b.hasSharing) return 1;
+        
+        // 然后按在线状态排序（在线的在前）
+        if (a.isOnline && !b.isOnline) return -1;
+        if (!a.isOnline && b.isOnline) return 1;
+        
+        // 最后按IP地址排序
+        return a.ip.compareTo(b.ip);
+      });
+    
     return LayoutBuilder(
       builder: (context, constraints) {
         // 根据屏幕宽度确定网格列数
@@ -149,7 +128,7 @@ class NearbyDevicesCard extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            children: devices.map((device) {
+            children: sortedDevices.map((device) {
               return StaggeredGridTile.fit(
                 crossAxisCellCount: 1,
                 child: _buildDeviceItem(context, device),
@@ -171,7 +150,7 @@ class NearbyDevicesCard extends StatelessWidget {
     if (!device.isOnline) {
       statusColor = Colors.red;
       statusIcon = Icons.offline_bolt;
-      statusText = '离线';
+      statusText = AppLocalizations.of(context)!.offline;
     } else if (device.hasSharing) {
       statusColor = Colors.green;
       statusIcon = Icons.share;
@@ -255,7 +234,7 @@ class NearbyDevicesCard extends StatelessWidget {
                                     color: Colors.red.withValues(alpha: 0.3)),
                               ),
                               child: Text(
-                                '离线',
+                                AppLocalizations.of(context)!.offline,
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.red[700],
@@ -274,14 +253,6 @@ class NearbyDevicesCard extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '最后见到: ${device.lastSeen.formatLastSeen()}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -289,10 +260,10 @@ class NearbyDevicesCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.launch),
                     onPressed: () {
-                      context
-                          .read<NearbyDevicesCubit>()
-                          .toggleDeviceSelection(device);
-                      Navigator.pop(context);
+                      accessDeviceDialog(
+                        context,
+                        device,
+                      );
                     },
                     tooltip: AppLocalizations.of(context)!.visit_device,
                   ),

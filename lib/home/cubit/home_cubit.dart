@@ -6,8 +6,6 @@ import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/util/string_util.dart';
-import 'package:hosts/utils/device_api_cache.dart';
-import 'package:hosts/utils/nearby_devices_scanner.dart';
 
 part 'home_state.dart';
 
@@ -266,6 +264,10 @@ class HomeCubit extends Cubit<HomeState> {
   /// 刷新hosts文件列表
   /// [context] 可选的context参数，用于system文件的本地化
   Future<void> refreshHostFiles([BuildContext? context]) async {
+    final String? defaultHostsText = context != null 
+        ? gen.AppLocalizations.of(context)!.default_hosts_text 
+        : null;
+        
     List<SimpleHostFile> tempHostFiles = [];
     List<dynamic> hostConfigs =
         await _settingsManager.getList(settingKeyHostConfigs);
@@ -276,9 +278,8 @@ class HomeCubit extends Cubit<HomeState> {
 
       // 特殊处理system文件的remark
       if (hostFile.fileName == "system") {
-        if (context != null) {
-          hostFile.remark =
-              gen.AppLocalizations.of(context)!.default_hosts_text;
+        if (defaultHostsText != null) {
+          hostFile.remark = defaultHostsText;
         } else {
           hostFile.remark = "默认"; // 后备文本
         }
@@ -294,28 +295,4 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  void loadRemoteHostFiles(BuildContext context, NearbyDevice device) async {
-    List<SimpleHostFile> tempHostFiles = [];
-
-    final hostConfigs = await DeviceApiCache.getCachedDeviceData(device.ip);
-
-    for (Map<String, dynamic> config in hostConfigs) {
-      SimpleHostFile hostFile = SimpleHostFile.fromJson(config);
-      tempHostFiles.add(hostFile);
-
-      if (hostFile.fileName == "system") {
-        hostFile.remark = gen.AppLocalizations.of(context)!.default_hosts_text;
-      }
-    }
-
-    emit(
-      HomeInitial(
-        HomeStateData(
-          hostFiles: tempHostFiles,
-          useHostFiles: [],
-          editMode: EditMode.Table,
-        ),
-      ),
-    );
-  }
 }

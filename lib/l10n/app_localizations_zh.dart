@@ -410,4 +410,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get select_hosts_to_share => '请选择要分享的hosts文件';
+
+  @override
+  String get offline => '离线';
+
+  @override
+  String get scan_nearby_devices_failed => '扫描附近设备失败';
+
+  @override
+  String get import_remote_hosts => '导入远程hosts文件';
+
+  @override
+  String get refresh => '刷新';
+
+  @override
+  String get getting_remote_hosts => '正在获取远程hosts文件...';
+
+  @override
+  String get connection_failed => '连接设备失败';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get no_hosts_files_found => '没有找到可用的hosts文件';
+
+  @override
+  String get device_no_shared_files => '该设备可能没有共享任何hosts文件';
+
+  @override
+  String get no_importable_content => '没有找到可导入的文件内容';
+
+  @override
+  String get remote_files => '个远程文件';
+
+  @override
+  String get show_qr_code => '显示二维码';
+
+  @override
+  String get port => '端口';
 }

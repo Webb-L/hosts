@@ -130,5 +130,19 @@
   "device_reachable": "Device reachable",
   "visit_device": "Visit device",
   "access_denied_file_not_allowed": "Access denied: File not allowed",
-  "select_hosts_to_share": "Please select hosts files to share"
+  "select_hosts_to_share": "Please select hosts files to share",
+  "offline": "Offline",
+  "scan_nearby_devices_failed": "Failed to scan nearby devices",
+  "import_remote_hosts": "Import remote hosts files",
+  "refresh": "Refresh",
+  "getting_remote_hosts": "Getting remote hosts files...",
+  "connection_failed": "Failed to connect to device",
+  "retry": "Retry",
+  "select_all": "Select All",
+  "no_hosts_files_found": "No available hosts files found",
+  "device_no_shared_files": "This device may not be sharing any hosts files",
+  "no_importable_content": "No importable file content found",
+  "remote_files": " remote files",
+  "show_qr_code": "Show QR Code",
+  "port": "Port"
 }

@@ -10,39 +10,11 @@ part 'nearby_devices_state.dart';
 class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
   NearbyDevicesCubit() : super(const NearbyDevicesInitial(NearbyDevicesStateData()));
 
-  /// 加载缓存的设备
-  Future<void> loadCachedDevices() async {
-    try {
-      emit(NearbyDevicesLoading(
-        state.data.copyWith(isLoading: true, errorMessage: null),
-      ));
-      
-      final cachedDevices = await NearbyDevicesScanner.getCachedDevices();
-      
-      emit(NearbyDevicesInitial(
-        state.data.copyWith(
-          isLoading: false,
-          devices: cachedDevices,
-        ),
-      ));
-      
-      // 如果有缓存设备，自动检查在线状态
-      if (cachedDevices.isNotEmpty) {
-        checkDevicesOnlineStatus();
-      }
-    } catch (e) {
-      emit(NearbyDevicesError(
-        state.data.copyWith(
-          isLoading: false,
-          errorMessage: '加载缓存设备失败: $e',
-        ),
-      ));
-    }
-  }
-
   /// 扫描附近设备
   Future<void> scanNearbyDevices() async {
     try {
+      if (isClosed) return;
+      
       emit(NearbyDevicesScanning(
         state.data.copyWith(
           isScanning: true,
@@ -55,78 +27,35 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
       await NearbyDevicesScanner.scanNearbyDevicesRealTime(
         onDeviceFound: (device) {
           // 实时更新设备列表
-          onDeviceFound(device);
+          if (!isClosed) {
+            onDeviceFound(device);
+          }
         },
       );
 
-      emit(NearbyDevicesSuccess(
-        state.data.copyWith(
-          isScanning: false,
-          successMessage: '扫描完成，发现${state.devices.length}个设备',
-        ),
-      ));
+      if (!isClosed) {
+        emit(NearbyDevicesInitial(
+          state.data.copyWith(
+            isScanning: false,
+          ),
+        ));
+      }
     } catch (e) {
-      emit(NearbyDevicesError(
-        state.data.copyWith(
-          isScanning: false,
-          errorMessage: '扫描附近设备失败: $e',
-        ),
-      ));
-    }
-  }
-
-  /// 检查设备在线状态
-  Future<void> checkDevicesOnlineStatus() async {
-    if (state.devices.isEmpty) return;
-
-    try {
-      emit(NearbyDevicesCheckingStatus(
-        state.data.copyWith(isCheckingStatus: true, errorMessage: null),
-      ));
-
-      await NearbyDevicesScanner.checkCachedDevicesOnlineStatus();
-
-      // 重新加载更新后的设备列表
-      final updatedDevices = await NearbyDevicesScanner.getCachedDevices();
-      
-      emit(NearbyDevicesInitial(
-        state.data.copyWith(
-          isCheckingStatus: false,
-          devices: updatedDevices,
-        ),
-      ));
-    } catch (e) {
-      emit(NearbyDevicesError(
-        state.data.copyWith(
-          isCheckingStatus: false,
-          errorMessage: '检查设备在线状态失败: $e',
-        ),
-      ));
-    }
-  }
-
-  /// 清除设备缓存
-  Future<void> clearDeviceCache() async {
-    try {
-      await NearbyDevicesScanner.clearCache();
-      
-      emit(NearbyDevicesSuccess(
-        state.data.copyWith(
-          devices: [],
-          successMessage: '设备缓存已清除',
-        ),
-      ));
-    } catch (e) {
-      emit(NearbyDevicesError(
-        state.data.copyWith(
-          errorMessage: '清除设备缓存失败: $e',
-        ),
-      ));
+      if (!isClosed) {
+        emit(NearbyDevicesError(
+          state.data.copyWith(
+            isScanning: false,
+            errorMessage: 'Failed to scan nearby devices: $e',
+          ),
+        ));
+      }
     }
   }
 
   /// 设备发现处理
   void onDeviceFound(NearbyDevice device) {
+    if (isClosed) return;
+    
     final updatedDevices = List<NearbyDevice>.from(state.devices);
     
     // 避免重复添加同一IP的设备
@@ -142,33 +71,6 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
     ));
   }
 
-  /// 选择设备
-  void selectDevice(NearbyDevice? device) {
-    print("selectDevice = $device");
-    emit(NearbyDevicesSelectionChanged(
-      state.data.copyWith(
-        selectedDevice: device,
-        clearSelectedDevice: device == null,
-      ),
-    ));
-  }
-  
-  /// 切换设备选择状态
-  void toggleDeviceSelection(NearbyDevice device) {
-    if (state.selectedDevice?.ip == device.ip) {
-      // 如果已选中，则取消选择
-      selectDevice(null);
-    } else {
-      // 否则选择该设备
-      selectDevice(device);
-    }
-  }
-  
-  /// 检查设备是否被选中
-  bool isDeviceSelected(NearbyDevice device) {
-    return state.selectedDevice?.ip == device.ip;
-  }
-
   /// 获取设备状态摘要（供其他组件使用）
   Map<String, int> getDevicesSummary() {
     return {
@@ -180,10 +82,11 @@ class NearbyDevicesCubit extends Cubit<NearbyDevicesState> {
 
   /// 清除消息
   void clearMessages() {
+    if (isClosed) return;
+    
     emit(NearbyDevicesInitial(
       state.data.copyWith(
         errorMessage: null,
-        successMessage: null,
       ),
     ));
   }

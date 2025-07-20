@@ -22,7 +22,7 @@ class ServerSettingsPage extends StatelessWidget {
             ..add(LoadNetworkInterfaces()),
         ),
         BlocProvider(
-          create: (context) => NearbyDevicesCubit()..loadCachedDevices(),
+          create: (context) => NearbyDevicesCubit(),
         ),
       ],
       child: const _ServerSettingsView(),
