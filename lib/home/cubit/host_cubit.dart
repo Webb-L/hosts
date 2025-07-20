@@ -635,4 +635,8 @@ class HostCubit extends Cubit<HostState> {
   String toString() {
     return state.data.fileContent;
   }
+
+  Future<bool> areFilesEqual(String fileId) async {
+    return await _fileManager.areFilesEqual(fileId);
+  }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/home/cubit/home_cubit.dart';
@@ -66,13 +68,13 @@ class HomeDrawer extends StatelessWidget {
                                       .useHost(hostFile.fileName);
                                   if (!result) {
                                     // 使用SnackBar提示错误
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(AppLocalizations.of(context)!.error_use_fail),
-                                        ),
-                                      );
-                                    }
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .error_use_fail),
+                                      ),
+                                    );
                                   }
                                 },
                           icon: Icon(state.data.useHostFiles
@@ -85,10 +87,11 @@ class HomeDrawer extends StatelessWidget {
                         selected:
                             state.data.selectHostFile == hostFile.fileName,
                         trailing: buildMoreButton(hostFile),
-                        onTap: () {
+                        onTap: () async {
                           if (state.data.selectHostFile == hostFile.fileName) {
                             return;
                           }
+
                           if (!context.read<HostCubit>().state.data.isSave) {
                             ScaffoldMessenger.of(context)
                                 .removeCurrentSnackBar();
@@ -112,6 +115,68 @@ class HomeDrawer extends StatelessWidget {
                           context
                               .read<HomeCubit>()
                               .selectHost(hostFile.fileName);
+
+                          if (state.data.useHostFiles
+                              .contains(hostFile.fileName)) {
+                            if (!await context
+                                .read<HostCubit>()
+                                .areFilesEqual(hostFile.fileName)) {
+                              final homeCubit = context.read<HomeCubit>();
+                              final hostCubit = context.read<HostCubit>();
+                              await showDialog(
+                                  context: context,
+                                  builder: (BuildContext dialogContext) {
+                                    return AlertDialog(
+                                      title: Text(AppLocalizations.of(dialogContext)!
+                                          .warning),
+                                      content: Text(
+                                          AppLocalizations.of(dialogContext)!
+                                              .warning_different),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () async {
+                                            final result = await homeCubit.useHost(hostFile.fileName);
+                                            if (!result) {
+                                              // 使用SnackBar提示错误
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .error_use_fail),
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            Navigator.of(dialogContext).pop();
+                                          },
+                                          child: Text(AppLocalizations.of(
+                                                  dialogContext)!
+                                              .warning_different_covering_system),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            // TODO 没有写入到文件页面。 Text模式也没有更新内容。
+                                            hostCubit.fromText(
+                                                  File(FileManager
+                                                          .systemHostFilePath)
+                                                      .readAsStringSync(),
+                                                );
+
+                                            hostCubit.save(true);
+                                            Navigator.of(dialogContext).pop();
+                                          },
+                                          child: Text(AppLocalizations.of(
+                                                  dialogContext)!
+                                              .warning_different_covering_current),
+                                        ),
+                                      ],
+                                    );
+                                  });
+                            }
+                          }
                         },
                       );
                     },
