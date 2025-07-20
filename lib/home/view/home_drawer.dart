@@ -61,19 +61,19 @@ class HomeDrawer extends StatelessWidget {
                                   .contains(hostFile.fileName)
                               ? null
                               : () async {
-                                  // final String path = await _fileManager
-                                  //     .getHostsFilePath(hostFile.fileName);
-                                  //
-                                  // if (!await widget
-                                  //     .onClickUse(File(path).readAsStringSync())) {
-                                  //   return;
-                                  // }
-
-                                  // setState(() {
-                                  //   useHostFile = hostFile.fileName;
-                                  // });
-                                  // _settingsManager.setString(
-                                  //     settingKeyUseHostFile, hostFile.fileName);
+                                  final result = await context
+                                      .read<HomeCubit>()
+                                      .useHost(hostFile.fileName);
+                                  if (!result) {
+                                    // 使用SnackBar提示错误
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(AppLocalizations.of(context)!.error_use_fail),
+                                        ),
+                                      );
+                                    }
+                                  }
                                 },
                           icon: Icon(state.data.useHostFiles
                                   .contains(hostFile.fileName)
@@ -109,7 +109,9 @@ class HomeDrawer extends StatelessWidget {
                             return;
                           }
 
-                          context.read<HomeCubit>().selectHost(hostFile.fileName);
+                          context
+                              .read<HomeCubit>()
+                              .selectHost(hostFile.fileName);
                         },
                       );
                     },
@@ -201,9 +203,10 @@ class HomeDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildHostFileOptionsMenu(BuildContext context, SimpleHostFile hostFile) {
+  Widget _buildHostFileOptionsMenu(
+      BuildContext context, SimpleHostFile hostFile) {
     final homeCubit = context.read<HomeCubit>();
-    
+
     return PopupMenuButton<int>(
       style: OutlinedButton.styleFrom(
         minimumSize: Size.zero,
@@ -212,7 +215,8 @@ class HomeDrawer extends StatelessWidget {
       onSelected: (value) async {
         switch (value) {
           case 1:
-            String result = (await hostConfigDialog(context, hostFile.remark) ?? "");
+            String result =
+                (await hostConfigDialog(context, hostFile.remark) ?? "");
             if (result.isEmpty) return;
             homeCubit.updateHostFileRemark(hostFile.fileName, result);
             break;
@@ -228,7 +232,8 @@ class HomeDrawer extends StatelessWidget {
             if (success) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                    content: Text(AppLocalizations.of(context)!.export_success)),
+                    content:
+                        Text(AppLocalizations.of(context)!.export_success)),
               );
             }
             break;

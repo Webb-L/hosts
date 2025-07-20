@@ -160,26 +160,13 @@ class HomeCubit extends Cubit<HomeState> {
     final bool isDeleteSelect = state.data.selectHostFile == fileName;
 
     if (isDeleteUse) {
-      // TODO
-      // final String path =
-      //     await _fileManager.getHostsFilePath("system");
-      //
-      // if (!await widget
-      //     .onClickUse(File(path).readAsStringSync())) {
-      //   return;
-      // }
-      // await _settingsManager.setString(
-      //     settingKeyUseHostFile, "system");
-      // useHostFile = "system";
-      // selectHostFile = "system";
+      if (!await useHost("system")) {
+        return;
+      }
     }
 
     if (isDeleteSelect) {
-      selectHost(
-        state.data.selectHostFile.isNotEmpty
-            ? state.data.selectHostFile
-            : "system",
-      );
+      selectHost("system");
     }
 
     List<SimpleHostFile> updatedHostFiles = state.data.hostFiles
@@ -221,8 +208,31 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// 使用host文件
   /// [fileName] 要使用的文件名
-  Future<void> useHost(String fileName) async {
-    // TODO
+  Future<bool> useHost(String fileName) async {
+    final hostPath = await _fileManager.getHostsFilePath(fileName);
+    try {
+      await _fileManager.writeFileWithAdminPrivileges(
+          hostPath, FileManager.systemHostFilePath);
+
+      // 更新使用的hosts文件列表
+      List<String> updatedUseHostFiles = [fileName];
+
+      // 保存到设置
+      await _settingsManager.setString(settingKeyUseHostFile, fileName);
+
+      // 更新状态
+      emit(
+        HomeInitial(
+          state.data.copyWith(
+            useHostFiles: updatedUseHostFiles,
+          ),
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// 切换编辑模式
@@ -264,10 +274,10 @@ class HomeCubit extends Cubit<HomeState> {
   /// 刷新hosts文件列表
   /// [context] 可选的context参数，用于system文件的本地化
   Future<void> refreshHostFiles([BuildContext? context]) async {
-    final String? defaultHostsText = context != null 
-        ? gen.AppLocalizations.of(context)!.default_hosts_text 
+    final String? defaultHostsText = context != null
+        ? gen.AppLocalizations.of(context)!.default_hosts_text
         : null;
-        
+
     List<SimpleHostFile> tempHostFiles = [];
     List<dynamic> hostConfigs =
         await _settingsManager.getList(settingKeyHostConfigs);
@@ -294,5 +304,4 @@ class HomeCubit extends Cubit<HomeState> {
       ),
     );
   }
-
 }
