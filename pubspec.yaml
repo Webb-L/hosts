@@ -51,6 +51,9 @@ dependencies:
   
   # 后台运行
   flutter_background: ^1.3.0+1
+  
+  # 文本差异对比
+  diff_match_patch: ^0.4.1
 
 dev_dependencies:
   flutter_test:

@@ -967,6 +967,48 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'端口'**
   String get port;
+
+  /// No description provided for @hosts_diff_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'Hosts 差异对比'**
+  String get hosts_diff_title;
+
+  /// No description provided for @diff_legend_added.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增内容'**
+  String get diff_legend_added;
+
+  /// No description provided for @diff_legend_deleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除内容'**
+  String get diff_legend_deleted;
+
+  /// No description provided for @diff_legend_unchanged.
+  ///
+  /// In zh, this message translates to:
+  /// **'未变更内容'**
+  String get diff_legend_unchanged;
+
+  /// No description provided for @diff_stats_history.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史版本'**
+  String get diff_stats_history;
+
+  /// No description provided for @diff_stats_current.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前版本'**
+  String get diff_stats_current;
+
+  /// No description provided for @diff_stats_difference.
+  ///
+  /// In zh, this message translates to:
+  /// **'差异'**
+  String get diff_stats_difference;
 }
 
 class _AppLocalizationsDelegate

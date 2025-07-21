@@ -115,6 +115,7 @@ class HomeAppBar extends StatelessWidget {
                                       HistoryPage(
                                     selectHistory: hostStateData.selectHistory,
                                     history: hostStateData.history,
+                                    fileId: state.data.fileId,
                                   ),
                                 );
                                 if (resultHistory == null) {
@@ -132,8 +133,8 @@ class HomeAppBar extends StatelessWidget {
                                     action: SnackBarAction(
                                       label:
                                           AppLocalizations.of(context)!.abort,
-                                      onPressed: () =>
-                                          hostCubit.onHistoryChanged(resultHistory),
+                                      onPressed: () => hostCubit
+                                          .onHistoryChanged(resultHistory),
                                     ),
                                   ));
 

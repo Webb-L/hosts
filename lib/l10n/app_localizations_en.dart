@@ -461,4 +461,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get port => 'Port';
+
+  @override
+  String get hosts_diff_title => 'Hosts Diff Comparison';
+
+  @override
+  String get diff_legend_added => 'Added Content';
+
+  @override
+  String get diff_legend_deleted => 'Deleted Content';
+
+  @override
+  String get diff_legend_unchanged => 'Unchanged Content';
+
+  @override
+  String get diff_stats_history => 'Historical Version';
+
+  @override
+  String get diff_stats_current => 'Current Version';
+
+  @override
+  String get diff_stats_difference => 'Difference';
 }

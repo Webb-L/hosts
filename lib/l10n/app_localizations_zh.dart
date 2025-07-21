@@ -449,4 +449,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get port => '端口';
+
+  @override
+  String get hosts_diff_title => 'Hosts 差异对比';
+
+  @override
+  String get diff_legend_added => '新增内容';
+
+  @override
+  String get diff_legend_deleted => '删除内容';
+
+  @override
+  String get diff_legend_unchanged => '未变更内容';
+
+  @override
+  String get diff_stats_history => '历史版本';
+
+  @override
+  String get diff_stats_current => '当前版本';
+
+  @override
+  String get diff_stats_difference => '差异';
 }

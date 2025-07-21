@@ -144,5 +144,12 @@
   "no_importable_content": "No importable file content found",
   "remote_files": " remote files",
   "show_qr_code": "Show QR Code",
-  "port": "Port"
+  "port": "Port",
+  "hosts_diff_title": "Hosts Diff Comparison",
+  "diff_legend_added": "Added Content",
+  "diff_legend_deleted": "Deleted Content",
+  "diff_legend_unchanged": "Unchanged Content",
+  "diff_stats_history": "Historical Version",
+  "diff_stats_current": "Current Version",
+  "diff_stats_difference": "Difference"
 }

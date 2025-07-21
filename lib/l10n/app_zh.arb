@@ -144,5 +144,12 @@
   "no_importable_content": "没有找到可导入的文件内容",
   "remote_files": "个远程文件",
   "show_qr_code": "显示二维码",
-  "port": "端口"
+  "port": "端口",
+  "hosts_diff_title": "Hosts 差异对比",
+  "diff_legend_added": "新增内容",
+  "diff_legend_deleted": "删除内容",
+  "diff_legend_unchanged": "未变更内容",
+  "diff_stats_history": "历史版本",
+  "diff_stats_current": "当前版本",
+  "diff_stats_difference": "差异"
 }
