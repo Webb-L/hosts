@@ -53,42 +53,45 @@ class RowLineWidget extends StatelessWidget {
     return Container(
       width: containerWidth,
       padding: const EdgeInsets.only(top: 4),
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: scrollController,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(lines.length, (index) {
-            final String line = lines[index];
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: scrollController,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(lines.length, (index) {
+              final String line = lines[index];
 
-            final TextPainter textPainter = TextPainter(
-              text: TextSpan(
-                text: line,
-                style: titleMedium,
-              ),
-              textDirection: TextDirection.ltr,
-            )..layout();
+              final TextPainter textPainter = TextPainter(
+                text: TextSpan(
+                  text: line,
+                  style: titleMedium,
+                ),
+                textDirection: TextDirection.ltr,
+              )..layout();
 
-            final double width = textPainter.width + fontSize;
+              final double width = textPainter.width + fontSize;
 
-            return buildIndexedLineContainer(
-              containerWidth,
-              selectedLine.contains(index),
-              "${index + 1}",
-              line,
-              () {
-                if (selectedLine.contains(index)) {
-                  textEditingController.updateUseStatus(textSelection);
-                  return;
-                }
-                final int length =
-                    lines.sublist(0, index + 1).join("\n").length;
-                textEditingController.updateUseStatus(
-                    TextSelection(baseOffset: length, extentOffset: length));
-              },
-            );
-          }),
+              return buildIndexedLineContainer(
+                containerWidth,
+                selectedLine.contains(index),
+                "${index + 1}",
+                line,
+                () {
+                  if (selectedLine.contains(index)) {
+                    textEditingController.updateUseStatus(textSelection);
+                    return;
+                  }
+                  final int length =
+                      lines.sublist(0, index + 1).join("\n").length;
+                  textEditingController.updateUseStatus(
+                      TextSelection(baseOffset: length, extentOffset: length));
+                },
+              );
+            }),
+          ),
         ),
       ),
     );

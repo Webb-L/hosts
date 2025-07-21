@@ -34,6 +34,7 @@ class _HostTextState extends State<HostText> {
   final ScrollController _scrollController = ScrollController();
   final ScrollController _textScrollController = ScrollController();
   final GlobalKey _textFieldContainerKey = GlobalKey();
+  bool _isScrollingSynchronized = false;
 
   @override
   void initState() {
@@ -43,12 +44,33 @@ class _HostTextState extends State<HostText> {
       ..addListener(() {
         hostCubit.updateFileContent(textEditingController.text);
       });
+    
+    // Synchronize scroll controllers
+    _textScrollController.addListener(() {
+      if (!_isScrollingSynchronized && _scrollController.hasClients) {
+        _isScrollingSynchronized = true;
+        _scrollController.jumpTo(_textScrollController.offset);
+        _isScrollingSynchronized = false;
+      }
+    });
+    
+    _scrollController.addListener(() {
+      if (!_isScrollingSynchronized && _textScrollController.hasClients) {
+        _isScrollingSynchronized = true;
+        _textScrollController.jumpTo(_scrollController.offset);
+        _isScrollingSynchronized = false;
+      }
+    });
+    
     super.initState();
   }
 
   @override
   void dispose() {
     textEditingController.dispose();
+    _scrollController.dispose();
+    _textScrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -110,12 +132,21 @@ class _HostTextState extends State<HostText> {
                           hostCubit.onTextSave();
                         }
                       },
-                      child: TextField(
-                        controller: textEditingController,
-                        scrollController: _textScrollController,
-                        maxLines: null,
-                        decoration:
-                            const InputDecoration(border: InputBorder.none),
+                      child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: IntrinsicWidth(
+                            child: TextField(
+                              controller: textEditingController,
+                              scrollController: _textScrollController,
+                              maxLines: null,
+                              scrollPhysics: const ClampingScrollPhysics(),
+                              decoration:
+                                  const InputDecoration(border: InputBorder.none),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
