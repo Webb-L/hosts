@@ -5,6 +5,7 @@ import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/server/bloc/nearby_devices_cubit.dart';
 import 'package:hosts/utils/nearby_devices_scanner.dart';
 import 'package:hosts/widget/dialog/access_device_dialog.dart';
+import 'package:hosts/widget/dialog/api_documentation_dialog.dart';
 
 /// 附近设备卡片组件
 class NearbyDevicesCard extends StatelessWidget {
@@ -256,6 +257,14 @@ class NearbyDevicesCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (device.hasSharing && device.isOnline)
+                  IconButton(
+                    icon: const Icon(Icons.remove_red_eye),
+                    onPressed: () {
+                      showApiDocumentationDialog(context, device.ip);
+                    },
+                    tooltip: AppLocalizations.of(context)!.api_docs,
+                  ),
                 if (device.hasSharing && device.isOnline)
                   IconButton(
                     icon: const Icon(Icons.launch),
