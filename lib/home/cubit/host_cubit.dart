@@ -500,7 +500,7 @@ class HostCubit extends Cubit<HostState> {
     File(filePath).writeAsStringSync(content);
     final List<SimpleHostFileHistory> history = [];
     if (isHistory) {
-      await _fileManager.saveHistory(fileId, content);
+      await _fileManager.saveHistory(fileId, state.data.defaultFileContent);
       history.addAll(await _fileManager.getHistory(fileId));
     }
 

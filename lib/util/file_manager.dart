@@ -159,7 +159,7 @@ class FileManager {
     if (!historyDirectory.existsSync()) {
       return [];
     }
-    return historyDirectory
+    final historyList = historyDirectory
         .listSync()
         .map(
           (item) => SimpleHostFileHistory(
@@ -168,6 +168,11 @@ class FileManager {
           ),
         )
         .toList();
+    
+    // 按fileName倒序排序
+    historyList.sort((a, b) => b.fileName.compareTo(a.fileName));
+    
+    return historyList;
   }
 
   Future<void> saveHistory(String fileId, String content) async {

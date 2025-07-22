@@ -32,131 +32,15 @@ class HomeAppBar extends StatelessWidget {
         final homeStateData = state.data;
         return Column(
           children: [
-            Container(
-              height: 58,
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: Row(
-                    children: [
-                      if (GlobalSettings().isSimple)
-                        IconButton(
-                          onPressed: () async {
-                            FilePickerResult? result =
-                                await FilePicker.platform.pickFiles();
-                            if (result == null) return;
-                            if (!context.read<HostCubit>().state.data.isSave) {
-                              ScaffoldMessenger.of(context)
-                                  .removeCurrentSnackBar();
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text(AppLocalizations.of(context)!
-                                    .error_not_save),
-                                action: SnackBarAction(
-                                  label: AppLocalizations.of(context)!.abort,
-                                  onPressed: () => pickFile(context, result),
-                                ),
-                              ));
-
-                              return;
-                            }
-
-                            pickFile(context, result);
-                          },
-                          icon: const Icon(Icons.file_open_outlined),
-                          tooltip: AppLocalizations.of(context)!.open_file,
-                        )
-                      else
-                        IconButton(
-                          onPressed: homeCubit.toggleAdvancedSettingsSwitch,
-                          icon: const Icon(Icons.menu),
-                          tooltip:
-                              AppLocalizations.of(context)!.advanced_settings,
-                        ),
-                      _buildEditModeButton(homeCubit, context),
-                      const SizedBox(width: 10),
-                      if (homeStateData.editMode == EditMode.Table)
-                        Flexible(
-                          child: Container(
-                            constraints: const BoxConstraints(
-                              maxWidth: 430,
-                              minWidth: 100,
-                            ),
-                            child: BlocBuilder<HostCubit, HostState>(
-                              builder: (context, state) {
-                                return SearchTextField(
-                                  text: state.data.searchText,
-                                  onChanged: context
-                                      .read<HostCubit>()
-                                      .updateSearchText,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                    ],
-                  )),
-                  const SizedBox(width: 32),
-                  BlocBuilder<HostCubit, HostState>(
-                    builder: (context, state) {
-                      final hostStateData = state.data;
-                      final hostCubit = context.read<HostCubit>();
-                      return Row(
-                        children: [
-                          batchGroupButton(homeCubit),
-                          if (hostStateData.history.isNotEmpty)
-                            IconButton(
-                              onPressed: () async {
-                                SimpleHostFileHistory? resultHistory =
-                                    await showModalBottomSheet(
-                                  context: context,
-                                  builder: (BuildContext context) =>
-                                      HistoryPage(
-                                    selectHistory: hostStateData.selectHistory,
-                                    history: hostStateData.history,
-                                    fileId: state.data.fileId,
-                                  ),
-                                );
-                                if (resultHistory == null) {
-                                  hostCubit.onHistoryChanged(null);
-                                  return;
-                                }
-
-                                if (!hostStateData.isSave) {
-                                  ScaffoldMessenger.of(context)
-                                      .removeCurrentSnackBar();
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content: Text(AppLocalizations.of(context)!
-                                        .error_not_save),
-                                    action: SnackBarAction(
-                                      label:
-                                          AppLocalizations.of(context)!.abort,
-                                      onPressed: () => hostCubit
-                                          .onHistoryChanged(resultHistory),
-                                    ),
-                                  ));
-
-                                  return;
-                                }
-                                hostCubit.onHistoryChanged(resultHistory);
-                              },
-                              icon: const Icon(Icons.history),
-                            ),
-                          if (!hostStateData.isSave)
-                            IconButton(
-                              onPressed: context.read<HostCubit>().undoHost,
-                              icon: const Icon(Icons.undo),
-                              tooltip: AppLocalizations.of(context)!.reduction,
-                            ),
-                          buildMoreButton(context)
-                        ],
-                      );
-                    },
-                  )
-                ],
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 600;
+                return Container(
+                  height: isNarrow ? null : 58,
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: isNarrow ? _buildNarrowLayout(context, homeCubit, homeStateData) : _buildWideLayout(context, homeCubit, homeStateData),
+                );
+              },
             )
           ],
         );
@@ -311,5 +195,290 @@ class HomeAppBar extends StatelessWidget {
         );
       }).toList();
     });
+  }
+
+  Widget _buildWideLayout(BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              if (GlobalSettings().isSimple)
+                IconButton(
+                  onPressed: () async {
+                    FilePickerResult? result = await FilePicker.platform.pickFiles();
+                    if (result == null) return;
+                    if (!context.read<HostCubit>().state.data.isSave) {
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(AppLocalizations.of(context)!.error_not_save),
+                        action: SnackBarAction(
+                          label: AppLocalizations.of(context)!.abort,
+                          onPressed: () => pickFile(context, result),
+                        ),
+                      ));
+                      return;
+                    }
+                    pickFile(context, result);
+                  },
+                  icon: const Icon(Icons.file_open_outlined),
+                  tooltip: AppLocalizations.of(context)!.open_file,
+                )
+              else
+                IconButton(
+                  onPressed: homeCubit.toggleAdvancedSettingsSwitch,
+                  icon: const Icon(Icons.menu),
+                  tooltip: AppLocalizations.of(context)!.advanced_settings,
+                ),
+              _buildEditModeButton(homeCubit, context),
+              const SizedBox(width: 10),
+              if (homeStateData.editMode == EditMode.Table)
+                Flexible(
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      maxWidth: 430,
+                      minWidth: 100,
+                    ),
+                    child: BlocBuilder<HostCubit, HostState>(
+                      builder: (context, state) {
+                        return SearchTextField(
+                          text: state.data.searchText,
+                          onChanged: context.read<HostCubit>().updateSearchText,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 32),
+        BlocBuilder<HostCubit, HostState>(
+          builder: (context, state) {
+            final hostStateData = state.data;
+            final hostCubit = context.read<HostCubit>();
+            return Row(
+              children: [
+                batchGroupButton(homeCubit),
+                if (hostStateData.history.isNotEmpty)
+                  IconButton(
+                    onPressed: () async {
+                      SimpleHostFileHistory? resultHistory = await showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) => HistoryPage(
+                          selectHistory: hostStateData.selectHistory,
+                          history: hostStateData.history,
+                          fileId: state.data.fileId,
+                        ),
+                      );
+                      if (resultHistory == null) {
+                        hostCubit.onHistoryChanged(null);
+                        return;
+                      }
+                      if (!hostStateData.isSave) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(AppLocalizations.of(context)!.error_not_save),
+                          action: SnackBarAction(
+                            label: AppLocalizations.of(context)!.abort,
+                            onPressed: () => hostCubit.onHistoryChanged(resultHistory),
+                          ),
+                        ));
+                        return;
+                      }
+                      hostCubit.onHistoryChanged(resultHistory);
+                    },
+                    icon: const Icon(Icons.history),
+                  ),
+                if (!hostStateData.isSave)
+                  IconButton(
+                    onPressed: context.read<HostCubit>().undoHost,
+                    icon: const Icon(Icons.undo),
+                    tooltip: AppLocalizations.of(context)!.reduction,
+                  ),
+                buildMoreButton(context)
+              ],
+            );
+          },
+        )
+      ],
+    );
+  }
+
+  Widget _buildNarrowLayout(BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              if (GlobalSettings().isSimple)
+                IconButton(
+                  onPressed: () async {
+                    FilePickerResult? result = await FilePicker.platform.pickFiles();
+                    if (result == null) return;
+                    if (!context.read<HostCubit>().state.data.isSave) {
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(AppLocalizations.of(context)!.error_not_save),
+                        action: SnackBarAction(
+                          label: AppLocalizations.of(context)!.abort,
+                          onPressed: () => pickFile(context, result),
+                        ),
+                      ));
+                      return;
+                    }
+                    pickFile(context, result);
+                  },
+                  icon: const Icon(Icons.file_open_outlined),
+                  tooltip: AppLocalizations.of(context)!.open_file,
+                )
+              else
+                IconButton(
+                  onPressed: homeCubit.toggleAdvancedSettingsSwitch,
+                  icon: const Icon(Icons.menu),
+                  tooltip: AppLocalizations.of(context)!.advanced_settings,
+                ),
+              _buildEditModeButton(homeCubit, context),
+              const Spacer(),
+              BlocBuilder<HostCubit, HostState>(
+                builder: (context, state) {
+                  final hostStateData = state.data;
+                  final hostCubit = context.read<HostCubit>();
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: _buildNarrowBatchActions(homeCubit),
+                      ),
+                      if (hostStateData.history.isNotEmpty)
+                        IconButton(
+                          onPressed: () async {
+                            SimpleHostFileHistory? resultHistory = await showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) => HistoryPage(
+                                selectHistory: hostStateData.selectHistory,
+                                history: hostStateData.history,
+                                fileId: state.data.fileId,
+                              ),
+                            );
+                            if (resultHistory == null) {
+                              hostCubit.onHistoryChanged(null);
+                              return;
+                            }
+                            if (!hostStateData.isSave) {
+                              ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text(AppLocalizations.of(context)!.error_not_save),
+                                action: SnackBarAction(
+                                  label: AppLocalizations.of(context)!.abort,
+                                  onPressed: () => hostCubit.onHistoryChanged(resultHistory),
+                                ),
+                              ));
+                              return;
+                            }
+                            hostCubit.onHistoryChanged(resultHistory);
+                          },
+                          icon: const Icon(Icons.history),
+                        ),
+                      if (!hostStateData.isSave)
+                        IconButton(
+                          onPressed: context.read<HostCubit>().undoHost,
+                          icon: const Icon(Icons.undo),
+                          tooltip: AppLocalizations.of(context)!.reduction,
+                        ),
+                      buildMoreButton(context)
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        if (homeStateData.editMode == EditMode.Table)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: BlocBuilder<HostCubit, HostState>(
+                    builder: (context, state) {
+                      return SearchTextField(
+                        text: state.data.searchText,
+                        onChanged: context.read<HostCubit>().updateSearchText,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildNarrowBatchActions(HomeCubit homeCubit) {
+    return BlocBuilder<HostCubit, HostState>(
+      builder: (BuildContext context, state) {
+        final selectHosts = state.data.selectHosts;
+        final hostCubit = context.read<HostCubit>();
+        
+        if (selectHosts.isEmpty || homeCubit.state.data.editMode != EditMode.Table) {
+          return const SizedBox.shrink();
+        }
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Switch(
+                value: true,
+                onChanged: (value) {
+                  final Map<HostsModel, HostsModel> hostsMap = {};
+                  for (var host in selectHosts) {
+                    hostsMap[host] = host.withCopy(isUse: true);
+                  }
+                  hostCubit.onToggleUse(hostsMap);
+                },
+              ),
+              Switch(
+                value: false,
+                onChanged: (value) {
+                  final Map<HostsModel, HostsModel> hostsMap = {};
+                  for (var host in selectHosts) {
+                    hostsMap[host] = host.withCopy(isUse: false);
+                  }
+                  hostCubit.onToggleUse(hostsMap);
+                },
+              ),
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => CopyMultipleDialog(hosts: selectHosts),
+                  );
+                },
+                tooltip: AppLocalizations.of(context)!.copy_selected,
+                icon: const Icon(Icons.copy),
+              ),
+              IconButton(
+                onPressed: () {
+                  deleteMultiple(
+                    context,
+                    selectHosts.map((it) => it.host).toList(),
+                    () {
+                      hostCubit.onDelete(selectHosts);
+                    },
+                  );
+                },
+                tooltip: AppLocalizations.of(context)!.delete_selected,
+                icon: const Icon(Icons.delete_outline),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

@@ -20,7 +20,7 @@ class HostsDiffPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.hosts_diff_title ?? 'Hosts 差异对比'),
+        title: Text(AppLocalizations.of(context)!.hosts_diff_title),
         actions: [
           IconButton(
             icon: Icon(Icons.info_outline),
@@ -67,20 +67,20 @@ class HostsDiffPage extends StatelessWidget {
         children: [
           _buildStatItem(
             context,
-            AppLocalizations.of(context)!.diff_stats_history ?? '历史版本',
-            '$oldLines 行',
+            AppLocalizations.of(context)!.diff_stats_history,
+            '$oldLines ${AppLocalizations.of(context)!.history_count}',
             Icons.history,
           ),
           _buildStatItem(
             context,
-            AppLocalizations.of(context)!.diff_stats_current ?? '当前版本', 
-            '$newLines 行',
+            AppLocalizations.of(context)!.diff_stats_current, 
+            '$newLines ${AppLocalizations.of(context)!.history_count}',
             Icons.description,
           ),
           _buildStatItem(
             context,
-            AppLocalizations.of(context)!.diff_stats_difference ?? '差异',
-            '${diff > 0 ? '+' : ''}$diff 行',
+            AppLocalizations.of(context)!.diff_stats_difference,
+            '${diff > 0 ? '+' : ''}$diff ${AppLocalizations.of(context)!.history_count}',
             diff > 0 ? Icons.add : (diff < 0 ? Icons.remove : Icons.check),
             color: diff > 0 
                 ? Theme.of(context).colorScheme.primary
@@ -121,20 +121,20 @@ class HostsDiffPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('差异说明'),
+        title: Text(AppLocalizations.of(context)!.diff_legend_description),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildLegendItem(
               context,
-              AppLocalizations.of(context)!.diff_legend_added ?? '新增内容',
+              AppLocalizations.of(context)!.diff_legend_added,
               Theme.of(context).colorScheme.primary,
               Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
             ),
             SizedBox(height: 8),
             _buildLegendItem(
               context,
-              AppLocalizations.of(context)!.diff_legend_deleted ?? '删除内容',
+              AppLocalizations.of(context)!.diff_legend_deleted,
               Theme.of(context).colorScheme.error,
               Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
               hasStrikethrough: true,
@@ -142,7 +142,7 @@ class HostsDiffPage extends StatelessWidget {
             SizedBox(height: 8),
             _buildLegendItem(
               context,
-              AppLocalizations.of(context)!.diff_legend_unchanged ?? '未变更内容',
+              AppLocalizations.of(context)!.diff_legend_unchanged,
               Theme.of(context).colorScheme.onSurface,
               null,
             ),
@@ -151,7 +151,7 @@ class HostsDiffPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('知道了'),
+            child: Text(AppLocalizations.of(context)!.diff_legend_ok),
           ),
         ],
       ),

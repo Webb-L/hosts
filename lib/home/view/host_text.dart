@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
+import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/widget/host_text_editing_controller.dart';
 import 'package:hosts/widget/row_line_widget.dart';
 
@@ -44,7 +45,7 @@ class _HostTextState extends State<HostText> {
       ..addListener(() {
         hostCubit.updateFileContent(textEditingController.text);
       });
-    
+
     // Synchronize scroll controllers
     _textScrollController.addListener(() {
       if (!_isScrollingSynchronized && _scrollController.hasClients) {
@@ -53,7 +54,7 @@ class _HostTextState extends State<HostText> {
         _isScrollingSynchronized = false;
       }
     });
-    
+
     _scrollController.addListener(() {
       if (!_isScrollingSynchronized && _textScrollController.hasClients) {
         _isScrollingSynchronized = true;
@@ -61,7 +62,7 @@ class _HostTextState extends State<HostText> {
         _isScrollingSynchronized = false;
       }
     });
-    
+
     super.initState();
   }
 
@@ -96,54 +97,62 @@ class _HostTextState extends State<HostText> {
                   ),
                   Expanded(
                     key: _textFieldContainerKey,
-                    child: KeyboardListener(
-                      focusNode: _focusNode,
-                      onKeyEvent: (event) {
-                        List<LogicalKeyboardKey> logicalKeys = [];
-                        if (Platform.isMacOS) {
-                          logicalKeys = [
-                            LogicalKeyboardKey.metaLeft,
-                            LogicalKeyboardKey.metaRight
-                          ];
-                        } else {
-                          logicalKeys = [
-                            LogicalKeyboardKey.controlLeft,
-                            LogicalKeyboardKey.controlRight
-                          ];
-                        }
-                        if (logicalKeys.contains(event.logicalKey)) {
-                          if (isControl) {
-                            isControl = false;
-                          } else {
-                            isControl = true;
-                          }
-                        }
-                        if (event.logicalKey == LogicalKeyboardKey.slash &&
-                            isControl &&
-                            event is KeyDownEvent) {
-                          textEditingController
-                              .updateUseStatus(textEditingController.selection);
-                        }
-
-                        if (event.logicalKey == LogicalKeyboardKey.keyS &&
-                            isControl &&
-                            event is KeyDownEvent &&
-                            !state.data.isSave) {
-                          hostCubit.onTextSave();
-                        }
+                    child: GestureDetector(
+                      onTap: () {
+                        _focusNode.requestFocus();
                       },
-                      child: ScrollConfiguration(
-                        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: IntrinsicWidth(
-                            child: TextField(
-                              controller: textEditingController,
-                              scrollController: _textScrollController,
-                              maxLines: null,
-                              scrollPhysics: const ClampingScrollPhysics(),
-                              decoration:
-                                  const InputDecoration(border: InputBorder.none),
+                      child: KeyboardListener(
+                        focusNode: _focusNode,
+                        onKeyEvent: (event) {
+                          List<LogicalKeyboardKey> logicalKeys = [];
+                          if (Platform.isMacOS) {
+                            logicalKeys = [
+                              LogicalKeyboardKey.metaLeft,
+                              LogicalKeyboardKey.metaRight
+                            ];
+                          } else {
+                            logicalKeys = [
+                              LogicalKeyboardKey.controlLeft,
+                              LogicalKeyboardKey.controlRight
+                            ];
+                          }
+                          if (logicalKeys.contains(event.logicalKey)) {
+                            if (isControl) {
+                              isControl = false;
+                            } else {
+                              isControl = true;
+                            }
+                          }
+                          if (event.logicalKey == LogicalKeyboardKey.slash &&
+                              isControl &&
+                              event is KeyDownEvent) {
+                            textEditingController.updateUseStatus(
+                                textEditingController.selection);
+                          }
+
+                          if (event.logicalKey == LogicalKeyboardKey.keyS &&
+                              isControl &&
+                              event is KeyDownEvent &&
+                              !state.data.isSave) {
+                            hostCubit.onTextSave();
+                          }
+                        },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context)
+                              .copyWith(scrollbars: false),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: IntrinsicWidth(
+                              child: TextField(
+                                controller: textEditingController,
+                                scrollController: _textScrollController,
+                                maxLines: null,
+                                scrollPhysics: const ClampingScrollPhysics(),
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: AppLocalizations.of(context)!
+                                        .create_host_template),
+                              ),
                             ),
                           ),
                         ),
@@ -158,13 +167,13 @@ class _HostTextState extends State<HostText> {
               child: Row(
                 children: [
                   Text(
-                    "当前行：${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}",
+                    "${AppLocalizations.of(context)!.current_line}${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}",
                   ),
                   const SizedBox(
                     width: 8,
                   ),
                   Text(
-                      "总行数：${textEditingController.countNewlines(textEditingController.text) + 1}"),
+                      "${AppLocalizations.of(context)!.total_lines}${textEditingController.countNewlines(textEditingController.text) + 1}"),
                 ],
               ),
             )

@@ -100,28 +100,30 @@ class _HistoryPageState extends State<HistoryPage> {
                             _showDiffComparison(context, hostFile);
                           },
                           icon: const Icon(Icons.compare_arrows),
-                          tooltip: '查看差异',
+                          tooltip: AppLocalizations.of(context)!.view_diff,
                         ),
                         IconButton(
-                            onPressed: () {
-                              setState(() {
-                                if (deleteSimpleHostFileHistory
-                                    .contains(hostFile)) {
-                                  deleteSimpleHostFileHistory.remove(hostFile);
-                                } else {
-                                  deleteSimpleHostFileHistory.add(hostFile);
-                                }
-                              });
-                            },
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: Size.zero,
-                              padding: EdgeInsets.zero,
-                            ),
-                            icon: Icon(
-                              deleteSimpleHostFileHistory.contains(hostFile)
-                                  ? Icons.close
-                                  : Icons.delete_outline,
-                            )),
+                          onPressed: () {
+                            setState(() {
+                              if (deleteSimpleHostFileHistory
+                                  .contains(hostFile)) {
+                                deleteSimpleHostFileHistory.remove(hostFile);
+                              } else {
+                                deleteSimpleHostFileHistory.add(hostFile);
+                              }
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: Size.zero,
+                            padding: EdgeInsets.zero,
+                          ),
+                          icon: Icon(
+                            deleteSimpleHostFileHistory.contains(hostFile)
+                                ? Icons.close
+                                : Icons.delete_outline,
+                          ),
+                          tooltip: AppLocalizations.of(context)!.delete,
+                        ),
                       ],
                     ),
                     selectedTileColor:
@@ -161,8 +163,9 @@ class _HistoryPageState extends State<HistoryPage> {
       final minute = dateTime.minute.toString().padLeft(2, '0');
       final second = dateTime.second.toString().padLeft(2, '0');
 
-      final historyLabel = '历史版本: $year-$month-$day $hour:$minute:$second';
-      final currentLabel = '当前版本';
+      final historyLabel =
+          '${AppLocalizations.of(context)!.history_version}: $year-$month-$day $hour:$minute:$second';
+      final currentLabel = AppLocalizations.of(context)!.current_version;
 
       // 导航到差异对比页面
       Navigator.of(context).push(
@@ -179,7 +182,8 @@ class _HistoryPageState extends State<HistoryPage> {
       // 显示错误信息
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('无法读取历史文件: $e'),
+          content: Text(
+              '${AppLocalizations.of(context)!.unable_to_read_history_file}: $e'),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
