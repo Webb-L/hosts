@@ -81,6 +81,7 @@ class HostCubit extends Cubit<HostState> {
     final content = await _fileManager.readAsString(fileId);
     final hosts = _fileManager.parseHosts(content.split("\n"));
     final history = await _fileManager.getHistory(fileId);
+
     emit(
       HostInitial(
         HostStateData(
@@ -638,5 +639,21 @@ class HostCubit extends Cubit<HostState> {
 
   Future<bool> areFilesEqual(String fileId) async {
     return await _fileManager.areFilesEqual(fileId);
+  }
+
+  Future<bool> saveFromText(String text) async {
+    try {
+      final filePath = await _fileManager.getHostsFilePath(state.data.fileId);
+      await _fileManager.saveHistory(
+        state.data.fileId,
+        File(filePath).readAsStringSync(),
+      );
+
+      File(filePath).writeAsStringSync(text);
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -165,10 +165,6 @@ class HomeCubit extends Cubit<HomeState> {
       }
     }
 
-    if (isDeleteSelect) {
-      selectHost("system");
-    }
-
     List<SimpleHostFile> updatedHostFiles = state.data.hostFiles
         .where((file) => file.fileName != fileName)
         .toList();
@@ -186,9 +182,10 @@ class HomeCubit extends Cubit<HomeState> {
 
     // 更新状态
     emit(
-      HomeInitial(
+      HomeDelete(
         state.data.copyWith(
           hostFiles: updatedHostFiles,
+          selectHostFile: isDeleteSelect ? "system" : null,
         ),
       ),
     );

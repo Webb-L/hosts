@@ -98,9 +98,9 @@ class NearbyDevicesCard extends StatelessWidget {
         if (a.hasSharing && !b.hasSharing) return -1;
         if (!a.hasSharing && b.hasSharing) return 1;
         
-        // 然后按在线状态排序（在线的在前）
-        if (a.isOnline && !b.isOnline) return -1;
-        if (!a.isOnline && b.isOnline) return 1;
+        // 然后按连接状态排序（可连接的在前）
+        if (a.isReachable && !b.isReachable) return -1;
+        if (!a.isReachable && b.isReachable) return 1;
         
         // 最后按IP地址排序
         return a.ip.compareTo(b.ip);
@@ -148,7 +148,7 @@ class NearbyDevicesCard extends StatelessWidget {
     IconData statusIcon;
     String statusText;
 
-    if (!device.isOnline) {
+    if (!device.isReachable) {
       statusColor = Colors.red;
       statusIcon = Icons.offline_bolt;
       statusText = AppLocalizations.of(context)!.offline;
@@ -189,8 +189,8 @@ class NearbyDevicesCard extends StatelessWidget {
                       color: statusColor,
                       size: 24,
                     ),
-                    // 在线状态指示器
-                    if (device.isOnline)
+                    // 连接状态指示器
+                    if (device.isReachable)
                       Positioned(
                         right: 0,
                         bottom: 0,
@@ -219,12 +219,12 @@ class NearbyDevicesCard extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: device.isOnline ? null : Colors.grey,
+                                color: device.isReachable ? null : Colors.grey,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (!device.isOnline)
+                          if (!device.isReachable)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
@@ -257,7 +257,7 @@ class NearbyDevicesCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (device.hasSharing && device.isOnline)
+                if (device.hasSharing && device.isReachable)
                   IconButton(
                     icon: const Icon(Icons.remove_red_eye),
                     onPressed: () {
@@ -265,7 +265,7 @@ class NearbyDevicesCard extends StatelessWidget {
                     },
                     tooltip: AppLocalizations.of(context)!.api_docs,
                   ),
-                if (device.hasSharing && device.isOnline)
+                if (device.hasSharing && device.isReachable)
                   IconButton(
                     icon: const Icon(Icons.launch),
                     onPressed: () {

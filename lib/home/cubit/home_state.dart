@@ -98,3 +98,8 @@ class HomeError extends HomeState {
 class HomeSelectHostFileChanged extends HomeState {
   const HomeSelectHostFileChanged(super.data);
 }
+
+/// 删除操作状态
+class HomeDelete extends HomeState {
+  const HomeDelete(super.data);
+}

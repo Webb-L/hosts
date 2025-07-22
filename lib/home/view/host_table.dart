@@ -299,11 +299,13 @@ class HostDataSource extends DataGridSource {
                 IconButton(
                   onPressed: () => onEdit(hosts.indexOf(host), host),
                   icon: const Icon(Icons.edit),
+                  tooltip: AppLocalizations.of(context)!.edit,
                 ),
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () => onDelete([host]),
                   icon: const Icon(Icons.delete_outline),
+                  tooltip: AppLocalizations.of(context)!.delete,
                 ),
                 const SizedBox(width: 8),
                 buildMoreButton(context, hosts.indexOf(host), host),

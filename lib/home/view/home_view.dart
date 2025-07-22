@@ -59,7 +59,7 @@ class _HomeViewState extends State<HomeView> {
       body: SafeArea(
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
-            if (state is HomeSelectHostFileChanged) {
+            if (state is HomeSelectHostFileChanged || state is HomeDelete) {
               context.read<HostCubit>().updateHost(state.data.selectHostFile);
             }
 

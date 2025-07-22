@@ -16,7 +16,7 @@ class HostsApp extends MaterialApp {
   HostsApp(this.filePath, {super.key})
       : super(
           onGenerateTitle: (context) => AppLocalizations.of(context)!.app_name,
-          locale: Locale("en"),
+          // locale: Locale("en"),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(

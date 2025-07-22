@@ -35,12 +35,14 @@ class HomeDrawer extends StatelessWidget {
                       ),
                       Spacer(),
                       IconButton(
-                          onPressed: () async {
-                            String? remark = await hostConfigDialog(context);
-                            if (remark == null || remark.isEmpty) return;
-                            context.read<HomeCubit>().addHostFile(remark);
-                          },
-                          icon: const Icon(Icons.add)),
+                        onPressed: () async {
+                          String? remark = await hostConfigDialog(context);
+                          if (remark == null || remark.isEmpty) return;
+                          context.read<HomeCubit>().addHostFile(remark);
+                        },
+                        icon: const Icon(Icons.add),
+                        tooltip: AppLocalizations.of(context)!.add,
+                      ),
                       _buildOptionsMenu(context, state),
                     ],
                   ),
@@ -127,15 +129,17 @@ class HomeDrawer extends StatelessWidget {
                                   context: context,
                                   builder: (BuildContext dialogContext) {
                                     return AlertDialog(
-                                      title: Text(AppLocalizations.of(dialogContext)!
-                                          .warning),
+                                      title: Text(
+                                          AppLocalizations.of(dialogContext)!
+                                              .warning),
                                       content: Text(
                                           AppLocalizations.of(dialogContext)!
                                               .warning_different),
                                       actions: [
                                         TextButton(
                                           onPressed: () async {
-                                            final result = await homeCubit.useHost(hostFile.fileName);
+                                            final result = await homeCubit
+                                                .useHost(hostFile.fileName);
                                             if (!result) {
                                               // 使用SnackBar提示错误
                                               ScaffoldMessenger.of(context)
@@ -158,14 +162,12 @@ class HomeDrawer extends StatelessWidget {
                                         ),
                                         TextButton(
                                           onPressed: () async {
-                                            // TODO 没有写入到文件页面。 Text模式也没有更新内容。
-                                            hostCubit.fromText(
-                                                  File(FileManager
-                                                          .systemHostFilePath)
-                                                      .readAsStringSync(),
-                                                );
-
-                                            hostCubit.save(true);
+                                            await hostCubit.saveFromText(File(
+                                                    FileManager
+                                                        .systemHostFilePath)
+                                                .readAsStringSync());
+                                            await homeCubit
+                                                .selectHost(hostFile.fileName);
                                             Navigator.of(dialogContext).pop();
                                           },
                                           child: Text(AppLocalizations.of(

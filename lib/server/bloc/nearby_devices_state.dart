@@ -24,16 +24,16 @@ class NearbyDevicesStateData {
   });
 
   /// 获取在线设备数量
-  int get onlineDevicesCount => devices.where((device) => device.isOnline).length;
+  int get onlineDevicesCount => devices.where((device) => device.isReachable && device.hasSharing).length;
   
   /// 获取总设备数量
   int get totalDevicesCount => devices.length;
   
   /// 获取在线设备列表
-  List<NearbyDevice> get onlineDevices => devices.where((device) => device.isOnline).toList();
+  List<NearbyDevice> get onlineDevices => devices.where((device) => device.isReachable && device.hasSharing).toList();
   
   /// 获取离线设备列表
-  List<NearbyDevice> get offlineDevices => devices.where((device) => !device.isOnline).toList();
+  List<NearbyDevice> get offlineDevices => devices.where((device) => !device.isReachable || !device.hasSharing).toList();
 
   /// 复制方法
   /// 用于基于当前状态创建新状态
