@@ -105,4 +105,28 @@ class DeviceApiCache {
       return [];
     }
   }
+
+  /// 获取特定hosts文件的历史内容（直接访问，不缓存）
+  static Future<String?> getCachedHostsFileHistoryContent(String ip, String fileName, String historyFileName) async {
+    try {
+      final httpClient = HttpClient();
+      httpClient.connectionTimeout = _scanTimeout;
+      httpClient.idleTimeout = _scanTimeout;
+
+      final request = await httpClient.get(ip, _defaultPort, '/api/hosts/$fileName/history/$historyFileName');
+      final response = await request.close();
+
+      if (response.statusCode == 200) {
+        final responseBody = await response.transform(utf8.decoder).join();
+        httpClient.close();
+        return responseBody;
+      }
+
+      httpClient.close();
+      return null;
+    } catch (e) {
+      print('获取hosts文件历史内容失败 $ip/$fileName/$historyFileName: $e');
+      return null;
+    }
+  }
 }

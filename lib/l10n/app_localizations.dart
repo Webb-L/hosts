@@ -1009,6 +1009,162 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'差异'**
   String get diff_stats_difference;
+
+  /// No description provided for @history_count.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史记录'**
+  String get history_count;
+
+  /// No description provided for @getting_device_info.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在获取设备信息...'**
+  String get getting_device_info;
+
+  /// No description provided for @get_device_info_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取设备信息失败'**
+  String get get_device_info_failed;
+
+  /// No description provided for @basic_api.
+  ///
+  /// In zh, this message translates to:
+  /// **'基础 API'**
+  String get basic_api;
+
+  /// No description provided for @available_hosts_files_api.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用的Hosts文件 API：'**
+  String get available_hosts_files_api;
+
+  /// No description provided for @device_no_hosts_files.
+  ///
+  /// In zh, this message translates to:
+  /// **'该设备暂无可用的hosts文件'**
+  String get device_no_hosts_files;
+
+  /// No description provided for @history_content.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史记录内容'**
+  String get history_content;
+
+  /// No description provided for @history_count_suffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'条历史'**
+  String get history_count_suffix;
+
+  /// No description provided for @get_content_prefix.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取'**
+  String get get_content_prefix;
+
+  /// No description provided for @get_content_suffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'的内容'**
+  String get get_content_suffix;
+
+  /// No description provided for @scan_qr_code_to_access.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描二维码访问'**
+  String get scan_qr_code_to_access;
+
+  /// No description provided for @open_in_browser.
+  ///
+  /// In zh, this message translates to:
+  /// **'在浏览器中打开'**
+  String get open_in_browser;
+
+  /// No description provided for @show_qr_code_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示二维码'**
+  String get show_qr_code_tooltip;
+
+  /// No description provided for @copy_url_tooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制URL'**
+  String get copy_url_tooltip;
+
+  /// No description provided for @get_history_content_prefix.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取历史记录'**
+  String get get_history_content_prefix;
+
+  /// No description provided for @get_history_content_suffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'的内容'**
+  String get get_history_content_suffix;
+
+  /// No description provided for @more_history_records.
+  ///
+  /// In zh, this message translates to:
+  /// **'... 还有'**
+  String get more_history_records;
+
+  /// No description provided for @more_history_records_suffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'条历史记录'**
+  String get more_history_records_suffix;
+
+  /// No description provided for @view_diff.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看差异'**
+  String get view_diff;
+
+  /// No description provided for @history_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史版本'**
+  String get history_version;
+
+  /// No description provided for @current_version.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前版本'**
+  String get current_version;
+
+  /// No description provided for @unable_to_read_history_file.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法读取历史文件'**
+  String get unable_to_read_history_file;
+
+  /// No description provided for @diff_legend_description.
+  ///
+  /// In zh, this message translates to:
+  /// **'差异说明'**
+  String get diff_legend_description;
+
+  /// No description provided for @diff_legend_ok.
+  ///
+  /// In zh, this message translates to:
+  /// **'知道了'**
+  String get diff_legend_ok;
+
+  /// No description provided for @current_line.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前行：'**
+  String get current_line;
+
+  /// No description provided for @total_lines.
+  ///
+  /// In zh, this message translates to:
+  /// **'总行数：'**
+  String get total_lines;
 }
 
 class _AppLocalizationsDelegate

@@ -470,4 +470,82 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diff_stats_difference => '差异';
+
+  @override
+  String get history_count => '历史记录';
+
+  @override
+  String get getting_device_info => '正在获取设备信息...';
+
+  @override
+  String get get_device_info_failed => '获取设备信息失败';
+
+  @override
+  String get basic_api => '基础 API';
+
+  @override
+  String get available_hosts_files_api => '可用的Hosts文件 API：';
+
+  @override
+  String get device_no_hosts_files => '该设备暂无可用的hosts文件';
+
+  @override
+  String get history_content => '历史记录内容';
+
+  @override
+  String get history_count_suffix => '条历史';
+
+  @override
+  String get get_content_prefix => '获取';
+
+  @override
+  String get get_content_suffix => '的内容';
+
+  @override
+  String get scan_qr_code_to_access => '扫描二维码访问';
+
+  @override
+  String get open_in_browser => '在浏览器中打开';
+
+  @override
+  String get show_qr_code_tooltip => '显示二维码';
+
+  @override
+  String get copy_url_tooltip => '复制URL';
+
+  @override
+  String get get_history_content_prefix => '获取历史记录';
+
+  @override
+  String get get_history_content_suffix => '的内容';
+
+  @override
+  String get more_history_records => '... 还有';
+
+  @override
+  String get more_history_records_suffix => '条历史记录';
+
+  @override
+  String get view_diff => '查看差异';
+
+  @override
+  String get history_version => '历史版本';
+
+  @override
+  String get current_version => '当前版本';
+
+  @override
+  String get unable_to_read_history_file => '无法读取历史文件';
+
+  @override
+  String get diff_legend_description => '差异说明';
+
+  @override
+  String get diff_legend_ok => '知道了';
+
+  @override
+  String get current_line => '当前行：';
+
+  @override
+  String get total_lines => '总行数：';
 }

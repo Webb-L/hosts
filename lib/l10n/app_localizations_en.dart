@@ -482,4 +482,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diff_stats_difference => 'Difference';
+
+  @override
+  String get history_count => 'History records';
+
+  @override
+  String get getting_device_info => 'Getting device information...';
+
+  @override
+  String get get_device_info_failed => 'Failed to get device information';
+
+  @override
+  String get basic_api => 'Basic API';
+
+  @override
+  String get available_hosts_files_api => 'Available Hosts files API:';
+
+  @override
+  String get device_no_hosts_files =>
+      'This device has no available hosts files';
+
+  @override
+  String get history_content => 'History content';
+
+  @override
+  String get history_count_suffix => ' history records';
+
+  @override
+  String get get_content_prefix => 'Get';
+
+  @override
+  String get get_content_suffix => 'content';
+
+  @override
+  String get scan_qr_code_to_access => 'Scan QR code to access';
+
+  @override
+  String get open_in_browser => 'Open in browser';
+
+  @override
+  String get show_qr_code_tooltip => 'Show QR code';
+
+  @override
+  String get copy_url_tooltip => 'Copy URL';
+
+  @override
+  String get get_history_content_prefix => 'Get history record';
+
+  @override
+  String get get_history_content_suffix => 'content';
+
+  @override
+  String get more_history_records => '... ';
+
+  @override
+  String get more_history_records_suffix => ' more history records';
+
+  @override
+  String get view_diff => 'View diff';
+
+  @override
+  String get history_version => 'History version';
+
+  @override
+  String get current_version => 'Current version';
+
+  @override
+  String get unable_to_read_history_file => 'Unable to read history file';
+
+  @override
+  String get diff_legend_description => 'Difference Legend';
+
+  @override
+  String get diff_legend_ok => 'Got it';
+
+  @override
+  String get current_line => 'Current line:';
+
+  @override
+  String get total_lines => 'Total lines:';
 }

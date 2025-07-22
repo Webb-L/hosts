@@ -7,6 +7,8 @@ import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
 import 'package:hosts/utils/device_api_cache.dart';
 import 'package:hosts/utils/nearby_devices_scanner.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 Future<void> accessDeviceDialog(BuildContext context, NearbyDevice device) {
   return showDialog<void>(
@@ -37,6 +39,7 @@ class _AccessDeviceDialogState extends State<AccessDeviceDialog> {
   bool isLoading = false;
   bool hasError = false;
   String? errorMessage;
+  Map<String, int> historyCount = {};
 
   @override
   void initState() {
@@ -95,17 +98,31 @@ class _AccessDeviceDialogState extends State<AccessDeviceDialog> {
       final hostConfigs = await DeviceApiCache.getCachedDeviceData(widget.device.ip);
 
       final List<SimpleHostFile> hosts = [];
+      final Map<String, int> historyCounts = {};
+      
       for (final config in hostConfigs) {
         final hostFile = SimpleHostFile.fromJson(config);
         if (hostFile.fileName == "system") {
           hostFile.remark = defaultHostsText;
         }
         hosts.add(hostFile);
+        
+        // 获取每个hosts文件的历史记录数量
+        try {
+          final historyList = await DeviceApiCache.getCachedHostsFileHistory(
+            widget.device.ip,
+            hostFile.fileName,
+          );
+          historyCounts[hostFile.fileName] = historyList.length;
+        } catch (e) {
+          historyCounts[hostFile.fileName] = 0;
+        }
       }
 
       setState(() {
         availableHosts = hosts;
         selectedItems = List.generate(hosts.length, (index) => false);
+        historyCount = historyCounts;
         isLoading = false;
       });
     } catch (e) {
@@ -186,6 +203,49 @@ class _AccessDeviceDialogState extends State<AccessDeviceDialog> {
           final String localFilePath =
               await fileManager.getHostsFilePath(fileName);
           await File(localFilePath).writeAsString(remoteContent);
+
+          // 导入hosts历史记录
+          try {
+
+            // 保存历史文件到本地，使用File直接写入
+            final Directory historyDirPath = Directory(p.join(
+                (await getApplicationSupportDirectory()).path,
+                fileName,
+                'history'
+            ));
+
+            if (!historyDirPath.existsSync()) {
+              historyDirPath.createSync();
+            }
+
+            final List<Map<String, dynamic>> historyList =
+                await DeviceApiCache.getCachedHostsFileHistory(
+              widget.device.ip,
+              fileName,
+            );
+
+            for (final historyItem in historyList) {
+              final String historyFileName = historyItem['id'] ?? '';
+              if (historyFileName.isNotEmpty) {
+                // 获取历史文件内容
+                final String? historyContent =
+                    await DeviceApiCache.getCachedHostsFileHistoryContent(
+                  widget.device.ip,
+                  fileName,
+                  historyFileName,
+                );
+
+                if (historyContent != null && historyContent.isNotEmpty) {
+                  // 直接写入历史文件，文件名保持与远程一致
+                  final String historyFilePath = p.join(historyDirPath.path, historyFileName);
+                  await File(historyFilePath).writeAsString(historyContent);
+                }
+              }
+            }
+          } catch (e) {
+            print('导入hosts历史失败 $fileName: $e');
+            // 历史导入失败不影响主文件导入，继续处理
+          }
 
           // 创建本地SimpleHostFile对象
           final SimpleHostFile localHostFile = SimpleHostFile(
@@ -376,13 +436,28 @@ class _AccessDeviceDialogState extends State<AccessDeviceDialog> {
                         onChanged: (bool? value) => _toggleItem(index),
                       ),
                       title: Text(host.remark),
-                      subtitle: isExisting
-                          ? Text(
-                              AppLocalizations.of(context)!.will_overwrite,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                                fontSize: 12,
-                              ),
+                      subtitle: (historyCount[host.fileName] != null && historyCount[host.fileName]! > 0) || isExisting
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (historyCount[host.fileName] != null && historyCount[host.fileName]! > 0)
+                                  Text(
+                                    '${AppLocalizations.of(context)!.history_count}: ${historyCount[host.fileName]}',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                if (isExisting)
+                                  Text(
+                                    AppLocalizations.of(context)!.will_overwrite,
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.error,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
                             )
                           : null,
                       onTap: () => _toggleItem(index),
