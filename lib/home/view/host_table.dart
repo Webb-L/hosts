@@ -5,12 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
-import 'package:hosts/page/host_page.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/dialog/link_dialog.dart';
 import 'package:hosts/widget/dialog/test_dialog.dart';
 import 'package:hosts/widget/snakbar.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'host_page.dart';
 
 /// 主机表格组件
 ///
@@ -57,8 +59,17 @@ class HostTable extends StatelessWidget {
                   () => hostCubit.onDelete(hosts));
             },
             onToggleUse: hostCubit.onToggleUse,
-            onLaunchUrl: (host) {
-              print("onLaunchUrl, $host");
+            onLaunchUrl: (host) async {
+              final url = Uri.parse('http://$host');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context)!.unable_to_open(host))),
+                  );
+                }
+              }
             },
             context: context,
           ),
@@ -199,7 +210,7 @@ class HostDataSource extends DataGridSource {
             value: MyDataGridCell(
                 value: host.host,
                 child: GestureDetector(
-                  onTap: () => onLaunchUrl(host.host),
+                  onTap: () async => await _launchUrl(host.host, context),
                   child: Container(
                     alignment: Alignment.centerLeft,
                     child: Text.rich(
@@ -346,14 +357,27 @@ class HostDataSource extends DataGridSource {
     // notifyListeners();
   }
 
+  Future<void> _launchUrl(String host, BuildContext context) async {
+    final url = Uri.parse('http://$host');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.unable_to_open(host))),
+        );
+      }
+    }
+  }
+
   List<InlineSpan> _buildTextSpans(List<String> hosts, BuildContext context) {
     List<InlineSpan> textSpans = [];
     for (int i = 0; i < hosts.length; i++) {
       textSpans.add(TextSpan(
         text: hosts[i],
         recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            onLaunchUrl(hosts[i]);
+          ..onTap = () async {
+            await _launchUrl(hosts[i], context);
           },
       ));
       if (i < hosts.length - 1) {

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:hosts/utils/nearby_devices_scanner.dart';
+import 'package:hosts/util/nearby_devices_scanner.dart';
 
 part 'nearby_devices_state.dart';
 

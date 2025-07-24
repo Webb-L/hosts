@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:hosts/l10n/app_localizations.dart';
-import 'package:hosts/utils/device_api_cache.dart';
+import 'package:hosts/util/device_api_cache.dart';
 import 'package:hosts/widget/dialog/qr_code_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 

@@ -33,3 +33,14 @@ class StopServer extends ServerSettingsEvent {}
 
 /// 刷新服务器状态
 class RefreshServerStatus extends ServerSettingsEvent {}
+
+/// 更新自动启动设置
+class UpdateAutoStartSettings extends ServerSettingsEvent {
+  final bool enabled;
+  final List<SimpleHostFile>? selectedHosts;
+  
+  const UpdateAutoStartSettings(this.enabled, this.selectedHosts);
+  
+  @override
+  List<Object?> get props => [enabled, selectedHosts];
+}

@@ -12,10 +12,12 @@ import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
-import 'package:hosts/page/history_page.dart';
+import 'package:hosts/home/view/history_page.dart';
 import 'package:hosts/widget/dialog/copy_multiple_dialog.dart';
 import 'package:hosts/widget/snakbar.dart';
 import 'package:hosts/widget/text_field/search_text_field.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// 首页应用栏组件
 ///
@@ -156,30 +158,57 @@ class HomeAppBar extends StatelessWidget {
   }
 
   Widget buildMoreButton(BuildContext context) {
-    return PopupMenuButton(onSelected: (value) {
+    return PopupMenuButton(onSelected: (value) async {
       switch (value) {
         case 1:
-          showAboutDialog(
-            context: context,
-            applicationVersion: '1.5.0',
-            applicationIcon: Image.asset(
-              "assets/icon/logo.png",
-              width: 50,
-              height: 50,
-            ),
-            children: [
-              Text(AppLocalizations.of(context)!.about_description),
-              const SizedBox(height: 10),
-              const Text('Developed by Webb.'),
-            ],
-          );
+          // 检查更新
+          await _launchUrl(context, 'https://github.com/webb-l/hosts/releases');
+          break;
+        case 2:
+          // 反馈问题
+          await _launchUrl(context, 'https://github.com/webb-l/hosts/issues');
+          break;
+        case 3:
+          // 关于
+          final packageInfo = await PackageInfo.fromPlatform();
+          
+          if (context.mounted) {
+            showAboutDialog(
+              context: context,
+              applicationVersion: packageInfo.version,
+              applicationIcon: Image.asset(
+                "assets/icon/logo.png",
+                width: 50,
+                height: 50,
+              ),
+              children: [
+                Text(AppLocalizations.of(context)!.about_description),
+                const SizedBox(height: 10),
+                const Text('Developed by Webb.'),
+              ],
+            );
+          }
           break;
         default:
           break;
       }
     }, itemBuilder: (BuildContext context) {
       final List<Map<String, Object>> list = [
-        {"text": AppLocalizations.of(context)!.about, "value": 1},
+        {
+          "text": AppLocalizations.of(context)!.check_for_updates,
+          "value": 1,
+          "icon": Icons.system_update
+        },
+        {
+          "text": AppLocalizations.of(context)!.report_issue, 
+          "value": 2,
+          "icon": Icons.bug_report
+        },
+        {
+          "text": AppLocalizations.of(context)!.about,
+          "value": 3,
+          "icon": Icons.info
+        },
       ];
 
       return list.map((item) {
@@ -188,13 +217,35 @@ class HomeAppBar extends StatelessWidget {
           child: Row(
             children: [
               if (item["icon"] != null) Icon(item["icon"]! as IconData),
-              SizedBox(width: item["icon"] != null ? 8 : 32),
+              SizedBox(width: item["icon"] != null ? 8 : 0),
               Text(item["text"]!.toString()),
             ],
           ),
         );
       }).toList();
     });
+  }
+
+  /// 打开URL
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.unable_to_open(url))),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppLocalizations.of(context)!.unable_to_open(url)}: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildWideLayout(BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
@@ -381,6 +432,7 @@ class HomeAppBar extends StatelessWidget {
                             hostCubit.onHistoryChanged(resultHistory);
                           },
                           icon: const Icon(Icons.history),
+                          tooltip: AppLocalizations.of(context)!.history,
                         ),
                       if (!hostStateData.isSave)
                         IconButton(

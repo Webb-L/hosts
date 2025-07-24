@@ -177,5 +177,8 @@
   "diff_legend_description": "Difference Legend",
   "diff_legend_ok": "Got it",
   "current_line": "Current line:",
-  "total_lines": "Total lines:"
+  "total_lines": "Total lines:",
+  "unable_to_open": "Unable to open {host}",
+  "check_for_updates": "Check for Updates",
+  "report_issue": "Report Issue"
 }

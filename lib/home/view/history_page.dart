@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hosts/home/view/hosts_diff_page.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
-import 'package:hosts/page/hosts_diff_page.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/widget/countdown_timer.dart';
 

@@ -177,5 +177,8 @@
   "diff_legend_description": "差异说明",
   "diff_legend_ok": "知道了",
   "current_line": "当前行：",
-  "total_lines": "总行数："
+  "total_lines": "总行数：",
+  "unable_to_open": "无法打开 {host}",
+  "check_for_updates": "检查更新",
+  "report_issue": "反馈问题"
 }

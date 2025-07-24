@@ -5,10 +5,10 @@ import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/home/view/home_app_bar.dart';
 import 'package:hosts/home/view/home_drawer.dart';
+import 'package:hosts/home/view/host_page.dart';
 import 'package:hosts/home/view/host_view.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
-import 'package:hosts/page/host_page.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hosts/server/bloc/server_settings_event.dart';
 import 'package:hosts/server/bloc/server_settings_state.dart';
 import 'package:hosts/server/server_manager.dart';
+import 'package:hosts/util/settings_manager.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 
 /// 服务器设置页面 BLoC
@@ -16,9 +17,11 @@ class ServerSettingsBloc extends Bloc<ServerSettingsEvent, ServerSettingsState> 
     on<StartServer>(_onStartServer);
     on<StopServer>(_onStopServer);
     on<RefreshServerStatus>(_onRefreshServerStatus);
+    on<UpdateAutoStartSettings>(_onUpdateAutoStartSettings);
   }
 
   final ServerManager _serverManager = ServerManager();
+  final SettingsManager _settingsManager = SettingsManager();
 
   /// 加载服务器设置
   Future<void> _onLoadServerSettings(
@@ -29,11 +32,13 @@ class ServerSettingsBloc extends Bloc<ServerSettingsEvent, ServerSettingsState> 
       emit(state.copyWith(isLoading: true, errorMessage: null));
       
       final status = await _serverManager.getServerStatus();
+      final isAutoStartEnabled = await _settingsManager.getBool(settingKeyAutoStartEnabled);
       
       emit(state.copyWith(
         isLoading: false,
         serverStatus: status,
         isServerEnabled: status['isEnabled'] ?? false,
+        isAutoStartEnabled: isAutoStartEnabled,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -161,6 +166,38 @@ class ServerSettingsBloc extends Bloc<ServerSettingsEvent, ServerSettingsState> 
     Emitter<ServerSettingsState> emit,
   ) async {
     add(LoadServerSettings());
+  }
+
+  /// 更新自动启动设置
+  Future<void> _onUpdateAutoStartSettings(
+    UpdateAutoStartSettings event,
+    Emitter<ServerSettingsState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
+      
+      // 保存自动启动开关状态
+      await _settingsManager.setBool(settingKeyAutoStartEnabled, event.enabled);
+      
+      // 如果启用自动启动且提供了hosts文件列表，则保存
+      if (event.enabled && event.selectedHosts != null) {
+        final hostsList = event.selectedHosts!.map((host) => host.toJson()).toList();
+        await _settingsManager.setList(settingKeyAutoStartHosts, hostsList);
+      } else if (!event.enabled) {
+        // 如果禁用自动启动，清除保存的hosts文件列表
+        await _settingsManager.remove(settingKeyAutoStartHosts);
+      }
+      
+      emit(state.copyWith(
+        isLoading: false,
+        isAutoStartEnabled: event.enabled,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: '更新自动启动设置失败: $e',
+      ));
+    }
   }
 
   /// 获取所有网络接口

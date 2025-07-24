@@ -548,4 +548,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get total_lines => '总行数：';
+
+  @override
+  String unable_to_open(Object host) {
+    return '无法打开 $host';
+  }
+
+  @override
+  String get check_for_updates => '检查更新';
+
+  @override
+  String get report_issue => '反馈问题';
 }

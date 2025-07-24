@@ -8,6 +8,7 @@ class ServerSettingsState extends Equatable {
     this.serverStatus,
     this.networkInterfaces = const [],
     this.errorMessage,
+    this.isAutoStartEnabled = false,
   });
 
   final bool isLoading;
@@ -15,6 +16,7 @@ class ServerSettingsState extends Equatable {
   final Map<String, dynamic>? serverStatus;
   final List<Map<String, String>> networkInterfaces;
   final String? errorMessage;
+  final bool isAutoStartEnabled;
 
   ServerSettingsState copyWith({
     bool? isLoading,
@@ -22,6 +24,7 @@ class ServerSettingsState extends Equatable {
     Map<String, dynamic>? serverStatus,
     List<Map<String, String>>? networkInterfaces,
     String? errorMessage,
+    bool? isAutoStartEnabled,
   }) {
     return ServerSettingsState(
       isLoading: isLoading ?? this.isLoading,
@@ -29,6 +32,7 @@ class ServerSettingsState extends Equatable {
       serverStatus: serverStatus ?? this.serverStatus,
       networkInterfaces: networkInterfaces ?? this.networkInterfaces,
       errorMessage: errorMessage,
+      isAutoStartEnabled: isAutoStartEnabled ?? this.isAutoStartEnabled,
     );
   }
 
@@ -39,5 +43,6 @@ class ServerSettingsState extends Equatable {
         serverStatus,
         networkInterfaces,
         errorMessage,
+        isAutoStartEnabled,
       ];
 }

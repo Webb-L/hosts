@@ -1165,6 +1165,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'总行数：'**
   String get total_lines;
+
+  /// No description provided for @unable_to_open.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开 {host}'**
+  String unable_to_open(Object host);
+
+  /// No description provided for @check_for_updates.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查更新'**
+  String get check_for_updates;
+
+  /// No description provided for @report_issue.
+  ///
+  /// In zh, this message translates to:
+  /// **'反馈问题'**
+  String get report_issue;
 }
 
 class _AppLocalizationsDelegate

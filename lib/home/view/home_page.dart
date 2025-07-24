@@ -5,7 +5,6 @@ import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/home/view/home_view.dart';
 import 'package:hosts/home/view/simple_home_view.dart';
 import 'package:hosts/server/bloc/nearby_devices_cubit.dart';
-import 'package:hosts/utils/nearby_devices_scanner.dart';
 
 /// 首页页面组件
 ///

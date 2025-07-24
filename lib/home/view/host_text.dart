@@ -80,7 +80,10 @@ class _HostTextState extends State<HostText> {
     return BlocBuilder<HostCubit, HostState>(
       builder: (BuildContext context, state) {
         if (state is HostUndo || state is HostInitial || state is HostHistory) {
+          // TODO 会出现撤回情况。
+          textEditingController.clear();
           textEditingController.text = state.data.fileContent;
+          _scrollController.jumpTo(0);
         }
         final hostCubit = context.read<HostCubit>();
         return Column(

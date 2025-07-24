@@ -561,4 +561,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get total_lines => 'Total lines:';
+
+  @override
+  String unable_to_open(Object host) {
+    return 'Unable to open $host';
+  }
+
+  @override
+  String get check_for_updates => 'Check for Updates';
+
+  @override
+  String get report_issue => 'Report Issue';
 }

@@ -4,6 +4,7 @@ import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/widget/dialog/qr_code_dialog.dart';
 import 'package:hosts/widget/dialog/select_hosts_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// 服务器状态卡片组件
 class ServerStatusCard extends StatelessWidget {
@@ -11,6 +12,8 @@ class ServerStatusCard extends StatelessWidget {
   final List<Map<String, String>> networkInterfaces;
   final Function(List<SimpleHostFile>?) onStartServer;
   final VoidCallback onStopServer;
+  final bool isAutoStartEnabled;
+  final Function(bool, List<SimpleHostFile>?) onAutoStartChanged;
 
   const ServerStatusCard({
     super.key,
@@ -18,6 +21,8 @@ class ServerStatusCard extends StatelessWidget {
     required this.networkInterfaces,
     required this.onStartServer,
     required this.onStopServer,
+    required this.isAutoStartEnabled,
+    required this.onAutoStartChanged,
   });
 
   /// 复制URL到剪贴板
@@ -36,6 +41,28 @@ class ServerStatusCard extends StatelessWidget {
     QrCodeDialog.show(context, url: url);
   }
 
+  /// 打开URL
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.unable_to_open(url))),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppLocalizations.of(context)!.unable_to_open(url)}: $e')),
+        );
+      }
+    }
+  }
+
   /// 处理服务器切换
   Future<void> _handleServerToggle(BuildContext context) async {
     final isRunning = serverStatus?['isRunning'] ?? false;
@@ -49,6 +76,20 @@ class ServerStatusCard extends StatelessWidget {
       if (selectedHosts != null && selectedHosts.isNotEmpty) {
         onStartServer(selectedHosts);
       }
+    }
+  }
+
+  /// 处理自动启动开关切换
+  Future<void> _handleAutoStartToggle(BuildContext context, bool value) async {
+    if (value) {
+      // 启用自动启动，需要选择hosts文件
+      final selectedHosts = await SelectHostsDialog.show(context);
+      if (selectedHosts != null && selectedHosts.isNotEmpty) {
+        onAutoStartChanged(true, selectedHosts);
+      }
+    } else {
+      // 禁用自动启动
+      onAutoStartChanged(false, null);
     }
   }
 
@@ -118,17 +159,22 @@ class ServerStatusCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // IP地址文本
+            // IP地址文本（可点击）
             Flexible(
-              child: Text(
-                displayLabel,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontFamily: 'monospace',
-                  fontWeight: FontWeight.w600,
-                  color: primaryColor,
+              child: InkWell(
+                onTap: () => _launchUrl(context, url),
+                child: Text(
+                  displayLabel,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                    color: primaryColor,
+                    decoration: TextDecoration.underline,
+                    decorationColor: primaryColor.withValues(alpha: 0.5),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 8),
@@ -197,39 +243,6 @@ class ServerStatusCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // 状态指示器
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isRunning
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline,
-                      boxShadow: isRunning
-                          ? [
-                              BoxShadow(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.4),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: isRunning
-                        ? Container(
-                            margin: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
                   // 状态文字
                   Expanded(
                     child: Column(
@@ -328,6 +341,71 @@ class ServerStatusCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            // 自动启动功能开关
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isAutoStartEnabled
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.3)
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isAutoStartEnabled
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.2)
+                      : Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  // 状态文字
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.server_auto_start,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: isAutoStartEnabled
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          AppLocalizations.of(context)!.server_auto_start_desc,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.7),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 开关
+                  Switch(
+                    value: isAutoStartEnabled,
+                    onChanged: (value) => _handleAutoStartToggle(context, value),
+                    activeColor: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 12),
             // 服务器地址信息
             Column(
@@ -347,7 +425,11 @@ class ServerStatusCard extends StatelessWidget {
                     // 显示所有网络接口的IP地址
                     ...networkInterfaces.map((interface) {
                       final address = interface['address']!;
-                      final serverUrl = 'http://$address:$port';
+                      // 检查是否为IPv6地址，如果是则需要用方括号包围
+                      final formattedAddress = address.contains(':') && !address.startsWith('[') 
+                          ? '[$address]' 
+                          : address;
+                      final serverUrl = 'http://$formattedAddress:$port';
 
                       return _buildAddressChip(
                         context,

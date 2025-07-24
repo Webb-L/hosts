@@ -5,8 +5,8 @@ import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
-import 'package:hosts/utils/device_api_cache.dart';
-import 'package:hosts/utils/nearby_devices_scanner.dart';
+import 'package:hosts/util/device_api_cache.dart';
+import 'package:hosts/util/nearby_devices_scanner.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
 import 'package:hosts/util/settings_manager.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
@@ -154,9 +155,12 @@ class HostsServer {
 
   /// 处理服务器状态请求
   Future<Response> _handleStatus(Request request) async {
+    // 获取应用版本信息
+    final packageInfo = await PackageInfo.fromPlatform();
+    
     final status = {
       'status': 'running',
-      'version': '1.0.0',
+      'version': packageInfo.version,
       'timestamp': DateTime.now().toIso8601String(),
       'endpoints': [
         'GET /api/hosts - ${_i18nStrings['get_all_hosts_files'] ?? 'Get all hosts files (JSON)'}',

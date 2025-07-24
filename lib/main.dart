@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:hosts/app.dart';
@@ -22,9 +23,16 @@ void main(List<String> args) async {
 }
 
 Future<void> _initializeBackgroundService() async {
+  // Web环境不支持后台服务
+  if (kIsWeb) {
+    return;
+  }
+  
+  // 只在Android平台初始化后台服务
   if (!Platform.isAndroid) {
     return;
   }
+  
   const androidConfig = FlutterBackgroundAndroidConfig(
     notificationTitle: "Hosts 编辑器",
     notificationText: "正在后台运行 hosts 服务",

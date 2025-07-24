@@ -138,6 +138,12 @@ class _ServerSettingsView extends StatelessWidget {
       onStopServer: () {
         context.read<ServerSettingsBloc>().add(StopServer());
       },
+      isAutoStartEnabled: state.isAutoStartEnabled,
+      onAutoStartChanged: (enabled, selectedHosts) {
+        context.read<ServerSettingsBloc>().add(
+          UpdateAutoStartSettings(enabled, selectedHosts),
+        );
+      },
     );
   }
 

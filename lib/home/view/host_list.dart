@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
+import 'package:hosts/home/view/host_page.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/host_file.dart';
-import 'package:hosts/page/host_page.dart';
 import 'package:hosts/widget/dialog/copy_dialog.dart';
 import 'package:hosts/widget/dialog/link_dialog.dart';
 import 'package:hosts/widget/dialog/test_dialog.dart';
 import 'package:hosts/widget/snakbar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// 主机列表组件
 ///
@@ -311,8 +312,19 @@ class ListItem extends StatelessWidget {
       textSpans.add(TextSpan(
         text: hosts[i],
         recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            // onLaunchUrl(hosts[i]);
+          ..onTap = () async {
+            final url = Uri.parse('http://${hosts[i]}');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url);
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          AppLocalizations.of(context)!.unable_to_open(hosts[i]))),
+                );
+              }
+            }
           },
       ));
 

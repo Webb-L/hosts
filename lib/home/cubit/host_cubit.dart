@@ -428,10 +428,16 @@ class HostCubit extends Cubit<HostState> {
     if (text == state.data.defaultFileContent) {
       return;
     }
+
+    print(text);
+
+    print(state.data.defaultFileContent);
+
     emit(
       HostFileContent(
         state.data.copyWith(
           fileContent: text,
+          // TODO 这里判断不够正确
           isSave: text == state.data.defaultFileContent,
         ),
       ),
