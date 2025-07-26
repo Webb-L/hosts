@@ -437,7 +437,7 @@ class HostCubit extends Cubit<HostState> {
       HostFileContent(
         state.data.copyWith(
           fileContent: text,
-          // TODO 这里判断不够正确
+          // TODO 这里判断不够正确，撤回会导致问题。
           isSave: text == state.data.defaultFileContent,
         ),
       ),

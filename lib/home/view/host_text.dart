@@ -80,9 +80,19 @@ class _HostTextState extends State<HostText> {
     return BlocBuilder<HostCubit, HostState>(
       builder: (BuildContext context, state) {
         if (state is HostUndo || state is HostInitial || state is HostHistory) {
-          // TODO 会出现撤回情况。
-          textEditingController.clear();
+          // 销毁旧的控制器
+          textEditingController.dispose();
+          
+          // 创建新的控制器
+          textEditingController = HostTextEditingController();
           textEditingController.text = state.data.fileContent;
+          
+          // 重新添加监听器
+          final hostCubit = context.read<HostCubit>();
+          textEditingController.addListener(() {
+            hostCubit.updateFileContent(textEditingController.text);
+          });
+          
           _scrollController.jumpTo(0);
         }
         final hostCubit = context.read<HostCubit>();
@@ -140,24 +150,38 @@ class _HostTextState extends State<HostText> {
                             hostCubit.onTextSave();
                           }
                         },
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context)
-                              .copyWith(scrollbars: false),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: IntrinsicWidth(
-                              child: TextField(
-                                controller: textEditingController,
-                                scrollController: _textScrollController,
-                                maxLines: null,
-                                scrollPhysics: const ClampingScrollPhysics(),
-                                decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: AppLocalizations.of(context)!
-                                        .create_host_template),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(context)
+                                  .copyWith(scrollbars: false),
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minWidth: constraints.maxWidth,
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: IntrinsicWidth(
+                                    child: SizedBox(
+                                      height: constraints.maxHeight,
+                                      child: TextField(
+                                        controller: textEditingController,
+                                        scrollController: _textScrollController,
+                                        maxLines: null,
+                                        expands: true,
+                                        scrollPhysics: const ClampingScrollPhysics(),
+                                        decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: AppLocalizations.of(context)!
+                                                .create_host_template),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
                     ),
