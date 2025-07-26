@@ -2,9 +2,25 @@
 Version=1.0
 Type=Application
 Name=Hosts Editor
-Comment=Linux MacOS Windows Hosts File Editor
+GenericName=Hosts File Editor
+Comment=A cross-platform hosts file editor built with Flutter
+Keywords=hosts;editor;network;system;dns;
 Exec=hosts %U
-Icon=icon.png
+Icon=hosts-editor
 Terminal=false
-Categories=Utility;Application;
+Categories=System;Network;Utility;
 StartupNotify=true
+MimeType=text/plain;
+X-Desktop-File-Install-Version=0.26
+
+[Desktop Action SimpleMode]
+Name=Simple Mode
+Exec=hosts --mode simple
+Icon=hosts-editor
+
+[Desktop Action OpenHostsFile]
+Name=Open Hosts File
+Exec=hosts --open /etc/hosts
+Icon=hosts-editor
+
+Actions=SimpleMode;OpenHostsFile;
