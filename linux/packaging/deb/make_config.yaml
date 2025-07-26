@@ -1,0 +1,32 @@
+display_name: Hosts Editor
+package_name: hosts-editor
+maintainer:
+  name: Webb
+  email: 822028533@qq.com
+priority: optional
+section: utils
+installed_size: 50000
+essential: false
+icon: linux/icon.png
+
+postinstall_scripts:
+  - echo "Hosts Editor installed successfully"
+  - echo "You can launch it from the applications menu or run 'hosts-editor' in terminal"
+postuninstall_scripts:
+  - echo "Hosts Editor has been uninstalled"
+
+keywords:
+  - Hosts
+  - Editor
+  - Network
+  - System
+  - DNS
+
+generic_name: Hosts File Editor
+
+categories:
+  - System
+  - Network
+  - Utility
+
+startup_notify: true

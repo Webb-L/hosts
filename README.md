@@ -36,8 +36,3 @@ hosts /etc/hosts
 ### 测试是否配置成功
 
 ![6.png](image/6.png)
-
-1. 构建应用：flutter build linux
-2. 安装用户服务：sudo ./install-user-service.sh
-3. 启动服务：systemctl --user start hosts-manager
-4. 开机自启：loginctl enable-linger $USER

@@ -1,0 +1,18 @@
+display_name: Hosts Editor
+publisher_display_name: Webb
+publisher: CN=Webb
+identity_name: top.webb_l.hosts
+msix_version: 1.5.0.0
+description: A cross-platform hosts file editor built with Flutter
+# logo_path: assets\icon\logo.png
+start_menu_icon_path: assets\icon\logo.png
+tile_icon_path: assets\icon\logo.png
+vs_generated_images_folder_path: assets\icon\
+icons_background_color: transparent
+architecture: x64
+certificate_path: 
+certificate_password: 
+capabilities: 
+  - internetClient
+  - privateNetworkClientServer
+  - documentsLibrary
