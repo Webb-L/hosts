@@ -29,7 +29,6 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       key: _scaffoldKey,
       drawer:
@@ -68,7 +67,8 @@ class _HomeViewState extends State<HomeView> {
             }
 
             if (state is HomeAdvancedSettings) {
-              if (state.data.advancedSettingsEnum == AdvancedSettingsEnum.Open) {
+              if (state.data.advancedSettingsEnum ==
+                  AdvancedSettingsEnum.Open) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _scaffoldKey.currentState?.openDrawer();
                 });

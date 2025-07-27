@@ -55,6 +55,9 @@ dependencies:
   # 文本差异对比
   diff_match_patch: ^0.4.1
 
+  # 键盘可见性检测
+  flutter_keyboard_visibility: ^6.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/widget/host_text_editing_controller.dart';
@@ -77,137 +78,150 @@ class _HostTextState extends State<HostText> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HostCubit, HostState>(
-      builder: (BuildContext context, state) {
-        if (state is HostUndo || state is HostInitial || state is HostHistory) {
-          // 销毁旧的控制器
-          textEditingController.dispose();
+    return KeyboardVisibilityBuilder(
+      builder: (context, isKeyboardVisible) {
+        return BlocBuilder<HostCubit, HostState>(
+          builder: (BuildContext context, state) {
+            if (state is HostUndo || state is HostInitial || state is HostHistory) {
+              // 销毁旧的控制器
+              textEditingController.dispose();
 
-          // 创建新的控制器
-          textEditingController = HostTextEditingController();
-          textEditingController.text = state.data.fileContent;
+              // 创建新的控制器
+              textEditingController = HostTextEditingController();
+              textEditingController.text = state.data.fileContent;
 
-          // 重新添加监听器
-          final hostCubit = context.read<HostCubit>();
-          textEditingController.addListener(() {
-            hostCubit.updateFileContent(textEditingController.text);
-          });
+              // 重新添加监听器
+              final hostCubit = context.read<HostCubit>();
+              textEditingController.addListener(() {
+                hostCubit.updateFileContent(textEditingController.text);
+              });
 
-          _scrollController.jumpTo(0);
-        }
-        final hostCubit = context.read<HostCubit>();
-        return Column(
-          children: [
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RowLineWidget(
-                    textEditingController: textEditingController,
-                    context: context,
-                    textFieldContainerKey: _textFieldContainerKey,
-                    scrollController: _scrollController,
-                  ),
-                  Expanded(
-                    key: _textFieldContainerKey,
-                    child: GestureDetector(
-                      onTap: () {
-                        _focusNode.requestFocus();
-                      },
-                      child: KeyboardListener(
-                        focusNode: _focusNode,
-                        onKeyEvent: (event) {
-                          List<LogicalKeyboardKey> logicalKeys = [];
-                          if (Platform.isMacOS) {
-                            logicalKeys = [
-                              LogicalKeyboardKey.metaLeft,
-                              LogicalKeyboardKey.metaRight
-                            ];
-                          } else {
-                            logicalKeys = [
-                              LogicalKeyboardKey.controlLeft,
-                              LogicalKeyboardKey.controlRight
-                            ];
-                          }
-                          if (logicalKeys.contains(event.logicalKey)) {
-                            if (isControl) {
-                              isControl = false;
-                            } else {
-                              isControl = true;
-                            }
-                          }
-                          if (event.logicalKey == LogicalKeyboardKey.slash &&
-                              isControl &&
-                              event is KeyDownEvent) {
-                            textEditingController.updateUseStatus(
-                                textEditingController.selection);
-                          }
+              _scrollController.jumpTo(0);
+            }
+            final hostCubit = context.read<HostCubit>();
+            return Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: Platform.isIOS || Platform.isAndroid ? 4 : 0,
+                        ),
+                        child: RowLineWidget(
+                          textEditingController: textEditingController,
+                          context: context,
+                          textFieldContainerKey: _textFieldContainerKey,
+                          scrollController: _scrollController,
+                        ),
+                      ),
+                      Expanded(
+                        key: _textFieldContainerKey,
+                        child: GestureDetector(
+                          onTap: () {
+                            _focusNode.requestFocus();
+                          },
+                          child: KeyboardListener(
+                            focusNode: _focusNode,
+                            onKeyEvent: (event) {
+                              List<LogicalKeyboardKey> logicalKeys = [];
+                              if (Platform.isMacOS) {
+                                logicalKeys = [
+                                  LogicalKeyboardKey.metaLeft,
+                                  LogicalKeyboardKey.metaRight
+                                ];
+                              } else {
+                                logicalKeys = [
+                                  LogicalKeyboardKey.controlLeft,
+                                  LogicalKeyboardKey.controlRight
+                                ];
+                              }
+                              if (logicalKeys.contains(event.logicalKey)) {
+                                if (isControl) {
+                                  isControl = false;
+                                } else {
+                                  isControl = true;
+                                }
+                              }
+                              if (event.logicalKey == LogicalKeyboardKey.slash &&
+                                  isControl &&
+                                  event is KeyDownEvent) {
+                                textEditingController.updateUseStatus(
+                                    textEditingController.selection);
+                              }
 
-                          if (event.logicalKey == LogicalKeyboardKey.keyS &&
-                              isControl &&
-                              event is KeyDownEvent &&
-                              !state.data.isSave) {
-                            hostCubit.onTextSave(
-                                context, textEditingController.text);
-                          }
-                        },
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(context)
-                                  .copyWith(scrollbars: false),
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minWidth: constraints.maxWidth,
-                                    minHeight: constraints.maxHeight,
-                                  ),
-                                  child: IntrinsicWidth(
-                                    child: SizedBox(
-                                      height: constraints.maxHeight,
-                                      child: TextField(
-                                        controller: textEditingController,
-                                        scrollController: _textScrollController,
-                                        maxLines: null,
-                                        expands: true,
-                                        scrollPhysics:
-                                            const ClampingScrollPhysics(),
-                                        decoration: InputDecoration(
-                                            border: InputBorder.none,
-                                            hintText:
-                                                AppLocalizations.of(context)!
-                                                    .create_host_template),
+                              if (event.logicalKey == LogicalKeyboardKey.keyS &&
+                                  isControl &&
+                                  event is KeyDownEvent &&
+                                  !state.data.isSave) {
+                                hostCubit.onTextSave(
+                                    context, textEditingController.text);
+                              }
+                            },
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return ScrollConfiguration(
+                                  behavior: ScrollConfiguration.of(context)
+                                      .copyWith(scrollbars: false),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minWidth: constraints.maxWidth,
+                                        minHeight: constraints.maxHeight,
+                                      ),
+                                      child: IntrinsicWidth(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                            top: (Platform.isIOS || Platform.isAndroid) && 
+                                                 isKeyboardVisible && !state.data.isSave ? 16 : 0,
+                                          ),
+                                          child: TextField(
+                                            controller: textEditingController,
+                                            scrollController: _textScrollController,
+                                            maxLines: null,
+                                            expands: true,
+                                            scrollPadding: EdgeInsets.zero,
+                                            scrollPhysics:
+                                                const ClampingScrollPhysics(),
+                                            decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText:
+                                                    AppLocalizations.of(context)!
+                                                        .create_host_template),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            );
-                          },
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              child: Row(
-                children: [
-                  Text(
-                    "${AppLocalizations.of(context)!.current_line}${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}",
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: Row(
+                    children: [
+                      Text(
+                        "${AppLocalizations.of(context)!.current_line}${textEditingController.countNewlines(textEditingController.text.substring(0, textEditingController.selection.start > 0 ? textEditingController.selection.start : 0)) + 1}",
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                          "${AppLocalizations.of(context)!.total_lines}${textEditingController.countNewlines(textEditingController.text) + 1}"),
+                    ],
                   ),
-                  const SizedBox(
-                    width: 8,
-                  ),
-                  Text(
-                      "${AppLocalizations.of(context)!.total_lines}${textEditingController.countNewlines(textEditingController.text) + 1}"),
-                ],
-              ),
-            )
-          ],
+                )
+              ],
+            );
+          },
         );
       },
     );
