@@ -52,9 +52,6 @@ dependencies:
   # 应用信息
   package_info_plus: ^8.1.0
   
-  # 后台运行
-  flutter_background: ^1.3.0+1
-  
   # 文本差异对比
   diff_match_patch: ^0.4.1
 
