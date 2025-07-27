@@ -23,23 +23,18 @@ DisableReadyPage=no
 ShowRunList=no
 
 [Languages]
-{{#each locales}}
-Name: "{{this}}"; MessagesFile: "compiler:Default.isl"
-{{/each}}
+Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "zh"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
 
 [Tasks]
-{{#if create_desktop_icon}}
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-{{/if}}
 
 [Files]
 Source: "{{files_path}}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{{display_name}}"; Filename: "{app}\{{executable_name}}"
-{{#if create_desktop_icon}}
 Name: "{autodesktop}\{{display_name}}"; Filename: "{app}\{{executable_name}}"; Tasks: desktopicon
-{{/if}}
 
 [Run]
 ; 注意：这里故意留空，不添加任何运行项目，确保安装后不会自动启动应用
