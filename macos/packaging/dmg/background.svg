@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="640" height="480" fill="url(#grad1)"/>
+  
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#dee2e6" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="480" fill="url(#grid)"/>
+  
+  <!-- Title -->
+  <text x="320" y="80" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="32" font-weight="600" fill="#212529">
+    Hosts Editor
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="320" y="110" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="16" fill="#6c757d">
+    A cross-platform hosts file editor
+  </text>
+  
+  <!-- Instruction text -->
+  <text x="320" y="360" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="500" fill="#495057">
+    Drag Hosts Editor to Applications folder to install
+  </text>
+  
+  <!-- Arrow pointing from left to right -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+     refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#007bff" />
+    </marker>
+  </defs>
+  
+  <line x1="260" y1="240" x2="380" y2="240" stroke="#007bff" stroke-width="3" marker-end="url(#arrowhead)" opacity="0.8"/>
+  
+  <!-- App placeholder circle -->
+  <circle cx="160" cy="240" r="40" fill="none" stroke="#007bff" stroke-width="2" stroke-dasharray="5,5" opacity="0.6"/>
+  <text x="160" y="290" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#6c757d">
+    Hosts Editor
+  </text>
+  
+  <!-- Applications folder placeholder -->
+  <rect x="450" y="210" width="60" height="60" rx="8" fill="none" stroke="#28a745" stroke-width="2" stroke-dasharray="5,5" opacity="0.6"/>
+  <text x="480" y="285" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#6c757d">
+    Applications
+  </text>
+  
+  <!-- Installation steps -->
+  <text x="320" y="400" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" fill="#6c757d">
+    1. Drag the app icon to Applications folder
+  </text>
+  <text x="320" y="420" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" fill="#6c757d">
+    2. Launch from Applications or Spotlight
+  </text>
+</svg>

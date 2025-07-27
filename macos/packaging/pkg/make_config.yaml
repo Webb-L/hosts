@@ -1,7 +1,2 @@
 install-path: /Applications
 # sign-identity: "-"
-identifier: top.webb_l.hosts
-version: 1.5.0
-title: Hosts Editor
-resources-dir: macos/packaging/pkg/Resources
-scripts-dir: macos/packaging/pkg/Scripts

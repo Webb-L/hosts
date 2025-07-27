@@ -1,0 +1,19 @@
+title: Hosts Editor
+# icon: assets/icon/logo.png  # 暂时移除图标避免格式问题
+background: background.png
+window:
+  size:
+    width: 640
+    height: 480
+  position:
+    x: 200
+    y: 120
+contents:
+  - x: 160
+    y: 240
+    type: file
+    path: hosts.app
+  - x: 480
+    y: 240
+    type: link
+    path: '/Applications'
