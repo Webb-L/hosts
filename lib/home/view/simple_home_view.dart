@@ -11,20 +11,20 @@ import 'package:hosts/home/view/home_app_bar.dart';
 import 'package:hosts/home/view/host_page.dart';
 import 'package:hosts/home/view/host_view.dart';
 import 'package:hosts/l10n/app_localizations.dart';
+import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/host_file.dart';
-import 'package:hosts/util/file_manager.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 class SimpleHomeView extends StatelessWidget {
-  final String filePath;
-
-  const SimpleHomeView({super.key, required this.filePath});
+  const SimpleHomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (!kIsWeb && filePath.isNotEmpty && File(filePath).existsSync()) {
-      context.read<HostCubit>().fromText(File(filePath).readAsStringSync());
+    if (!kIsWeb &&
+        GlobalSettings().filePath != null &&
+        File(GlobalSettings().filePath!).existsSync()) {
+      context
+          .read<HostCubit>()
+          .fromText(File(GlobalSettings().filePath!).readAsStringSync());
     }
 
     return Scaffold(
@@ -90,81 +90,11 @@ class SimpleHomeView extends StatelessWidget {
 
   Future<bool> saveHost(BuildContext context, String hostContent) async {
     final hostCubit = context.read<HostCubit>();
-
-    if (kIsWeb) {
-      final String tempContent = hostContent.replaceAll("\"", "\\\"");
-      await showDialog(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-                title: const Text("保存"),
-                content: SizedBox(
-                  width: MediaQuery.of(dialogContext).size.width * 0.5,
-                  child: SelectableText(hostContent),
-                ),
-                actions: [
-                  TextButton(
-                      onPressed: () => writeClipboard(
-                            'echo "$tempContent" > /etc/hosts',
-                            tempContent,
-                            context,
-                            hostCubit,
-                          ),
-                      child: const Text("Linux(echo)")),
-                  TextButton(
-                      onPressed: () {
-                        final String systemHostPath = p.joinAll([
-                          "C:",
-                          "Windows",
-                          "System32",
-                          "drivers",
-                          "etc",
-                          "hosts"
-                        ]);
-                        final String content = hostContent
-                            .split("\n")
-                            .map((item) => 'echo $item')
-                            .join("\n");
-                        writeClipboard(
-                          '(\n$content\n) > $systemHostPath',
-                          hostContent,
-                          context,
-                          hostCubit,
-                        );
-                      },
-                      child: const Text("Windows(echo)")),
-                  TextButton(
-                      onPressed: () => writeClipboard(
-                            'echo "$tempContent" > /etc/hosts',
-                            tempContent,
-                            context,
-                            hostCubit,
-                          ),
-                      child: const Text("MacOS(echo)")),
-                ],
-              ));
-      return true;
+    final result = await hostCubit.saveHost(context, GlobalSettings().filePath!, hostContent);
+    if (result) {
+      hostCubit.fromText(hostContent);
     }
-
-    final File file = File(filePath);
-    try {
-      await file.writeAsString(hostContent);
-    } catch (e) {
-      try {
-        final Directory cacheDirectory = await getApplicationCacheDirectory();
-        final File cacheFile = File(p.join(cacheDirectory.path, 'hosts'));
-        await cacheFile.writeAsString(hostContent);
-
-        await FileManager()
-            .writeFileWithAdminPrivileges(cacheFile.path, filePath);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context)!.error_save_fail)));
-        return false;
-      }
-    }
-
-    hostCubit.fromText(hostContent);
-    return true;
+    return result;
   }
 
   void writeClipboard(String hostContent, String defaultContent,

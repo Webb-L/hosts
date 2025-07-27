@@ -82,17 +82,17 @@ class _HostTextState extends State<HostText> {
         if (state is HostUndo || state is HostInitial || state is HostHistory) {
           // 销毁旧的控制器
           textEditingController.dispose();
-          
+
           // 创建新的控制器
           textEditingController = HostTextEditingController();
           textEditingController.text = state.data.fileContent;
-          
+
           // 重新添加监听器
           final hostCubit = context.read<HostCubit>();
           textEditingController.addListener(() {
             hostCubit.updateFileContent(textEditingController.text);
           });
-          
+
           _scrollController.jumpTo(0);
         }
         final hostCubit = context.read<HostCubit>();
@@ -147,7 +147,8 @@ class _HostTextState extends State<HostText> {
                               isControl &&
                               event is KeyDownEvent &&
                               !state.data.isSave) {
-                            hostCubit.onTextSave();
+                            hostCubit.onTextSave(
+                                context, textEditingController.text);
                           }
                         },
                         child: LayoutBuilder(
@@ -170,11 +171,13 @@ class _HostTextState extends State<HostText> {
                                         scrollController: _textScrollController,
                                         maxLines: null,
                                         expands: true,
-                                        scrollPhysics: const ClampingScrollPhysics(),
+                                        scrollPhysics:
+                                            const ClampingScrollPhysics(),
                                         decoration: InputDecoration(
                                             border: InputBorder.none,
-                                            hintText: AppLocalizations.of(context)!
-                                                .create_host_template),
+                                            hintText:
+                                                AppLocalizations.of(context)!
+                                                    .create_host_template),
                                       ),
                                     ),
                                   ),

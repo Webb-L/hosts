@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/l10n/app_localizations.dart';
+import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
 import 'package:hosts/util/file_manager.dart';
@@ -429,15 +430,10 @@ class HostCubit extends Cubit<HostState> {
       return;
     }
 
-    print(text);
-
-    print(state.data.defaultFileContent);
-
     emit(
       HostFileContent(
         state.data.copyWith(
           fileContent: text,
-          // TODO 这里判断不够正确，撤回会导致问题。
           isSave: text == state.data.defaultFileContent,
         ),
       ),
@@ -493,12 +489,16 @@ class HostCubit extends Cubit<HostState> {
     save(isHistory);
   }
 
-  // TODO 保存到文件中。
-  void onTextSave() {
-    // state.data.fileContent
+  void onTextSave(BuildContext context, String content) async {
+    final result = await saveHost(
+      context,
+      GlobalSettings().filePath ?? FileManager.systemHostFilePath,
+      state.data.fileContent,
+    );
+    if (GlobalSettings().filePath != null && result) {
+      fromText(content);
+    }
   }
-
-  void saveToFile() {}
 
   void save([bool isHistory = false]) async {
     final fileId = state.data.fileId;
@@ -530,7 +530,7 @@ class HostCubit extends Cubit<HostState> {
       await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-                title: const Text("保存"),
+                title: Text(AppLocalizations.of(context)!.save),
                 content: SizedBox(
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: SelectableText(hostContent),
@@ -594,38 +594,12 @@ class HostCubit extends Cubit<HostState> {
       }
     }
 
-    // emit(
-    //   HostSave(
-    //     state.data.copyWith(
-    //       defaultHosts: state.data.hosts,
-    //       defaultFileContent: state.data.fileContent,
-    //       isSave: true,
-    //     ),
-    //   ),
-    // );
-    // setState(() {
-    //   hostsFile.defaultContent = hostContent;
-    //   hostsFile.isUpdateHost();
-    // });
     return true;
   }
 
   void writeClipboard(
       String hostContent, String defaultContent, BuildContext context) {
     Clipboard.setData(ClipboardData(text: hostContent)).then((_) {
-      // emit(
-      //   HostSave(
-      //     state.data.copyWith(
-      //       defaultHosts: state.data.hosts,
-      //       defaultFileContent: state.data.fileContent,
-      //       isSave: true,
-      //     ),
-      //   ),
-      // );
-      // setState(() {
-      //   hostsFile.defaultContent = defaultContent;
-      //   hostsFile.isUpdateHost();
-      // });
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

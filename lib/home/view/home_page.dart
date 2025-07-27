@@ -28,9 +28,7 @@ class HomePage extends StatelessWidget {
 }
 
 class SimpleHomePage extends StatelessWidget {
-  final String filePath;
-
-  const SimpleHomePage({super.key, required this.filePath});
+  const SimpleHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +37,7 @@ class SimpleHomePage extends StatelessWidget {
         BlocProvider<HomeCubit>(create: (context) => HomeCubit()),
         BlocProvider<HostCubit>(create: (context) => HostCubit()),
       ],
-      child: SimpleHomeView(filePath: filePath),
+      child: SimpleHomeView(),
     );
   }
 }

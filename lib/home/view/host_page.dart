@@ -208,7 +208,7 @@ class _HostPageState extends State<HostPage> {
                           icon: const Icon(Icons.chevron_right),
                           tooltip: AppLocalizations.of(context)!.next,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
                         IconButton(
                           onPressed: hosts.length == 1
                               ? null

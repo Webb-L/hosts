@@ -8,11 +8,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/home/cubit/home_cubit.dart';
 import 'package:hosts/home/cubit/host_cubit.dart';
+import 'package:hosts/home/view/history_page.dart';
 import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/model/global_settings.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/model/simple_host_file.dart';
-import 'package:hosts/home/view/history_page.dart';
 import 'package:hosts/widget/dialog/copy_multiple_dialog.dart';
 import 'package:hosts/widget/snakbar.dart';
 import 'package:hosts/widget/text_field/search_text_field.dart';
@@ -40,7 +40,9 @@ class HomeAppBar extends StatelessWidget {
                 return Container(
                   height: isNarrow ? null : 58,
                   padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: isNarrow ? _buildNarrowLayout(context, homeCubit, homeStateData) : _buildWideLayout(context, homeCubit, homeStateData),
+                  child: isNarrow
+                      ? _buildNarrowLayout(context, homeCubit, homeStateData)
+                      : _buildWideLayout(context, homeCubit, homeStateData),
                 );
               },
             )
@@ -148,6 +150,8 @@ class HomeAppBar extends StatelessWidget {
         context.read<HostCubit>().fromText(File(path).readAsStringSync());
       }
 
+      GlobalSettings().filePath = path;
+
       if (bytes != null) {
         context.read<HostCubit>().fromText(utf8.decode(bytes));
       }
@@ -171,7 +175,7 @@ class HomeAppBar extends StatelessWidget {
         case 3:
           // 关于
           final packageInfo = await PackageInfo.fromPlatform();
-          
+
           if (context.mounted) {
             showAboutDialog(
               context: context,
@@ -200,7 +204,7 @@ class HomeAppBar extends StatelessWidget {
           "icon": Icons.system_update
         },
         {
-          "text": AppLocalizations.of(context)!.report_issue, 
+          "text": AppLocalizations.of(context)!.report_issue,
           "value": 2,
           "icon": Icons.bug_report
         },
@@ -235,34 +239,41 @@ class HomeAppBar extends StatelessWidget {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.unable_to_open(url))),
+            SnackBar(
+                content:
+                    Text(AppLocalizations.of(context)!.unable_to_open(url))),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.unable_to_open(url)}: $e')),
+          SnackBar(
+              content: Text(
+                  '${AppLocalizations.of(context)!.unable_to_open(url)}: $e')),
         );
       }
     }
   }
 
-  Widget _buildWideLayout(BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
+  Widget _buildWideLayout(
+      BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
     return Row(
       children: [
         Expanded(
           child: Row(
             children: [
-              if (GlobalSettings().isSimple)
+              if (GlobalSettings().filePath != null)
                 IconButton(
                   onPressed: () async {
-                    FilePickerResult? result = await FilePicker.platform.pickFiles();
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles();
                     if (result == null) return;
                     if (!context.read<HostCubit>().state.data.isSave) {
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(AppLocalizations.of(context)!.error_not_save),
+                        content:
+                            Text(AppLocalizations.of(context)!.error_not_save),
                         action: SnackBarAction(
                           label: AppLocalizations.of(context)!.abort,
                           onPressed: () => pickFile(context, result),
@@ -314,7 +325,8 @@ class HomeAppBar extends StatelessWidget {
                 if (hostStateData.history.isNotEmpty)
                   IconButton(
                     onPressed: () async {
-                      SimpleHostFileHistory? resultHistory = await showModalBottomSheet(
+                      SimpleHostFileHistory? resultHistory =
+                          await showModalBottomSheet(
                         context: context,
                         builder: (BuildContext context) => HistoryPage(
                           selectHistory: hostStateData.selectHistory,
@@ -329,10 +341,12 @@ class HomeAppBar extends StatelessWidget {
                       if (!hostStateData.isSave) {
                         ScaffoldMessenger.of(context).removeCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(AppLocalizations.of(context)!.error_not_save),
+                          content: Text(
+                              AppLocalizations.of(context)!.error_not_save),
                           action: SnackBarAction(
                             label: AppLocalizations.of(context)!.abort,
-                            onPressed: () => hostCubit.onHistoryChanged(resultHistory),
+                            onPressed: () =>
+                                hostCubit.onHistoryChanged(resultHistory),
                           ),
                         ));
                         return;
@@ -356,22 +370,25 @@ class HomeAppBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNarrowLayout(BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
+  Widget _buildNarrowLayout(
+      BuildContext context, HomeCubit homeCubit, HomeStateData homeStateData) {
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              if (GlobalSettings().isSimple)
+              if (GlobalSettings().filePath != null)
                 IconButton(
                   onPressed: () async {
-                    FilePickerResult? result = await FilePicker.platform.pickFiles();
+                    FilePickerResult? result =
+                        await FilePicker.platform.pickFiles();
                     if (result == null) return;
                     if (!context.read<HostCubit>().state.data.isSave) {
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(AppLocalizations.of(context)!.error_not_save),
+                        content:
+                            Text(AppLocalizations.of(context)!.error_not_save),
                         action: SnackBarAction(
                           label: AppLocalizations.of(context)!.abort,
                           onPressed: () => pickFile(context, result),
@@ -406,7 +423,8 @@ class HomeAppBar extends StatelessWidget {
                       if (hostStateData.history.isNotEmpty)
                         IconButton(
                           onPressed: () async {
-                            SimpleHostFileHistory? resultHistory = await showModalBottomSheet(
+                            SimpleHostFileHistory? resultHistory =
+                                await showModalBottomSheet(
                               context: context,
                               builder: (BuildContext context) => HistoryPage(
                                 selectHistory: hostStateData.selectHistory,
@@ -419,12 +437,16 @@ class HomeAppBar extends StatelessWidget {
                               return;
                             }
                             if (!hostStateData.isSave) {
-                              ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(AppLocalizations.of(context)!.error_not_save),
+                              ScaffoldMessenger.of(context)
+                                  .removeCurrentSnackBar();
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text(AppLocalizations.of(context)!
+                                    .error_not_save),
                                 action: SnackBarAction(
                                   label: AppLocalizations.of(context)!.abort,
-                                  onPressed: () => hostCubit.onHistoryChanged(resultHistory),
+                                  onPressed: () =>
+                                      hostCubit.onHistoryChanged(resultHistory),
                                 ),
                               ));
                               return;
@@ -475,8 +497,9 @@ class HomeAppBar extends StatelessWidget {
       builder: (BuildContext context, state) {
         final selectHosts = state.data.selectHosts;
         final hostCubit = context.read<HostCubit>();
-        
-        if (selectHosts.isEmpty || homeCubit.state.data.editMode != EditMode.Table) {
+
+        if (selectHosts.isEmpty ||
+            homeCubit.state.data.editMode != EditMode.Table) {
           return const SizedBox.shrink();
         }
 
@@ -508,7 +531,8 @@ class HomeAppBar extends StatelessWidget {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (context) => CopyMultipleDialog(hosts: selectHosts),
+                    builder: (context) =>
+                        CopyMultipleDialog(hosts: selectHosts),
                   );
                 },
                 tooltip: AppLocalizations.of(context)!.copy_selected,
