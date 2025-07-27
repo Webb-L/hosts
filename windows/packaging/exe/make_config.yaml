@@ -5,10 +5,7 @@ publisher: Webb
 publisher_url: https://github.com/webb-l/hosts
 display_name: Hosts Editor
 create_desktop_icon: true
-# 禁用自启动和安装后启动
-start_menu_folder: false
-auto_start: false
-run_after_install: false
+script_template: inno_setup.iss
 # See: https://jrsoftware.org/ishelp/index.php?topic=setup_defaultdirname
 # install_dir_name: "C:\\Program Files\\HostsEditor"
 # 这里的路径是相对于项目根目录的路径； 图标格式必须是ico格式，不能是png或其它
