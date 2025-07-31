@@ -90,7 +90,7 @@ class SimpleHomeView extends StatelessWidget {
 
   Future<bool> saveHost(BuildContext context, String hostContent) async {
     final hostCubit = context.read<HostCubit>();
-    final result = await hostCubit.saveHost(context, GlobalSettings().filePath!, hostContent);
+    final result = await hostCubit.saveHost(context, GlobalSettings().filePath??"", hostContent);
     if (result) {
       hostCubit.fromText(hostContent);
     }

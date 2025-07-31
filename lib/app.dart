@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hosts/home/view/home_page.dart';
 import 'package:hosts/l10n/app_localizations.dart';
@@ -38,7 +39,7 @@ Widget _platformSpecificWidget(String filePath) {
   if (filePath.isNotEmpty) {
     GlobalSettings().filePath = filePath;
   }
-  if (GlobalSettings().filePath != null) {
+  if (GlobalSettings().filePath != null || kIsWeb) {
     return SimpleHomePage();
   } else {
     return FutureBuilder<void>(
