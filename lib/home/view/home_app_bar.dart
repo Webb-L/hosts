@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hosts/enums.dart';
@@ -263,7 +263,7 @@ class HomeAppBar extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              if (GlobalSettings().filePath != null)
+              if (GlobalSettings().filePath != null || kIsWeb)
                 IconButton(
                   onPressed: () async {
                     FilePickerResult? result =

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -107,7 +108,7 @@ class _HostTextState extends State<HostText> {
                     children: [
                       Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: Platform.isIOS || Platform.isAndroid ? 4 : 0,
+                          vertical: !kIsWeb && (Platform.isIOS || Platform.isAndroid) ? 4 : 0,
                         ),
                         child: RowLineWidget(
                           textEditingController: textEditingController,
@@ -126,7 +127,7 @@ class _HostTextState extends State<HostText> {
                             focusNode: _focusNode,
                             onKeyEvent: (event) {
                               List<LogicalKeyboardKey> logicalKeys = [];
-                              if (Platform.isMacOS) {
+                              if (!kIsWeb && Platform.isMacOS) {
                                 logicalKeys = [
                                   LogicalKeyboardKey.metaLeft,
                                   LogicalKeyboardKey.metaRight
@@ -174,7 +175,7 @@ class _HostTextState extends State<HostText> {
                                       child: IntrinsicWidth(
                                         child: Padding(
                                           padding: EdgeInsets.only(
-                                            top: (Platform.isIOS || Platform.isAndroid) && 
+                                            top: !kIsWeb && (Platform.isIOS || Platform.isAndroid) && 
                                                  isKeyboardVisible && !state.data.isSave ? 16 : 0,
                                           ),
                                           child: TextField(
