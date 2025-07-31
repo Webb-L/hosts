@@ -56,7 +56,7 @@ dependencies:
   diff_match_patch: ^0.4.1
 
   # 键盘可见性检测
-  flutter_keyboard_visibility: ^6.0.0
+  flutter_keyboard_visibility_temp_fork: ^0.1.5
 
 dev_dependencies:
   flutter_test:

@@ -25,12 +25,6 @@ class RowLineWidget extends StatelessWidget {
   }
 
   Widget buildRowLine() {
-    double textFieldContainerWidth = 0;
-    final RenderBox? renderBox =
-        textFieldContainerKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox != null) {
-      textFieldContainerWidth = renderBox.size.width;
-    }
     final TextStyle? titleMedium = Theme.of(context).textTheme.titleMedium;
     final TextSelection textSelection = textEditingController.selection;
     final List<String> lines = textEditingController.text.split('\n');

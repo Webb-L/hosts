@@ -259,7 +259,7 @@ class FileManager {
       });
 
       // 等待进程结束
-      int exitCode = await process.exitCode;
+      await process.exitCode;
 
       // 检查退出代码，如果非零则抛出异常
       if (errorMessage.isNotEmpty) {

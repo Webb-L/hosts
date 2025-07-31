@@ -27,7 +27,7 @@ class ServerManager {
   
   /// 检查服务器是否启用
   Future<bool> isServerEnabled() async {
-    return await _settingsManager.getBool(_serverEnabledKey) ?? false;
+    return await _settingsManager.getBool(_serverEnabledKey);
   }
   
   /// 设置服务器启用状态
@@ -57,7 +57,7 @@ class ServerManager {
   
   /// 获取自动启动设置
   Future<bool> isAutoStartEnabled() async {
-    return await _settingsManager.getBool(_serverAutoStartKey) ?? false;
+    return await _settingsManager.getBool(_serverAutoStartKey);
   }
   
   /// 设置自动启动
