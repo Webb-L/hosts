@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hosts/l10n/app_localizations.dart';
 import 'package:hosts/enums.dart';
 import 'package:hosts/model/host_file.dart';
 import 'package:hosts/util/regexp_util.dart';
@@ -208,7 +208,7 @@ class _HostPageState extends State<HostPage> {
                           icon: const Icon(Icons.chevron_right),
                           tooltip: AppLocalizations.of(context)!.next,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
                         IconButton(
                           onPressed: hosts.length == 1
                               ? null

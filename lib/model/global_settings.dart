@@ -7,5 +7,5 @@ class GlobalSettings {
 
   GlobalSettings._internal();
 
-  bool isSimple = false;
+  String? filePath;
 }

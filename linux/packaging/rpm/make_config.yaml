@@ -1,0 +1,26 @@
+icon: linux/icon.png
+summary: A cross-platform hosts file editor built with Flutter
+group: Applications/System
+vendor: Webb
+packager: Webb
+packagerEmail: 822028533@qq.com
+license: MIT
+url: https://github.com/webb-l/hosts
+
+display_name: Hosts Editor
+
+keywords:
+  - Hosts
+  - Editor
+  - Network
+  - System
+  - DNS
+
+generic_name: Hosts File Editor
+
+categories:
+  - System
+  - Network
+  - Utility
+
+startup_notify: true

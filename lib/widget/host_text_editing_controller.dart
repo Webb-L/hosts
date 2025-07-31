@@ -15,6 +15,21 @@ class HostTextEditingController extends TextEditingController {
     TextStyle? style,
     bool? withComposing,
   }) {
+    // Ensure selection is within bounds before building text span
+    final int textLength = text.length;
+    if (selection.baseOffset > textLength || selection.extentOffset > textLength) {
+      final TextSelection boundedSelection = selection.copyWith(
+        baseOffset: min(selection.baseOffset, textLength),
+        extentOffset: min(selection.extentOffset, textLength),
+      );
+      // Update selection without triggering infinite recursion
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (selection != boundedSelection) {
+          selection = boundedSelection;
+        }
+      });
+    }
+    
     lines.clear();
     lines.addAll(text.split("\n"));
 
@@ -177,7 +192,15 @@ class HostTextEditingController extends TextEditingController {
   set value(TextEditingValue newValue) {
     lines.clear();
     lines.addAll(newValue.text.split("\n"));
-    super.value = newValue;
+    
+    // Ensure selection is within bounds
+    final int textLength = newValue.text.length;
+    final TextSelection boundedSelection = newValue.selection.copyWith(
+      baseOffset: min(newValue.selection.baseOffset, textLength),
+      extentOffset: min(newValue.selection.extentOffset, textLength),
+    );
+    
+    super.value = newValue.copyWith(selection: boundedSelection);
   }
 
   int countNewlines(String text) {

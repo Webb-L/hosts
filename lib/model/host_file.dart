@@ -34,10 +34,14 @@ class HostsModel {
       return "";
     }
 
-    return "$text${isUse ? "" : "# "}$host ${hosts.join(" ")} ${config.isNotEmpty ? '# - config ${json.encode(config)}' : ''}";
+    return "$text${toHostString()}";
   }
 
-  filter(String searchQuery) {
+  String toHostString() {
+    return "${isUse ? "" : "# "}$host ${hosts.join(" ")} ${config.isNotEmpty ? '# - config ${json.encode(config)}' : ''}";
+  }
+
+  bool filter(String searchQuery) {
     if (searchQuery.isEmpty) return true;
     return host.contains(searchQuery) ||
         description.contains(searchQuery) ||
@@ -63,6 +67,64 @@ class HostsModel {
       hostLine: hostLine ?? this.hostLine,
       descLine: descLine ?? this.descLine,
     );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is HostsModel &&
+        other.host == host &&
+        other.isUse == isUse &&
+        other.description == description &&
+        _listEquals(other.hosts, hosts) &&
+        _mapEquals(other.config, config);
+  }
+
+  @override
+  int get hashCode {
+    return host.hashCode ^
+        isUse.hashCode ^
+        description.hashCode ^
+        _listHash(hosts) ^
+        _mapHash(config);
+  }
+
+  static bool _listEquals(List<dynamic>? list1, List<dynamic>? list2) {
+    if (identical(list1, list2)) return true;
+    if (list1 == null || list2 == null) return false;
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i] != list2[i]) return false;
+    }
+    return true;
+  }
+
+  static int _listHash(List<dynamic> list) {
+    int hash = 0;
+    for (var item in list) {
+      hash ^= item.hashCode;
+    }
+    return hash;
+  }
+
+  static bool _mapEquals(
+      Map<String, dynamic>? map1, Map<String, dynamic>? map2) {
+    if (identical(map1, map2)) return true;
+    if (map1 == null || map2 == null) return false;
+    if (map1.length != map2.length) return false;
+    for (var key in map1.keys) {
+      if (map1[key] != map2[key]) return false;
+    }
+    return true;
+  }
+
+  static int _mapHash(Map<String, dynamic> map) {
+    int hash = 0;
+    for (var key in map.keys) {
+      hash ^= key.hashCode ^ map[key].hashCode;
+    }
+    return hash;
   }
 }
 

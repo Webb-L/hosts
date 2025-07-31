@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 const String settingKeyFirstOpenApp = "FirstOpenApp";
 const String settingKeyHostConfigs = "HostConfigs";
 const String settingKeyUseHostFile = "UseHostFileKey";
+const String settingKeyAutoStartEnabled = "AutoStartEnabled";
+const String settingKeyAutoStartHosts = "AutoStartHosts";
 
 class SettingsManager {
   static final SettingsManager _instance = SettingsManager._internal();
